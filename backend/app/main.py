@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastapi import FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -56,7 +57,9 @@ async def _validation_exception_handler(request: Request, exc: Exception) -> JSO
         title="validation_error",
         detail="Erro de validação da requisição",
         instance=request.url.path,
-        errors=list(exc.errors()),
+        # jsonable_encoder: `exc.errors()` pode conter o objeto `ValueError`
+        # cru em `ctx` (validators que levantam ValueError) — não serializável.
+        errors=jsonable_encoder(exc.errors()),
     )
 
 
