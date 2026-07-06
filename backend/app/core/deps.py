@@ -16,6 +16,7 @@ credencial disponível). Conecta como `app_admin` (BYPASSRLS); ver
 
 from __future__ import annotations
 
+import ipaddress
 from collections.abc import Callable, Iterator
 
 from fastapi import Depends, HTTPException, Request, status
@@ -24,6 +25,25 @@ from sqlalchemy.orm import Session
 
 from app.core.db import AppAdminSessionLocal, AppUserSessionLocal
 from app.core.middleware import AuthContext
+
+
+def _client_ip(request: Request) -> str:
+    """IP de origem para auditoria. Prefere o primeiro IP de `X-Forwarded-For`
+    (produção fica atrás de proxy); cai para o peer direto. Retorna '' se não
+    for um IP válido (ex.: o TestClient usa host 'testclient') — o trigger de
+    auditoria converte '' em NULL."""
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        candidate = forwarded.split(",")[0].strip()
+    elif request.client is not None:
+        candidate = request.client.host
+    else:
+        candidate = ""
+    try:
+        ipaddress.ip_address(candidate)
+    except ValueError:
+        return ""
+    return candidate
 
 
 def get_current_user(request: Request) -> AuthContext:
@@ -47,13 +67,20 @@ def require_roles(*roles: str) -> Callable[[AuthContext], AuthContext]:
     return _dependency
 
 
-def get_db(company_id: str = Depends(get_tenant)) -> Iterator[Session]:
-    """Sessão `app_user` (RLS ativa) com `app.company_id` já setado via
-    `SET LOCAL` (escopo da transação da request)."""
+def get_db(request: Request, auth: AuthContext = Depends(get_current_user)) -> Iterator[Session]:
+    """Sessão `app_user` (RLS ativa) com as GUCs de request já setadas via
+    `SET LOCAL` (escopo da transação): `app.company_id` (isolamento por
+    tenant) e `app.actor_id`/`app.client_ip` (lidas pelo trigger de auditoria
+    para preencher `audit_log`, ver B2.4)."""
     session = AppUserSessionLocal()
     try:
         session.execute(
-            text("SELECT set_config('app.company_id', :cid, true)"), {"cid": company_id}
+            text(
+                "SELECT set_config('app.company_id', :cid, true), "
+                "set_config('app.actor_id', :aid, true), "
+                "set_config('app.client_ip', :ip, true)"
+            ),
+            {"cid": str(auth.company_id), "aid": str(auth.user_id), "ip": _client_ip(request)},
         )
         yield session
         session.commit()
