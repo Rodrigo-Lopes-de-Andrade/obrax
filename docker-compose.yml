@@ -1,0 +1,33 @@
+# Stack de desenvolvimento local (Postgres + Redis).
+# Credenciais são throwaway de dev — não usar em produção.
+services:
+  postgres:
+    image: postgres:16
+    container_name: obrax-postgres
+    environment:
+      POSTGRES_USER: obrax
+      POSTGRES_PASSWORD: obrax
+      POSTGRES_DB: obrax
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U obrax -d obrax"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  redis:
+    image: redis:7
+    container_name: obrax-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  pgdata:
