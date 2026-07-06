@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.10);border-radius:8px;border:2px solid #1a1c24;}
+  input::placeholder{color:#5b6072;}
+  a{text-decoration:none;color:inherit;}
+  .obx-nav:hover{background:rgba(255,255,255,0.05)!important;color:#e8eaf0!important;}
+  .obx-navdis{position:relative;}
+  .obx-navdis:hover .obx-tip{opacity:1;}
+  .obx-icobtn:hover{background:rgba(255,255,255,0.08)!important;color:#e8eaf0!important;}
+  .obx-kpi:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,0.34);border-color:rgba(255,255,255,0.10);}
+  .obx-card{transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease;}
+  .obx-row:hover{background:rgba(255,255,255,0.04)!important;}
+  .obx-ghost:hover{background:rgba(255,255,255,0.06)!important;border-color:#4a5068!important;}
+  i[data-lucide]{width:18px;height:18px;}
+  @keyframes obxspin{to{transform:rotate(360deg);}}
+  .obx-spin{animation:obxspin 1s linear infinite;}
+  .obx-sb{transition:width .2s ease;}
+  .obx-sb.col{width:64px !important;min-width:64px !important;max-width:64px !important;flex-basis:64px !important;padding-left:8px !important;padding-right:8px !important;}
+  .obx-sb.col .lbl{display:none !important;}
+  .obx-sb.col .obx-nav,.obx-sb.col .obx-navtop,.obx-sb.col .obx-navdis{justify-content:center !important;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;background:#1a1c24;font-family:'Manrope',sans-serif;color:#e8eaf0;overflow:hidden;-webkit-font-smoothing:antialiased;">
+
+  <aside class="obx-sb {{ sbClass }}" style="width:248px;flex-shrink:0;background:#1e2130;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;padding:20px 14px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:11px;padding:6px 8px 14px 8px;"><div style="width:38px;height:38px;border-radius:9px;background:#ff6b6b;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(255,107,107,0.35);flex-shrink:0;"><i data-lucide="hard-hat" style="color:#fff;width:21px;height:21px;"></i></div><div class="lbl" style="font-weight:800;font-size:21px;letter-spacing:-0.02em;">Obra<span style="color:#ff6b6b;">x</span></div></div>
+    <button class="obx-navtop" onClick="{{ toggleSb }}" title="Recolher menu" style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 8px;padding:4px 8px;border:none;background:transparent;color:#5b6072;cursor:pointer;"><i data-lucide="{{ sbIcon }}" style="width:18px;height:18px;"></i></button>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:8px 8px 8px;">Gestão</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <a href="Obrax Dashboard.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="layout-dashboard"></i><span class="lbl">Dashboard</span></a>
+      <a href="Obras.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="building-2"></i><span class="lbl">Obras</span></a>
+      <a href="Clientes.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="users"></i><span class="lbl">Clientes</span></a>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="file-text"></i><span class="lbl">Orçamentos</span></div>
+      <a href="Compras.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="shopping-cart"></i><span class="lbl">Compras</span></a>
+      <a href="Financeiro.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="wallet"></i><span class="lbl">Financeiro</span></a>
+      <div class="obx-navtop" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:rgba(132,94,247,0.15);color:#845ef7;font-weight:600;font-size:14px;cursor:pointer;position:relative;"><span style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:#845ef7;"></span><i data-lucide="bar-chart-3"></i><span class="lbl">Relatórios</span></div>
+    </nav>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:14px 8px 6px;">Inteligência</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <a href="Assistente IA.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="bot"></i><span class="lbl">Assistente IA</span><span class="lbl" style="margin-left:auto;font-size:10px;font-weight:700;font-family:'JetBrains Mono',monospace;background:rgba(132,94,247,0.2);color:#845ef7;padding:2px 7px;border-radius:999px;">PRO</span></a>
+      <a href="Assistente IA.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="shield-check"></i><span class="lbl">Auditoria IA</span></a>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:3px;">
+      <a href="Configuracoes.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="settings"></i><span class="lbl">Configurações</span></a>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 10px;margin-top:6px;border-radius:10px;background:#242833;border:1px solid rgba(255,255,255,0.05);"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">MA</div><div class="lbl" style="line-height:1.2;"><div style="font-size:13px;font-weight:600;">Marina Alves</div><div style="font-size:11px;color:#8c92a4;">Engenheira</div></div></div>
+    </div>
+  </aside>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <header style="height:68px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.05);display:flex;align-items:center;gap:18px;padding:0 24px;">
+      <div style="position:relative;flex:1;max-width:440px;"><i data-lucide="search" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#5b6072;width:17px;height:17px;"></i><input type="text" placeholder="Buscar…" style="width:100%;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 12px 9px 38px;color:#e8eaf0;font-family:inherit;font-size:13.5px;"></div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <button class="obx-icobtn" style="position:relative;width:38px;height:38px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="bell"></i></button>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">MA</div>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:26px 28px 40px;">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+        <div><h1 style="margin:0 0 6px;font-size:27px;font-weight:800;letter-spacing:-0.02em;">Relatórios</h1><p style="margin:0;color:#8c92a4;font-size:14px;">Visão consolidada · atualizado há 3 min</p></div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:3px;">
+            <sc-for list="{{ periods }}" as="p" hint-placeholder-count="3"><button onClick="{{ p.onClick }}" style="border:none;background:{{ p.bg }};color:{{ p.color }};font-family:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;">{{ p.label }}</button></sc-for>
+          </div>
+          <button class="obx-ghost" onClick="{{ doExport }}" style="display:flex;align-items:center;gap:8px;background:#242833;border:1px solid #3a3f52;color:#e8eaf0;font-family:inherit;font-size:13px;font-weight:600;padding:9px 15px;border-radius:8px;cursor:pointer;transition:all .15s ease;">
+            <i data-lucide="{{ exportIcon }}" class="{{ exportSpin }}" style="width:15px;height:15px;"></i>{{ exportLabel }}
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px;">
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:12px;">Obras ativas</div><div style="font-size:28px;font-weight:700;letter-spacing:-0.02em;">8</div><div style="font-size:12.5px;color:#38d9a9;font-weight:600;margin-top:7px;">+2 vs mês anterior</div></div>
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:12px;">Valor total</div><div style="font-size:28px;font-weight:700;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;white-space:nowrap;">R$ 42,1<span style="font-size:15px;color:#8c92a4;"> mi</span></div><div style="font-size:12.5px;color:#38d9a9;font-weight:600;margin-top:7px;">+R$ 3,2 mi</div></div>
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:12px;">Margem média</div><div style="font-size:28px;font-weight:700;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;color:#38d9a9;">31,4%</div><div style="font-size:12.5px;color:#ff6b6b;font-weight:600;margin-top:7px;">−1,2 p.p.</div></div>
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:12px;">Tickets abertos</div><div style="font-size:28px;font-weight:700;letter-spacing:-0.02em;">12</div><div style="font-size:12.5px;color:#ff6b6b;font-weight:600;margin-top:7px;">3 urgentes</div></div>
+      </div>
+
+      <!-- donut + orçamentos -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;">Obras por status</h3>
+          <div style="display:flex;align-items:center;gap:24px;">
+            <div style="flex-shrink:0;">{{ statusChart }}</div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:#845ef7;"></span><span style="font-size:13px;flex:1;">Em execução</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;">5</span></div>
+              <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:#fcc419;"></span><span style="font-size:13px;flex:1;">Planejamento</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;">2</span></div>
+              <div style="display:flex;align-items:center;gap:10px;"><span style="width:11px;height:11px;border-radius:3px;background:#38d9a9;"></span><span style="font-size:13px;flex:1;">Concluída</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;">1</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <h3 style="margin:0 0 16px;font-size:16px;font-weight:700;">Orçamentos</h3>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <sc-for list="{{ orcStatus }}" as="o" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px;"><span style="width:8px;height:8px;border-radius:50%;background:{{ o.color }};"></span><span style="font-size:13.5px;flex:1;color:#b9bfce;">{{ o.label }}</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ o.count }}</span></div>
+            </sc-for>
+          </div>
+          <div style="border-top:1px solid rgba(255,255,255,0.06);margin-top:16px;padding-top:14px;"><div style="font-size:12px;color:#8c92a4;">Valor total orçado</div><div style="font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:3px;">R$ 39,8 mi</div></div>
+        </div>
+      </div>
+
+      <!-- tabela -->
+      <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:16px;flex-wrap:wrap;">
+          <h3 style="margin:0;font-size:16px;font-weight:700;">Obras — resumo detalhado</h3>
+          <div style="position:relative;max-width:240px;flex:1;"><i data-lucide="search" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:#5b6072;width:15px;height:15px;"></i><input type="text" placeholder="Buscar obra…" style="width:100%;background:#2d3142;border:1px solid #3a3f52;border-radius:8px;padding:7px 11px 7px 33px;color:#e8eaf0;font-family:inherit;font-size:12.5px;"></div>
+        </div>
+        <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:1.6fr 1.3fr 110px 100px 120px;align-items:center;background:#2d3142;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;"><div style="padding:11px 14px;">Obra</div><div style="padding:11px 8px;">Cliente</div><div style="padding:11px 8px;text-align:right;">Valor</div><div style="padding:11px 8px;text-align:right;">Margem</div><div style="padding:11px 8px;text-align:center;">Status</div></div>
+          <sc-for list="{{ obras }}" as="o" hint-placeholder-count="6">
+            <div class="obx-row" style="display:grid;grid-template-columns:1.6fr 1.3fr 110px 100px 120px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);">
+              <div style="padding:12px 14px;font-size:13.5px;font-weight:600;">{{ o.nome }}</div>
+              <div style="padding:12px 8px;font-size:12.5px;color:#8c92a4;">{{ o.cli }}</div>
+              <div style="padding:12px 8px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ o.val }}</div>
+              <div style="padding:12px 8px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;color:{{ o.mgColor }};">{{ o.mg }}</div>
+              <div style="padding:12px 8px;text-align:center;"><span style="font-size:11.5px;font-weight:600;color:{{ o.stColor }};background:{{ o.stBg }};padding:3px 9px;border-radius:999px;">{{ o.st }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:12px;color:#8c92a4;margin-top:12px;">Mostrando 8 obras · paginação cursor 50/página</div>
+      </div>
+
+      <!-- ticket chart -->
+      <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:12px;">
+          <div><h3 style="margin:0 0 3px;font-size:16px;font-weight:700;">Tickets por período</h3><p style="margin:0;color:#8c92a4;font-size:13px;">Abertos vs resolvidos · últimas 8 semanas</p></div>
+          <div style="display:flex;gap:16px;"><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#b9bfce;font-weight:600;"><span style="width:11px;height:11px;border-radius:3px;background:#ff6b6b;"></span>Abertos</span><span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#b9bfce;font-weight:600;"><span style="width:11px;height:11px;border-radius:3px;background:#38d9a9;"></span>Resolvidos</span></div>
+        </div>
+        <div style="width:100%;">{{ ticketChart }}</div>
+      </div>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { period:'mes', sbCollapsed:false, exporting:false, exported:false };
+
+  componentDidMount(){ this._lucide(); }
+  componentDidUpdate(){ this._lucide(); }
+  _lucide(){ try{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } else { clearTimeout(this._lt); this._lt=setTimeout(()=>this._lucide(),120);} }catch(e){} }
+
+  toggleSb = () => this.setState(s => ({ sbCollapsed:!s.sbCollapsed }));
+  setPeriod = (p) => this.setState({ period:p });
+  doExport = () => {
+    if(this.state.exporting) return;
+    if(this.state.exported){ this.setState({ exported:false }); return; }
+    this.setState({ exporting:true });
+    clearTimeout(this._e); this._e=setTimeout(()=>this.setState({ exporting:false, exported:true }), 1800);
+  };
+
+  buildDonut(){
+    const h=React.createElement;
+    const data=[{v:5,c:'#845ef7'},{v:2,c:'#fcc419'},{v:1,c:'#38d9a9'}];
+    const total=8, r=48, sw=16, sz=124, cx=sz/2, cy=sz/2, circ=2*Math.PI*r;
+    let offset=0; const arcs=[];
+    data.forEach((d,i)=>{
+      const frac=d.v/total, len=frac*circ;
+      arcs.push(h('circle',{key:i,cx,cy,r,fill:'none',stroke:d.c,strokeWidth:sw,
+        strokeDasharray:`${len} ${circ-len}`,strokeDashoffset:-offset,transform:`rotate(-90 ${cx} ${cy})`}));
+      offset+=len;
+    });
+    return h('svg',{viewBox:`0 0 ${sz} ${sz}`,style:{width:'124px',height:'124px'}},
+      h('circle',{cx,cy,r,fill:'none',stroke:'rgba(255,255,255,0.05)',strokeWidth:sw}),
+      ...arcs,
+      h('text',{x:cx,y:cy-3,textAnchor:'middle',fill:'#e8eaf0',fontSize:26,fontWeight:800,fontFamily:'JetBrains Mono, monospace'},'8'),
+      h('text',{x:cx,y:cy+15,textAnchor:'middle',fill:'#8c92a4',fontSize:10,fontFamily:'Manrope, sans-serif'},'obras'));
+  }
+
+  buildTicketChart(){
+    const h=React.createElement;
+    const weeks=[[8,6],[5,7],[9,5],[6,8],[11,6],[7,9],[10,7],[12,8]];
+    const W=820,H=220,L=34,R=10,T=14,B=28, plotW=W-L-R, plotH=H-T-B, max=14;
+    const slot=plotW/weeks.length, bw=slot*0.28, gap=4;
+    const kids=[];
+    [0,7,14].forEach(g=>{const y=T+plotH*(1-g/max);kids.push(h('line',{key:'g'+g,x1:L,y1:y,x2:W-R,y2:y,stroke:'rgba(255,255,255,0.06)'}));kids.push(h('text',{key:'gl'+g,x:L-8,y:y+4,textAnchor:'end',fill:'#5b6072',fontSize:10,fontFamily:'JetBrains Mono, monospace'},g));});
+    weeks.forEach((w,i)=>{
+      const cx=L+slot*i+slot/2;
+      const h1=w[0]/max*plotH, h2=w[1]/max*plotH;
+      kids.push(h('rect',{key:'a'+i,x:cx-bw-gap/2,y:T+plotH-h1,width:bw,height:h1,rx:3,fill:'#ff6b6b'}));
+      kids.push(h('rect',{key:'r'+i,x:cx+gap/2,y:T+plotH-h2,width:bw,height:h2,rx:3,fill:'#38d9a9'}));
+      kids.push(h('text',{key:'x'+i,x:cx,y:H-9,textAnchor:'middle',fill:'#5b6072',fontSize:10,fontFamily:'Manrope, sans-serif'},'S'+(i+1)));
+    });
+    return h('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',display:'block',marginTop:'8px'}},kids);
+  }
+
+  renderVals(){
+    const periodItems=[{id:'mes',label:'Mês'},{id:'tri',label:'Trimestre'},{id:'ano',label:'Ano'}];
+    const periods=periodItems.map(p=>({ label:p.label, onClick:()=>this.setPeriod(p.id), bg: this.state.period===p.id ? '#33384a':'transparent', color: this.state.period===p.id ? '#e8eaf0':'#8c92a4' }));
+
+    const orcStatus=[
+      { label:'Rascunho', count:'3', color:'#8c92a4' },
+      { label:'Aguardando aprovação', count:'2', color:'#fcc419' },
+      { label:'Aprovados', count:'4', color:'#38d9a9' },
+      { label:'Rejeitados', count:'1', color:'#ff6b6b' },
+    ];
+
+    const margem=(v)=> v>25 ? '#38d9a9' : (v>=15 ? '#fcc419' : '#ff6b6b');
+    const ST={ exec:{st:'Execução',stColor:'#38d9a9',stBg:'rgba(56,217,169,0.12)'}, planj:{st:'Planej.',stColor:'#fcc419',stBg:'rgba(252,196,25,0.12)'}, concl:{st:'Concluída',stColor:'#845ef7',stBg:'rgba(132,94,247,0.14)'} };
+    const rawObras=[
+      { nome:'Res. Vila Aurora', cli:'Aurora Inc.', val:'R$ 7,40 mi', mgN:34.8, mg:'34,8%', s:'exec' },
+      { nome:'Com. Mirante 360', cli:'Mirante SA', val:'R$ 12,1 mi', mgN:28.1, mg:'28,1%', s:'exec' },
+      { nome:'Cond. Jd. Acácias', cli:'Acácias Ltda', val:'R$ 4,20 mi', mgN:31.0, mg:'31,0%', s:'exec' },
+      { nome:'Ref. Apart. 302', cli:'João Silva', val:'R$ 480 k', mgN:41.2, mg:'41,2%', s:'planj' },
+      { nome:'Galpão BR-101', cli:'TransLog SA', val:'R$ 9,60 mi', mgN:27.0, mg:'27,0%', s:'concl' },
+      { nome:'Hosp. Santa Inês', cli:'Santa Inês', val:'R$ 3,10 mi', mgN:12.5, mg:'12,5%', s:'planj' },
+    ];
+    const obras=rawObras.map(o=>({ ...o, ...ST[o.s], mgColor:margem(o.mgN) }));
+
+    const ex=this.state.exporting, done=this.state.exported;
+    return {
+      sbClass: this.state.sbCollapsed ? 'col':'', sbIcon: this.state.sbCollapsed ? 'panel-left-open':'panel-left-close', toggleSb:this.toggleSb,
+      periods, orcStatus, obras,
+      statusChart: this.buildDonut(), ticketChart: this.buildTicketChart(),
+      doExport:this.doExport,
+      exportLabel: ex ? 'Gerando…' : (done ? 'CSV pronto' : 'Export CSV'),
+      exportIcon: ex ? 'loader-2' : (done ? 'check' : 'download'),
+      exportSpin: ex ? 'obx-spin':'',
+    };
+  }
+}
+</script>
+</body>
+</html>

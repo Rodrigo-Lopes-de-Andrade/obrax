@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Obrax é dark-mode único (sem tema claro) — :root e .dark carregam a mesma paleta. */
+:root,
+.dark {
+  --background: oklch(0.2280 0.0158 274.07); /* #1a1c24 */
+  --foreground: oklch(1 0 0); /* #ffffff */
+  --card: oklch(0.2777 0.0212 269.34); /* #242833 */
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.2534 0.0194 271.89); /* #1f222c */
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.7116 0.1812 22.84); /* #ff6b6b coral */
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.7428 0.1563 21.56); /* #ff7f7f */
+  --secondary: oklch(0.6029 0.2175 289.69); /* #845ef7 roxo */
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.3139 0.0244 268.49); /* #2c313e */
+  --muted-foreground: oklch(0.6610 0.0276 270.97); /* #8c92a4 */
+  --subtle-foreground: oklch(0.8046 0.0221 268.39); /* #b9bfce */
+  --accent: oklch(0.3139 0.0244 268.49);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(0.7116 0.1812 22.84); /* mesmo coral */
+  --success: oklch(0.7926 0.1472 167.92); /* #38d9a9 */
+  --success-foreground: oklch(0.2280 0.0158 274.07);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.6029 0.2175 289.69); /* roxo */
+  --chart-1: oklch(0.7926 0.1472 167.92); /* teal */
+  --chart-2: oklch(0.7116 0.1812 22.84); /* coral */
+  --chart-3: oklch(0.6029 0.2175 289.69); /* roxo */
+  --chart-4: oklch(0.6280 0.1907 269.50); /* azul */
+  --chart-5: oklch(0.6610 0.0276 270.97); /* cinza */
+  --radius: 0.625rem;
+  --sidebar: oklch(0.2057 0.0143 272.58); /* #15171e */
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.7116 0.1812 22.84);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(1 0 0 / 5%);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 5%);
+  --sidebar-ring: oklch(0.6029 0.2175 289.69);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}

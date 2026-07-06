@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  .obx-press:active{transform:scale(0.97);}
+  i[data-lucide]{width:20px;height:20px;}
+  @keyframes obxpulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+  .obx-dot{animation:obxpulse 1.5s ease-in-out infinite;}
+  @keyframes obxspin{to{transform:rotate(360deg);}}
+  .obx-spin{animation:obxspin 1.1s linear infinite;}
+</style>
+</helmet>
+
+<div style="min-height:100vh;width:100%;background:radial-gradient(circle at 50% 0%, #20232e, #15171e 70%);font-family:'Manrope',sans-serif;color:#fff;-webkit-font-smoothing:antialiased;display:flex;align-items:center;justify-content:center;padding:24px;">
+
+  <div style="width:390px;height:800px;max-height:92vh;background:#1a1c24;border-radius:34px;border:1px solid rgba(255,255,255,0.08);box-shadow:0 40px 100px rgba(0,0,0,0.6);overflow:hidden;position:relative;display:flex;flex-direction:column;">
+
+    <!-- status bar -->
+    <div style="height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:12px;font-weight:700;color:#fff;">
+      <span style="font-family:'JetBrains Mono',monospace;">9:41</span>
+      <span style="display:flex;gap:5px;align-items:center;"><i data-lucide="signal" style="width:14px;height:14px;"></i><i data-lucide="wifi-off" style="width:14px;height:14px;color:#fcc419;"></i><i data-lucide="battery" style="width:18px;height:18px;"></i></span>
+    </div>
+
+    <!-- header -->
+    <div style="height:56px;flex-shrink:0;background:#15171e;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:10px;padding:0 16px;">
+      <i data-lucide="arrow-left" style="width:20px;height:20px;color:#8c92a4;"></i>
+      <div style="flex:1;font-size:15px;font-weight:700;text-align:center;">Residencial Vila Aurora</div>
+      <i data-lucide="more-vertical" style="width:20px;height:20px;color:#8c92a4;"></i>
+    </div>
+
+    <!-- sync badge -->
+    <div onClick="{{ goFila }}" style="flex-shrink:0;padding:10px 16px;background:{{ syncBg }};display:flex;align-items:center;gap:9px;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;">
+      <i data-lucide="{{ syncIcon }}" style="width:16px;height:16px;color:{{ syncColor }};"></i>
+      <span style="font-size:12.5px;font-weight:600;color:{{ syncColor }};flex:1;">{{ syncText }}</span>
+      <sc-if value="{{ hasPending }}" hint-placeholder-val="{{ true }}"><span onClick="{{ doSync }}" style="font-size:12px;font-weight:700;color:{{ syncColor }};text-decoration:underline;cursor:pointer;">Sincronizar</span></sc-if>
+    </div>
+
+    <!-- content -->
+    <div style="flex:1;overflow-y:auto;padding:18px 16px 84px;">
+
+      <!-- OBRA -->
+      <sc-if value="{{ isObra }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:9px;">Etapa atual</div>
+          <div style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+            <div style="font-size:15px;font-weight:700;margin-bottom:11px;">Alvenaria · Torre B</div>
+            <div style="height:9px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;margin-bottom:7px;"><div style="height:100%;width:64%;border-radius:999px;background:#ff6b6b;"></div></div>
+            <div style="font-size:12.5px;color:#8c92a4;">64% concluído</div>
+          </div>
+
+          <button class="obx-press" onClick="{{ openCapture }}" style="width:100%;height:54px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:700;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 6px 18px rgba(255,107,107,0.3);transition:transform .1s ease;margin-bottom:22px;"><i data-lucide="camera" style="width:21px;height:21px;"></i>Registrar foto</button>
+
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:11px;">Fotos de hoje · 3</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            <sc-for list="{{ fotosHoje }}" as="f" hint-placeholder-count="3">
+              <div>
+                <div style="aspect-ratio:1;border-radius:10px;background:{{ f.bg }};display:flex;align-items:center;justify-content:center;"><i data-lucide="image" style="width:24px;height:24px;color:rgba(255,255,255,0.4);"></i></div>
+                <div style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;color:#8c92a4;"><span style="font-family:'JetBrains Mono',monospace;">{{ f.hora }}</span></div>
+                <div style="display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:{{ f.color }};"><i data-lucide="{{ f.icon }}" style="width:12px;height:12px;"></i>{{ f.status }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- FILA -->
+      <sc-if value="{{ isFila }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h2 style="margin:0 0 4px;font-size:19px;font-weight:800;">Fila de sincronização</h2>
+          <p style="margin:0 0 16px;color:#8c92a4;font-size:13px;">{{ pendingCount }} fotos pendentes</p>
+          <button class="obx-press" onClick="{{ doSync }}" style="width:100%;height:46px;background:rgba(132,94,247,0.16);border:1px solid rgba(132,94,247,0.4);color:#845ef7;font-family:inherit;font-size:14px;font-weight:700;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:18px;transition:transform .1s ease;"><i data-lucide="{{ syncBtnIcon }}" class="{{ syncBtnSpin }}" style="width:16px;height:16px;"></i>Sincronizar agora</button>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ fila }}" as="q" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:12px;background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:11px;padding:12px;">
+                <div style="width:46px;height:46px;border-radius:9px;background:{{ q.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="image" style="width:20px;height:20px;color:rgba(255,255,255,0.45);"></i></div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12.5px;font-weight:600;font-family:'JetBrains Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ q.name }}</div>
+                  <div style="font-size:11.5px;color:#8c92a4;margin-top:2px;">Vila Aurora · {{ q.hora }}</div>
+                  <div style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:{{ q.color }};margin-top:4px;"><i data-lucide="{{ q.icon }}" style="width:13px;height:13px;"></i>{{ q.status }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- FOTOS -->
+      <sc-if value="{{ isFotos }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <h2 style="margin:0 0 16px;font-size:19px;font-weight:800;">Fotos da obra</h2>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+            <sc-for list="{{ galeria }}" as="g" hint-placeholder-count="6">
+              <div style="aspect-ratio:1;border-radius:11px;background:{{ g.bg }};display:flex;align-items:flex-end;padding:9px;"><span style="font-size:11px;font-family:'JetBrains Mono',monospace;color:rgba(255,255,255,0.8);background:rgba(0,0,0,0.4);padding:2px 7px;border-radius:6px;">{{ g.data }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- CHECKLIST -->
+      <sc-if value="{{ isChecklist }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <sc-if value="{{ offline }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(252,196,25,0.12);border:1px solid rgba(252,196,25,0.25);border-radius:9px;padding:9px 12px;margin-bottom:14px;"><i data-lucide="wifi-off" style="width:15px;height:15px;color:#fcc419;"></i><span style="font-size:12px;color:#fcc419;font-weight:600;">Sem conexão · alterações salvas localmente</span></div>
+          </sc-if>
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:4px;">Checklist · hoje 28/Jun</div>
+          <div style="font-size:13px;color:#8c92a4;margin-bottom:14px;">Vila Aurora · Torre B</div>
+          <div style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px;"><span style="font-weight:600;">Concluídos: {{ checkDone }} de {{ checkTotal }}</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#fcc419;">{{ checkPct }}</span></div>
+            <div style="height:9px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;"><div style="height:100%;border-radius:999px;width:{{ checkPct }};background:#fcc419;transition:width .3s ease;"></div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ checklist }}" as="c" hint-placeholder-count="5">
+              <div onClick="{{ c.onToggle }}" style="display:flex;align-items:center;gap:13px;background:{{ c.bg }};border:1px solid rgba(255,255,255,0.05);border-radius:11px;padding:13px 14px;min-height:56px;cursor:pointer;">
+                <div style="width:24px;height:24px;border-radius:6px;border:2px solid {{ c.boxBorder }};background:{{ c.boxBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><sc-if value="{{ c.done }}" hint-placeholder-val="{{ false }}"><i data-lucide="check" style="width:15px;height:15px;color:#fff;"></i></sc-if></div>
+                <div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:600;color:{{ c.textColor }};text-decoration:{{ c.deco }};">{{ c.label }}</div><div style="font-size:11.5px;color:#8c92a4;font-family:'JetBrains Mono',monospace;margin-top:2px;">{{ c.status }}</div></div>
+                <sc-if value="{{ c.pendingSync }}" hint-placeholder-val="{{ false }}"><i data-lucide="cloud-off" style="width:14px;height:14px;color:#fcc419;"></i></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ toggleAddCheck }}" style="width:100%;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:1px solid #3a3f52;color:#e8eaf0;font-family:inherit;font-size:13.5px;font-weight:600;padding:12px;border-radius:10px;cursor:pointer;"><i data-lucide="plus" style="width:16px;height:16px;"></i>Adicionar item</button>
+          <sc-if value="{{ addCheckOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px;margin-top:10px;">
+              <input class="obx-edit" type="text" placeholder="Novo item do checklist…" style="flex:1;background:#2d3142;border:1px solid #3a3f52;border-radius:8px;padding:11px 13px;color:#e8eaf0;font-family:inherit;font-size:13.5px;">
+              <button class="obx-press" onClick="{{ toggleAddCheck }}" style="background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:0 16px;border-radius:8px;cursor:pointer;">OK</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- OCORRÊNCIAS -->
+      <sc-if value="{{ isOcorr }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:4px;">Ocorrências</div>
+          <div style="font-size:13px;color:#8c92a4;margin-bottom:14px;">Vila Aurora</div>
+          <button class="obx-press" onClick="{{ openOcorr }}" style="width:100%;height:50px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 6px 18px rgba(255,107,107,0.3);margin-bottom:18px;transition:transform .1s ease;"><i data-lucide="plus" style="width:19px;height:19px;"></i>Nova ocorrência</button>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <sc-for list="{{ ocorrencias }}" as="o" hint-placeholder-count="2">
+              <div style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:12px;padding:14px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px;"><i data-lucide="{{ o.icon }}" style="width:16px;height:16px;color:{{ o.color }};"></i><span style="font-size:14px;font-weight:600;flex:1;">{{ o.titulo }}</span><span style="font-size:11px;font-weight:700;color:{{ o.color }};background:{{ o.bg }};padding:2px 9px;border-radius:999px;">{{ o.status }}</span></div>
+                <div style="font-size:12.5px;color:#8c92a4;">{{ o.local }}</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:5px;font-size:11.5px;color:#8c92a4;font-family:'JetBrains Mono',monospace;"><span>{{ o.data }}</span><span style="color:#5b6072;">·</span><span style="display:inline-flex;align-items:center;gap:4px;font-family:'Manrope',sans-serif;"><i data-lucide="image" style="width:12px;height:12px;"></i>{{ o.fotos }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- PERFIL -->
+      <sc-if value="{{ isPerfil }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0 24px;">
+            <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#38d9a9,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;margin-bottom:12px;">CM</div>
+            <div style="font-size:17px;font-weight:700;">Carlos Motta</div>
+            <div style="font-size:13px;color:#8c92a4;">Mestre de obras · Campo</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="display:flex;align-items:center;gap:13px;padding:14px;border-radius:10px;background:#242833;border:1px solid rgba(255,255,255,0.05);"><i data-lucide="building-2" style="width:18px;height:18px;color:#845ef7;"></i><span style="font-size:14px;flex:1;">Obras designadas</span><span style="font-size:13px;color:#8c92a4;font-weight:600;">2</span></div>
+            <div style="display:flex;align-items:center;gap:13px;padding:14px;border-radius:10px;"><i data-lucide="bell" style="width:18px;height:18px;color:#8c92a4;"></i><span style="font-size:14px;flex:1;color:#b9bfce;">Notificações</span></div>
+            <div style="display:flex;align-items:center;gap:13px;padding:14px;border-radius:10px;"><i data-lucide="settings" style="width:18px;height:18px;color:#8c92a4;"></i><span style="font-size:14px;flex:1;color:#b9bfce;">Configurações</span></div>
+            <div style="display:flex;align-items:center;gap:13px;padding:14px;border-radius:10px;"><i data-lucide="log-out" style="width:18px;height:18px;color:#ff6b6b;"></i><span style="font-size:14px;flex:1;color:#ff6b6b;">Sair</span></div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+
+    <!-- bottom nav -->
+    <div style="position:absolute;left:0;right:0;bottom:0;height:64px;background:#15171e;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;padding:0 6px 6px;">
+      <sc-for list="{{ navs }}" as="n" hint-placeholder-count="4">
+        <button class="obx-press" onClick="{{ n.onClick }}" style="flex:1;background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;transition:transform .1s ease;color:{{ n.color }};"><i data-lucide="{{ n.icon }}" style="width:22px;height:22px;"></i><span style="font-size:10.5px;font-weight:600;">{{ n.label }}</span></button>
+      </sc-for>
+    </div>
+
+    <!-- CAPTURE overlay -->
+    <sc-if value="{{ capturing }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:#0a0b0f;z-index:20;display:flex;flex-direction:column;">
+        <div style="height:34px;"></div>
+        <div style="padding:12px 18px;"><i data-lucide="x" onClick="{{ closeCapture }}" style="width:26px;height:26px;color:#fff;cursor:pointer;"></i></div>
+        <div style="flex:1;margin:0 16px;border-radius:18px;background:linear-gradient(160deg,#2c313e,#1a1c24);border:1px solid rgba(255,255,255,0.08);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+          <div style="position:absolute;top:16px;left:16px;width:26px;height:26px;border-top:2px solid rgba(255,255,255,0.5);border-left:2px solid rgba(255,255,255,0.5);border-radius:4px 0 0 0;"></div>
+          <div style="position:absolute;top:16px;right:16px;width:26px;height:26px;border-top:2px solid rgba(255,255,255,0.5);border-right:2px solid rgba(255,255,255,0.5);border-radius:0 4px 0 0;"></div>
+          <div style="position:absolute;bottom:16px;left:16px;width:26px;height:26px;border-bottom:2px solid rgba(255,255,255,0.5);border-left:2px solid rgba(255,255,255,0.5);border-radius:0 0 0 4px;"></div>
+          <div style="position:absolute;bottom:16px;right:16px;width:26px;height:26px;border-bottom:2px solid rgba(255,255,255,0.5);border-right:2px solid rgba(255,255,255,0.5);border-radius:0 0 4px 0;"></div>
+          <i data-lucide="image" style="width:48px;height:48px;color:rgba(255,255,255,0.25);"></i>
+          <div style="position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">Vila Aurora · Torre B · 28/06 14:07</div>
+        </div>
+        <div style="height:130px;display:flex;align-items:center;justify-content:space-around;padding:0 30px;">
+          <i data-lucide="refresh-cw" style="width:26px;height:26px;color:#8c92a4;"></i>
+          <button class="obx-press" onClick="{{ closeCapture }}" style="width:68px;height:68px;border-radius:50%;background:#fff;border:4px solid rgba(255,255,255,0.3);cursor:pointer;transition:transform .1s ease;"></button>
+          <i data-lucide="images" style="width:26px;height:26px;color:#8c92a4;"></i>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- NOVA OCORRÊNCIA modal -->
+    <sc-if value="{{ ocorrOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;background:rgba(10,11,15,0.7);z-index:25;display:flex;align-items:flex-end;">
+        <div style="width:100%;max-height:92%;background:#242833;border-radius:20px 20px 0 0;box-shadow:0 -10px 40px rgba(0,0,0,0.5);display:flex;flex-direction:column;overflow:hidden;">
+          <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;"><h2 style="margin:0;font-size:17px;font-weight:800;">Nova ocorrência</h2><i data-lucide="x" onClick="{{ closeOcorr }}" style="width:22px;height:22px;color:#8c92a4;cursor:pointer;"></i></div>
+          <div style="flex:1;overflow-y:auto;padding:18px 20px;">
+            <label style="font-size:12.5px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Título *</label>
+            <input class="obx-edit" type="text" placeholder="Ex: Infiltração no teto…" style="width:100%;background:#2d3142;border:1px solid #3a3f52;border-radius:8px;padding:12px 13px;color:#e8eaf0;font-family:inherit;font-size:14px;margin-bottom:16px;">
+            <label style="font-size:12.5px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Descrição</label>
+            <textarea class="obx-edit" placeholder="Descreva o problema com detalhes…" style="width:100%;min-height:70px;resize:vertical;background:#2d3142;border:1px solid #3a3f52;border-radius:8px;padding:11px 13px;color:#e8eaf0;font-family:inherit;font-size:13.5px;line-height:1.5;margin-bottom:16px;"></textarea>
+            <label style="font-size:12.5px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Foto <span style="color:#ff6b6b;">*</span> (obrigatória)</label>
+            <sc-if value="{{ noPhoto }}" hint-placeholder-val="{{ true }}">
+              <div onClick="{{ capturePhoto }}" style="border:2px dashed #3a3f52;border-radius:12px;padding:24px;text-align:center;cursor:pointer;margin-bottom:8px;">
+                <i data-lucide="camera" style="width:30px;height:30px;color:#845ef7;"></i>
+                <div style="font-size:13.5px;font-weight:600;margin-top:8px;">Tirar foto</div>
+                <div style="font-size:12px;color:#8c92a4;margin-top:2px;">ou escolher do álbum</div>
+              </div>
+              <div style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:#ff6b6b;font-weight:600;margin-bottom:16px;"><i data-lucide="alert-circle" style="width:13px;height:13px;"></i>Foto obrigatória</div>
+            </sc-if>
+            <sc-if value="{{ hasPhoto }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#2c313e,#845ef744);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="image" style="width:26px;height:26px;color:rgba(255,255,255,0.5);"></i></div>
+                <button onClick="{{ removePhoto }}" style="display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid #3a3f52;color:#ff6b6b;font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;"><i data-lucide="x" style="width:14px;height:14px;"></i>Remover</button>
+              </div>
+            </sc-if>
+            <label style="font-size:12.5px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Localização GPS (opcional)</label>
+            <sc-if value="{{ noGps }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ useGps }}" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:1px solid #3a3f52;color:#e8eaf0;font-family:inherit;font-size:13.5px;font-weight:600;padding:11px;border-radius:8px;cursor:pointer;margin-bottom:20px;"><i data-lucide="map-pin" style="width:16px;height:16px;color:#38d9a9;"></i>Usar localização atual</button>
+            </sc-if>
+            <sc-if value="{{ hasGps }}" hint-placeholder-val="{{ false }}">
+              <div style="background:#2d3142;border:1px solid #3a3f52;border-radius:8px;padding:11px 13px;margin-bottom:20px;"><div style="display:flex;align-items:center;gap:7px;font-size:13px;color:#e8eaf0;"><i data-lucide="map-pin" style="width:14px;height:14px;color:#38d9a9;"></i>Vila Aurora · São Paulo</div><div style="font-size:11px;color:#8c92a4;font-family:'JetBrains Mono',monospace;margin-top:3px;margin-left:21px;">-23.5505, -46.6333</div></div>
+            </sc-if>
+          </div>
+          <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);flex-shrink:0;">
+            <button onClick="{{ registerOcorr }}" style="width:100%;height:48px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:14.5px;font-weight:700;border-radius:10px;cursor:{{ regCursor }};opacity:{{ regOpacity }};box-shadow:0 4px 14px rgba(255,107,107,0.28);">Registrar</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab:'obra', capturing:false, synced:false, syncing:false, offline:true,
+            checklist:[
+              { id:1, label:'Inspeção de andaimes', done:false, time:null, pendingSync:false },
+              { id:2, label:'Betonada Torre B', done:true, time:'09:14', pendingSync:false },
+              { id:3, label:'Reunião de equipe', done:false, time:null, pendingSync:false },
+              { id:4, label:'Medição de alvenaria', done:true, time:'11:32', pendingSync:false },
+              { id:5, label:'Conferência de EPI', done:true, time:'07:50', pendingSync:false },
+              { id:6, label:'Recebimento de material', done:true, time:'13:05', pendingSync:false },
+              { id:7, label:'Limpeza do canteiro', done:true, time:'16:20', pendingSync:false },
+              { id:8, label:'Registro do diário de obra', done:false, time:null, pendingSync:false },
+            ],
+            addCheckOpen:false,
+            ocorrOpen:false, ocorrPhoto:false, ocorrGps:false };
+
+  componentDidMount(){ this._lucide(); }
+  componentDidUpdate(){ this._lucide(); }
+  _lucide(){ try{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } else { clearTimeout(this._lt); this._lt=setTimeout(()=>this._lucide(),120);} }catch(e){} }
+
+  setTab = (t) => this.setState({ tab:t });
+  goFila = () => this.setState({ tab:'fila' });
+  openCapture = () => this.setState({ capturing:true });
+  closeCapture = () => this.setState({ capturing:false });
+  doSync = () => {
+    if(this.state.syncing||this.state.synced) return;
+    this.setState({ syncing:true });
+    clearTimeout(this._s); this._s = setTimeout(()=>this.setState({ syncing:false, synced:true }), 1800);
+  };
+
+  toggleCheck = (id) => this.setState(s => ({ checklist: s.checklist.map(c => c.id===id ? {...c, done:!c.done, time: !c.done ? this._now() : null, pendingSync: this.state.offline } : c) }));
+  _now(){ const d=new Date(); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+  toggleAddCheck = () => this.setState(s => ({ addCheckOpen:!s.addCheckOpen }));
+  openOcorr = () => this.setState({ ocorrOpen:true, ocorrPhoto:false, ocorrGps:false });
+  closeOcorr = () => this.setState({ ocorrOpen:false });
+  capturePhoto = () => this.setState({ ocorrPhoto:true });
+  removePhoto = () => this.setState({ ocorrPhoto:false });
+  useGps = () => this.setState({ ocorrGps:true });
+  registerOcorr = () => { if(this.state.ocorrPhoto) this.setState({ ocorrOpen:false }); };
+
+  renderVals(){
+    const navItems = [
+      { id:'obra',      label:'Obras',      icon:'building-2' },
+      { id:'checklist', label:'Checklist',  icon:'list-checks' },
+      { id:'fotos',     label:'Fotos',      icon:'image' },
+      { id:'ocorr',     label:'Ocorr.',     icon:'triangle-alert' },
+      { id:'perfil',    label:'Perfil',     icon:'user' },
+    ];
+    const navs = navItems.map(n => ({ ...n, onClick:()=>this.setTab(n.id), color: this.state.tab===n.id ? '#ff6b6b':'#5b6072' }));
+
+    const checkDone = this.state.checklist.filter(c=>c.done).length;
+    const checkPct = Math.round(checkDone/this.state.checklist.length*100)+'%';
+    const checklistView = this.state.checklist.map(c => ({
+      ...c,
+      onToggle: ()=>this.toggleCheck(c.id),
+      bg: c.done ? 'rgba(56,217,169,0.08)' : '#242833',
+      boxBorder: c.done ? '#38d9a9' : '#3a3f52',
+      boxBg: c.done ? '#38d9a9' : 'transparent',
+      textColor: c.done ? '#8c92a4' : '#e8eaf0',
+      deco: c.done ? 'line-through' : 'none',
+      status: c.done ? ('Concluído '+c.time) : 'Pendente',
+    }));
+
+    const ocorrencias = [
+      { titulo:'Infiltração no teto', local:'Apto 302 · Torre A', data:'25/Jun às 09:12', fotos:'1 foto', status:'Aberto', icon:'triangle-alert', color:'#fcc419', bg:'rgba(252,196,25,0.12)' },
+      { titulo:'Fissura na parede', local:'Escada B · 3º andar', data:'23/Jun às 14:40', fotos:'3 fotos', status:'Resolvido', icon:'check-circle-2', color:'#38d9a9', bg:'rgba(56,217,169,0.12)' },
+    ];
+
+    const synced = this.state.synced;
+    const pending = synced ? 0 : 2;
+
+    const fotosHoje = [
+      { hora:'09:15', status:'sincronizada', icon:'check', color:'#38d9a9', bg:'linear-gradient(135deg,#2c313e,#384a6b)' },
+      { hora:'10:42', status:'sincronizada', icon:'check', color:'#38d9a9', bg:'linear-gradient(135deg,#384a6b,#5c7cfa44)' },
+      { hora:'14:07', status: synced ? 'sincronizada':'na fila', icon: synced ? 'check':'clock', color: synced ? '#38d9a9':'#fcc419', bg:'linear-gradient(135deg,#2c313e,#845ef744)' },
+    ];
+
+    const fila = [
+      { name:'foto_20260628_091532.jpg', hora:'09:15:32', status:'Sincronizado às 09:25', icon:'check', color:'#38d9a9', bg:'linear-gradient(135deg,#2c313e,#384a6b)' },
+      { name:'foto_20260628_140712.jpg', hora:'14:07:12', status: synced ? 'Sincronizado':'Aguardando · 1ª tentativa', icon: synced ? 'check':'clock', color: synced ? '#38d9a9':'#fcc419', bg:'linear-gradient(135deg,#2c313e,#845ef744)' },
+      { name:'foto_20260628_152044.jpg', hora:'15:20:44', status: synced ? 'Sincronizado':'Aguardando · 2ª tentativa', icon: synced ? 'check':'clock', color: synced ? '#38d9a9':'#fcc419', bg:'linear-gradient(135deg,#384a6b,#5c7cfa44)' },
+    ];
+
+    const galeria = ['28/06 14:07','28/06 10:42','28/06 09:15','27/06 16:30','27/06 11:20','26/06 08:50'].map((d,i)=>({
+      data:d, bg: i%3===0 ? 'linear-gradient(135deg,#2c313e,#384a6b)' : (i%3===1 ? 'linear-gradient(135deg,#384a6b,#5c7cfa44)':'linear-gradient(135deg,#2c313e,#845ef744)'),
+    }));
+
+    return {
+      navs,
+      goFila: this.goFila,
+      isObra: this.state.tab==='obra',
+      isFotos: this.state.tab==='fotos',
+      isFila: this.state.tab==='fila',
+      isPerfil: this.state.tab==='perfil',
+      isChecklist: this.state.tab==='checklist',
+      isOcorr: this.state.tab==='ocorr',
+      offline: this.state.offline,
+      checklist: checklistView, checkDone, checkTotal: this.state.checklist.length, checkPct,
+      addCheckOpen: this.state.addCheckOpen, toggleAddCheck: this.toggleAddCheck,
+      ocorrencias,
+      ocorrOpen: this.state.ocorrOpen, openOcorr: this.openOcorr, closeOcorr: this.closeOcorr,
+      capturePhoto: this.capturePhoto, removePhoto: this.removePhoto, useGps: this.useGps, registerOcorr: this.registerOcorr,
+      noPhoto: !this.state.ocorrPhoto, hasPhoto: this.state.ocorrPhoto,
+      noGps: !this.state.ocorrGps, hasGps: this.state.ocorrGps,
+      regCursor: this.state.ocorrPhoto ? 'pointer':'not-allowed',
+      regOpacity: this.state.ocorrPhoto ? '1':'0.4',
+      capturing: this.state.capturing, openCapture:this.openCapture, closeCapture:this.closeCapture,
+      fotosHoje, fila, galeria,
+      pendingCount: pending, hasPending: pending>0,
+      doSync: this.doSync,
+      syncBtnIcon: this.state.syncing ? 'loader-2':'refresh-cw',
+      syncBtnSpin: this.state.syncing ? 'obx-spin':'',
+      syncBg: synced ? 'rgba(56,217,169,0.12)' : 'rgba(252,196,25,0.14)',
+      syncColor: synced ? '#38d9a9' : '#fcc419',
+      syncIcon: synced ? 'check-circle-2' : (this.state.syncing ? 'loader-2':'cloud-off'),
+      syncText: synced ? 'Tudo sincronizado' : (this.state.syncing ? 'Sincronizando…' : pending+' fotos aguardando sincronização'),
+    };
+  }
+}
+</script>
+</body>
+</html>

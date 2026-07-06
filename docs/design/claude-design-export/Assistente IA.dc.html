@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.10);border-radius:8px;border:2px solid #1a1c24;}
+  input::placeholder{color:#5b6072;}
+  a{text-decoration:none;color:inherit;}
+  .obx-nav:hover{background:rgba(255,255,255,0.05)!important;color:#fff!important;}
+  .obx-icobtn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+  .obx-row:hover{background:rgba(255,255,255,0.03)!important;}
+  .obx-cta:hover{background:#ff7f7f!important;box-shadow:0 8px 22px rgba(255,107,107,0.32)!important;}
+  .obx-ghost:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.18)!important;}
+  .obx-sug:hover{background:rgba(132,94,247,0.10)!important;border-color:rgba(132,94,247,0.4)!important;color:#fff!important;}
+  .obx-edit:focus{outline:none;background:rgba(132,94,247,0.10);box-shadow:inset 0 0 0 1px rgba(132,94,247,0.5);}
+  .obx-linkcard:hover{background:rgba(132,94,247,0.14)!important;}
+  i[data-lucide]{width:18px;height:18px;}
+  @keyframes obxblink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+  .obx-cursor{animation:obxblink 1s step-end infinite;}
+  .obx-sb{transition:width .2s ease;}
+  .obx-sb.col{width:64px !important;min-width:64px !important;max-width:64px !important;flex-basis:64px !important;padding-left:8px !important;padding-right:8px !important;}
+  .obx-sb.col .lbl{display:none !important;}
+  .obx-sb.col .obx-nav,.obx-sb.col .obx-navtop{justify-content:center !important;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;background:#1a1c24;font-family:'Manrope',sans-serif;color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;">
+
+  <aside class="obx-sb {{ sbClass }}" style="width:248px;flex-shrink:0;background:#15171e;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;padding:20px 14px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:11px;padding:6px 8px 14px 8px;"><div style="width:38px;height:38px;border-radius:9px;background:#ff6b6b;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(255,107,107,0.35);flex-shrink:0;"><i data-lucide="hard-hat" style="color:#fff;width:21px;height:21px;"></i></div><div class="lbl" style="font-weight:800;font-size:21px;letter-spacing:-0.02em;">Obra<span style="color:#ff6b6b;">x</span></div></div>
+    <button class="obx-navtop" onClick="{{ toggleSb }}" title="Recolher menu" style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 8px;padding:4px 8px;border:none;background:transparent;color:#5b6072;cursor:pointer;"><i data-lucide="{{ sbIcon }}" style="width:18px;height:18px;"></i></button>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:8px 8px 8px;">Gestão</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <a href="Obrax Dashboard.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="layout-dashboard"></i><span class="lbl">Dashboard</span></a>
+      <a href="Obras.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="building-2"></i><span class="lbl">Obras</span></a>
+      <a href="Clientes.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="users"></i><span class="lbl">Clientes</span></a>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="file-text"></i><span class="lbl">Orçamentos</span></div>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="wallet"></i><span class="lbl">Financeiro</span></div>
+    </nav>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:14px 8px 6px;">Inteligência</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-navtop" onClick="{{ goChat }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:{{ chatNavBg }};color:{{ chatNavColor }};font-weight:600;font-size:14px;cursor:pointer;position:relative;"><span style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:{{ chatNavBar }};"></span><i data-lucide="bot"></i><span class="lbl">Assistente IA</span><span class="lbl" style="margin-left:auto;font-size:10px;font-weight:700;background:rgba(132,94,247,0.2);color:#845ef7;padding:2px 8px;border-radius:999px;">PRO</span></div>
+      <div class="obx-navtop" onClick="{{ goAudit }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:{{ audNavBg }};color:{{ audNavColor }};font-weight:600;font-size:14px;cursor:pointer;position:relative;"><span style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:{{ audNavBar }};"></span><i data-lucide="shield-check"></i><span class="lbl">Auditoria IA</span></div>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:10px;background:#1f222c;border:1px solid rgba(255,255,255,0.05);"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">MA</div><div class="lbl" style="line-height:1.2;"><div style="font-size:13px;font-weight:600;">Marina Alves</div><div style="font-size:11px;color:#8c92a4;">Engenheira</div></div></div>
+  </aside>
+
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+    <!-- ===== CHAT ===== -->
+    <sc-if value="{{ isChat }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;display:flex;min-height:0;">
+        <!-- context column -->
+        <div style="width:280px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.06);background:#15171e;padding:22px 18px;overflow-y:auto;">
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:12px;">Contexto ativo</div>
+          <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(132,94,247,0.12);border:1px solid rgba(132,94,247,0.4);border-radius:999px;padding:6px 12px;margin-bottom:22px;"><i data-lucide="building-2" style="width:14px;height:14px;color:#845ef7;"></i><span style="font-size:13px;font-weight:600;">Obra: Vila Aurora</span><i data-lucide="x" style="width:14px;height:14px;color:#8c92a4;cursor:pointer;"></i></div>
+          <div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:11px;">Sugestões rápidas</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px;">
+            <sc-for list="{{ suggestions }}" as="s" hint-placeholder-count="3"><button class="obx-sug" onClick="{{ s.onClick }}" style="text-align:left;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#b9bfce;font-family:inherit;font-size:12.5px;font-weight:500;padding:9px 12px;border-radius:8px;cursor:pointer;transition:all .15s ease;">{{ s.text }}</button></sc-for>
+          </div>
+          <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;display:flex;flex-direction:column;gap:11px;">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><span style="width:8px;height:8px;border-radius:50%;background:#845ef7;"></span><span style="color:#8c92a4;">Agente ativo:</span><span style="font-weight:600;">Orçamento</span></div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;"><i data-lucide="cpu" style="width:14px;height:14px;color:#8c92a4;"></i><span style="color:#8c92a4;">Modelo:</span><span style="font-weight:600;">Claude Sonnet</span></div>
+          </div>
+        </div>
+
+        <!-- chat area -->
+        <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+          <header style="height:60px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:11px;padding:0 24px;">
+            <div style="width:32px;height:32px;border-radius:9px;background:rgba(132,94,247,0.16);display:flex;align-items:center;justify-content:center;"><i data-lucide="bot" style="width:18px;height:18px;color:#845ef7;"></i></div>
+            <div style="flex:1;"><div style="font-size:15px;font-weight:700;">Assistente Obrax</div><div style="font-size:11.5px;color:#38d9a9;display:flex;align-items:center;gap:5px;"><span style="width:6px;height:6px;border-radius:50%;background:#38d9a9;"></span>Online</div></div>
+            <i data-lucide="settings" style="width:18px;height:18px;color:#8c92a4;cursor:pointer;"></i>
+          </header>
+
+          <div style="flex:1;overflow-y:auto;padding:24px;">
+            <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:22px;">
+              <sc-for list="{{ messages }}" as="m" hint-placeholder-count="2">
+                <div style="display:flex;flex-direction:column;align-items:{{ m.align }};">
+                  <div style="font-size:11.5px;color:#8c92a4;margin-bottom:6px;">{{ m.who }} · {{ m.time }}</div>
+                  <div style="max-width:80%;background:{{ m.bubbleBg }};border:1px solid {{ m.bubbleBorder }};border-radius:{{ m.radius }};padding:12px 15px;font-size:13.5px;line-height:1.6;">{{ m.html }}</div>
+                </div>
+              </sc-for>
+              <!-- streaming bot answer -->
+              <div style="display:flex;flex-direction:column;align-items:flex-start;">
+                <div style="font-size:11.5px;color:#8c92a4;margin-bottom:6px;">🤖 Assistente Obrax · 14:33</div>
+                <div style="max-width:80%;background:#242833;border:1px solid rgba(132,94,247,0.35);border-radius:3px 14px 14px 14px;padding:13px 16px;font-size:13.5px;line-height:1.7;">
+                  Os custos da <b>Torre B</b> até hoje são:
+                  <div style="margin:8px 0;display:flex;flex-direction:column;gap:4px;">
+                    <div>• Custo realizado: <b style="font-family:'JetBrains Mono',monospace;">R$ 4,82 mi</b> <span style="color:#8c92a4;">(94,5% do previsto)</span></div>
+                    <div>• Avanço físico: <b style="font-family:'JetBrains Mono',monospace;color:#ff6b6b;">64%</b> <span style="color:#8c92a4;">(meta: 71%)</span></div>
+                    <div>• Principal desvio: Alvenaria <b style="color:#ff6b6b;">+R$ 180 mil</b> vs orçado</div>
+                  </div>
+                  <a href="Obrax Dashboard.dc.html" class="obx-linkcard" style="display:inline-flex;align-items:center;gap:8px;margin-top:6px;background:rgba(132,94,247,0.10);border:1px solid rgba(132,94,247,0.3);border-radius:8px;padding:9px 13px;font-size:12.5px;font-weight:600;color:#845ef7;cursor:pointer;transition:all .15s ease;"><i data-lucide="external-link" style="width:14px;height:14px;"></i>Abrir orçamento ORC-2026-0042</a>
+                  <span class="obx-cursor" style="display:inline-block;width:7px;height:15px;background:#845ef7;margin-left:3px;vertical-align:middle;border-radius:1px;"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="flex-shrink:0;border-top:1px solid rgba(255,255,255,0.06);padding:16px 24px;">
+            <div style="max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px;">
+              <button class="obx-ghost" style="width:40px;height:40px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.08);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s ease;"><i data-lucide="paperclip" style="width:17px;height:17px;"></i></button>
+              <input class="obx-edit" type="text" placeholder="Digite uma mensagem ou comando…" style="flex:1;background:#242833;border:1px solid rgba(255,255,255,0.08);border-radius:9px;padding:11px 14px;color:#fff;font-family:inherit;font-size:13.5px;transition:all .2s ease;">
+              <button class="obx-cta" style="display:flex;align-items:center;gap:7px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;padding:11px 18px;border-radius:9px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;flex-shrink:0;">Enviar<i data-lucide="send" style="width:15px;height:15px;"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ===== AUDITORIA ===== -->
+    <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;display:flex;min-height:0;">
+        <div style="flex:1;overflow-y:auto;padding:26px 28px 40px;min-width:0;">
+          <h1 style="margin:0 0 6px;font-size:25px;font-weight:800;letter-spacing:-0.02em;">Auditoria de Agentes</h1>
+          <p style="margin:0 0 20px;color:#8c92a4;font-size:14px;">Registro de comandos interpretados pelos agentes de IA via WhatsApp</p>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#fff;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Obra <i data-lucide="chevron-down" style="width:14px;height:14px;color:#8c92a4;"></i></button>
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Agente <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Período <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>
+          </div>
+          <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:130px 140px 120px 1fr 110px 34px;align-items:center;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">
+              <div style="padding:11px 14px;">Timestamp</div><div style="padding:11px 8px;">WhatsApp</div><div style="padding:11px 8px;">Agente</div><div style="padding:11px 8px;">Comando</div><div style="padding:11px 8px;text-align:center;">Resultado</div><div></div>
+            </div>
+            <sc-for list="{{ logs }}" as="l" hint-placeholder-count="4">
+              <div class="obx-row" onClick="{{ l.onOpen }}" style="display:grid;grid-template-columns:130px 140px 120px 1fr 110px 34px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);background:{{ l.rowBg }};cursor:pointer;">
+                <div style="padding:11px 14px;font-size:12px;color:#b9bfce;font-family:'JetBrains Mono',monospace;">{{ l.ts }}</div>
+                <div style="padding:11px 8px;font-size:12px;color:#8c92a4;font-family:'JetBrains Mono',monospace;">{{ l.phone }}</div>
+                <div style="padding:11px 8px;"><span style="font-size:11.5px;font-weight:600;color:#b9bfce;background:rgba(255,255,255,0.06);padding:2px 9px;border-radius:999px;">{{ l.agente }}</span></div>
+                <div style="padding:11px 8px;font-size:12.5px;color:#b9bfce;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ l.cmd }}</div>
+                <div style="padding:11px 8px;text-align:center;"><span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:{{ l.resColor }};"><i data-lucide="{{ l.resIcon }}" style="width:13px;height:13px;"></i>{{ l.res }}</span></div>
+                <div style="padding:11px 6px;display:flex;justify-content:center;"><i data-lucide="more-vertical" style="width:15px;height:15px;color:#8c92a4;"></i></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- drawer -->
+        <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="width:460px;flex-shrink:0;border-left:1px solid rgba(255,255,255,0.08);background:#15171e;display:flex;flex-direction:column;min-height:0;">
+            <div style="padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:flex-start;justify-content:space-between;">
+              <div><div style="font-size:15px;font-weight:700;">Log da interação #A-2847</div><div style="font-size:12px;color:#8c92a4;margin-top:2px;font-family:'JetBrains Mono',monospace;">28/Jun/2026 às 14:32:07</div></div>
+              <button class="obx-icobtn" onClick="{{ closeDrawer }}" style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="x"></i></button>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:flex;flex-direction:column;gap:11px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Número WhatsApp</span><span style="font-family:'JetBrains Mono',monospace;">+55 11 98765-4321</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Usuário</span><span style="font-weight:600;">Carlos Motta (Admin)</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Agente</span><span style="font-weight:600;">Compras</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Obra</span><span style="font-weight:600;">Residencial Vila Aurora</span></div>
+              </div>
+              <div><div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:7px;">Comando recebido</div><div style="background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;">"Preciso de 10 sacos de cimento para a Torre B"</div></div>
+              <div style="display:flex;gap:10px;"><div style="flex:1;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:11px;"><div style="font-size:11px;color:#8c92a4;margin-bottom:3px;">Intenção</div><div style="font-size:12.5px;font-weight:600;font-family:'JetBrains Mono',monospace;">solicitacao_compra</div></div><div style="flex:1;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:11px;"><div style="font-size:11px;color:#8c92a4;margin-bottom:3px;">Confiança</div><div style="font-size:12.5px;font-weight:700;color:#38d9a9;font-family:'JetBrains Mono',monospace;">94%</div></div></div>
+              <div><div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:7px;">Ação executada</div><div style="background:rgba(56,217,169,0.08);border:1px solid rgba(56,217,169,0.2);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;"><span style="color:#38d9a9;font-weight:600;">→ Criou Solicitação de Compra #SC-0891</span><br><span style="color:#b9bfce;">10 sacos Cimento CP-II · Obra Vila Aurora</span></div></div>
+              <div><div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:7px;">Resposta enviada</div><div style="background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:12px;font-size:13px;line-height:1.5;color:#b9bfce;">"Pedido registrado! 10 sacos de cimento para a Torre B foram adicionados à solicitação #SC-0891. 👍"</div></div>
+              <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;"><div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#5b6072;font-weight:700;margin-bottom:9px;">A IA interpretou corretamente?</div><div style="display:flex;gap:9px;"><button class="obx-ghost" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(56,217,169,0.4);color:#38d9a9;font-family:inherit;font-size:12.5px;font-weight:600;padding:9px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="thumbs-up" style="width:14px;height:14px;"></i>Correto</button><button class="obx-ghost" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,107,107,0.4);color:#ff6b6b;font-family:inherit;font-size:12.5px;font-weight:600;padding:9px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="thumbs-down" style="width:14px;height:14px;"></i>Incorreto</button></div></div>
+            </div>
+            <div style="padding:14px 20px;border-top:1px solid rgba(255,255,255,0.06);"><button class="obx-ghost" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;border:1px solid rgba(255,107,107,0.4);color:#ff6b6b;font-family:inherit;font-size:13px;font-weight:600;padding:10px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="undo-2" style="width:15px;height:15px;"></i>Reverter esta ação</button></div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view:'chat', sbCollapsed:false, drawerOpen:false };
+
+  componentDidMount(){ this._lucide(); }
+  componentDidUpdate(){ this._lucide(); }
+  _lucide(){ try{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } else { clearTimeout(this._lt); this._lt=setTimeout(()=>this._lucide(),120);} }catch(e){} }
+
+  toggleSb = () => this.setState(s => ({ sbCollapsed:!s.sbCollapsed }));
+  goChat = () => this.setState({ view:'chat' });
+  goAudit = () => this.setState({ view:'auditoria' });
+  openDrawer = () => this.setState({ drawerOpen:true });
+  closeDrawer = () => this.setState({ drawerOpen:false });
+
+  renderVals(){
+    const suggestions = [
+      { text:'Resumo dos custos desta semana' },
+      { text:'Criar pedido de compra' },
+      { text:'Status físico da Torre B' },
+    ].map(s => ({ ...s, onClick:()=>{} }));
+
+    const messages = [
+      { who:'Você', time:'14:32', align:'flex-end', bubbleBg:'#2e3241', bubbleBorder:'transparent', radius:'14px 14px 3px 14px', html:'Qual o status dos custos da Torre B?' },
+    ];
+
+    const logsRaw = [
+      { ts:'28/Jun 14:32', phone:'+55 11 9…', agente:'Compras',     cmd:'"Preciso de 10 sacos de cimento para a Torre B"', res:'Criado',  resIcon:'check', resColor:'#38d9a9', err:false },
+      { ts:'28/Jun 11:14', phone:'+55 11 9…', agente:'Orçamento',   cmd:'"Me manda um resumo dos custos da obra"',         res:'Enviado',  resIcon:'check', resColor:'#38d9a9', err:false },
+      { ts:'27/Jun 16:05', phone:'+55 21 8…', agente:'Compras',     cmd:'"Aprovar pedido de compra #SC-0884"',             res:'Negado',   resIcon:'x',     resColor:'#ff6b6b', err:true },
+      { ts:'27/Jun 09:22', phone:'+55 11 9…', agente:'Atendimento', cmd:'"Qual o status da obra Vila Aurora?"',            res:'Enviado',  resIcon:'check', resColor:'#38d9a9', err:false },
+      { ts:'26/Jun 18:40', phone:'+55 47 9…', agente:'Compras',     cmd:'"Cotação de 200 blocos cerâmicos"',               res:'Criado',   resIcon:'check', resColor:'#38d9a9', err:false },
+    ];
+    const logs = logsRaw.map(l => ({ ...l, onOpen:this.openDrawer, rowBg: l.err ? 'rgba(255,107,107,0.06)' : 'transparent' }));
+
+    const v = this.state.view;
+    return {
+      sbClass: this.state.sbCollapsed ? 'col':'', sbIcon: this.state.sbCollapsed ? 'panel-left-open':'panel-left-close', toggleSb:this.toggleSb,
+      isChat: v==='chat', isAudit: v==='auditoria', goChat:this.goChat, goAudit:this.goAudit,
+      chatNavBg: v==='chat' ? 'rgba(255,107,107,0.12)':'transparent', chatNavColor: v==='chat' ? '#fff':'#8c92a4', chatNavBar: v==='chat' ? '#ff6b6b':'transparent',
+      audNavBg: v==='auditoria' ? 'rgba(255,107,107,0.12)':'transparent', audNavColor: v==='auditoria' ? '#fff':'#8c92a4', audNavBar: v==='auditoria' ? '#ff6b6b':'transparent',
+      suggestions, messages, logs,
+      drawerOpen: this.state.drawerOpen, openDrawer:this.openDrawer, closeDrawer:this.closeDrawer,
+    };
+  }
+}
+</script>
+</body>
+</html>

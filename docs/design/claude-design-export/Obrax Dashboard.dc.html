@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail" data-bg-color="#1a1c24">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#1a1c24"/>
+    <rect x="430" y="250" width="340" height="340" rx="70" fill="#ff6b6b"/>
+    <g fill="#ffffff">
+      <path d="M600 360c-66 0-120 50-126 114h252c-6-64-60-114-126-114z"/>
+      <rect x="448" y="486" width="304" height="34" rx="10"/>
+      <rect x="588" y="332" width="24" height="44" rx="8"/>
+    </g>
+  </svg>
+</template>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.10);border-radius:8px;border:2px solid #1a1c24;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18);}
+  input::placeholder{color:#5b6072;}
+  .obx-nav:hover{background:rgba(255,255,255,0.05)!important;color:#fff!important;}
+  .obx-navdis:hover .obx-tip{opacity:1!important;}
+  .obx-icobtn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+  .obx-card{transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease;}
+  .obx-kpi:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,0.34);border-color:rgba(255,255,255,0.10);}
+  .obx-ctab{transition:color .15s ease, border-color .15s ease;}
+  .obx-row:hover{background:rgba(255,255,255,0.025)!important;}
+  .obx-edit{transition:background .35s ease;}
+  .obx-edit:focus{outline:none;background:rgba(132,94,247,0.14);box-shadow:inset 0 0 0 1px rgba(132,94,247,0.5);}
+  .obx-cta:hover{background:#ff7f7f!important;box-shadow:0 8px 22px rgba(255,107,107,0.32)!important;}
+  .obx-ghost:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.18)!important;}
+  i[data-lucide]{width:18px;height:18px;}
+  @keyframes obxspin{to{transform:rotate(360deg);}}
+  .obx-spin{animation:obxspin .8s linear infinite;}
+  .obx-sb{transition:width .2s ease;}
+  .obx-sb.col{width:64px !important;min-width:64px !important;max-width:64px !important;flex-basis:64px !important;padding-left:8px !important;padding-right:8px !important;}
+  .obx-sb.col .lbl{display:none !important;}
+  .obx-sb.col .obx-nav,.obx-sb.col .obx-navtop{justify-content:center !important;}
+  .obx-irow .obx-del{opacity:0;transition:opacity .15s ease;}
+  .obx-irow:hover .obx-del{opacity:1;}
+  .obx-irow:hover{background:rgba(255,255,255,0.02);}
+  .obx-add:hover{background:rgba(132,94,247,0.10)!important;border-color:rgba(132,94,247,0.7)!important;}
+  .obx-srow:hover{background:rgba(255,255,255,0.04)!important;}
+  input[type=range]{accent-color:#845ef7;height:4px;cursor:pointer;}
+  .obx-dd:hover{background:rgba(255,255,255,0.05)!important;color:#fff!important;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;background:#1a1c24;font-family:'Manrope',sans-serif;color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="obx-sb {{ sbClass }}" style="width:248px;flex-shrink:0;background:#15171e;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;padding:20px 14px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:11px;padding:6px 8px 14px 8px;">
+      <div style="width:38px;height:38px;border-radius:9px;background:#ff6b6b;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(255,107,107,0.35);flex-shrink:0;">
+        <i data-lucide="hard-hat" style="color:#fff;width:21px;height:21px;"></i>
+      </div>
+      <div class="lbl" style="font-weight:800;font-size:21px;letter-spacing:-0.02em;">Obra<span style="color:#ff6b6b;">x</span></div>
+    </div>
+
+    <button class="obx-navtop" onClick="{{ toggleSb }}" title="Recolher menu" style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 8px;padding:4px 8px;border:none;background:transparent;color:#5b6072;cursor:pointer;">
+      <i data-lucide="{{ sbIcon }}" style="width:18px;height:18px;"></i>
+    </button>
+
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:8px 8px 8px;">Gestão</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-navtop" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:rgba(255,107,107,0.12);color:#fff;font-weight:600;font-size:14px;cursor:pointer;position:relative;">
+        <span style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:#ff6b6b;"></span>
+        <i data-lucide="layout-dashboard"></i><span class="lbl">Dashboard</span>
+      </div>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="building-2"></i><span class="lbl">Obra</span>
+      </div>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="users"></i><span class="lbl">Clientes</span>
+      </div>
+      <div class="obx-nav" onClick="{{ openModal }}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="file-text"></i><span class="lbl">Orçamentos</span>
+        <span class="lbl" style="margin-left:auto;font-size:11px;font-weight:700;background:rgba(255,255,255,0.08);color:#b9bfce;padding:1px 7px;border-radius:999px;">6</span>
+      </div>
+      <a href="Compras.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;">
+        <i data-lucide="shopping-cart"></i><span class="lbl">Compras</span>
+      </a>
+      <a href="Financeiro.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;">
+        <i data-lucide="wallet"></i><span class="lbl">Financeiro</span>
+      </a>
+      <a href="Relatorios.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;">
+        <i data-lucide="bar-chart-3"></i><span class="lbl">Relatórios</span>
+      </a>
+    </nav>
+
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:14px 8px 6px;">Inteligência</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="bot"></i><span class="lbl">Assistente IA</span>
+        <span class="lbl" style="margin-left:auto;font-size:10px;font-weight:700;background:rgba(132,94,247,0.2);color:#845ef7;padding:2px 8px;border-radius:999px;">PRO</span>
+      </div>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="shield-check"></i><span class="lbl">Auditoria IA</span>
+      </div>
+    </nav>
+
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;">
+        <i data-lucide="settings"></i><span class="lbl">Configurações</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 10px;margin-top:6px;border-radius:10px;background:#1f222c;border:1px solid rgba(255,255,255,0.05);">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">MA</div>
+        <div class="lbl" style="min-width:0;line-height:1.2;">
+          <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Marina Alves</div>
+          <div style="font-size:11px;color:#8c92a4;">Engenheira</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+
+    <!-- TOPBAR -->
+    <header style="height:68px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.05);background:#1a1c24;display:flex;align-items:center;gap:18px;padding:0 24px;">
+      <button class="obx-ghost" style="display:flex;align-items:center;gap:9px;background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 13px;color:#fff;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;">
+        <i data-lucide="building" style="color:#ff6b6b;width:16px;height:16px;"></i>
+        Residencial Vila Aurora
+        <i data-lucide="chevron-down" style="color:#8c92a4;width:15px;height:15px;"></i>
+      </button>
+      <div style="position:relative;flex:1;max-width:440px;">
+        <i data-lucide="search" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#5b6072;width:17px;height:17px;"></i>
+        <input type="text" placeholder="Buscar obras, clientes, insumos…" style="width:100%;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 12px 9px 38px;color:#fff;font-family:inherit;font-size:13.5px;">
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <button class="obx-icobtn" style="position:relative;width:38px;height:38px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <i data-lucide="bell"></i>
+          <span style="position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:#ff6b6b;border:1.5px solid #242833;"></span>
+        </button>
+        <button class="obx-icobtn" style="width:38px;height:38px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <i data-lucide="messages-square"></i>
+        </button>
+        <div style="width:1px;height:26px;background:rgba(255,255,255,0.08);margin:0 4px;"></div>
+        <div style="position:relative;">
+          <button onClick="{{ toggleAvatar }}" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;cursor:pointer;padding:3px;border-radius:999px;">
+            <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff;">MA</div>
+            <i data-lucide="chevron-down" style="color:#8c92a4;width:15px;height:15px;"></i>
+          </button>
+          <sc-if value="{{ avatarOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:48px;right:0;width:228px;background:#1f222c;border:1px solid rgba(255,255,255,0.08);border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,0.6);z-index:40;overflow:hidden;">
+              <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="font-size:14px;font-weight:700;">Marina Alves</div>
+                <div style="font-size:12px;color:#8c92a4;margin-top:1px;">marina@obrax.com.br</div>
+                <div style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;font-weight:700;color:#845ef7;background:rgba(132,94,247,0.16);padding:3px 9px;border-radius:999px;"><i data-lucide="star" style="width:12px;height:12px;"></i>Plano Pro</div>
+              </div>
+              <div style="padding:6px;">
+                <div class="obx-dd" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;color:#b9bfce;font-size:13.5px;font-weight:500;cursor:pointer;"><i data-lucide="settings" style="width:16px;height:16px;"></i>Configurações</div>
+                <div class="obx-dd" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;color:#b9bfce;font-size:13.5px;font-weight:500;cursor:pointer;"><i data-lucide="credit-card" style="width:16px;height:16px;"></i>Meu plano</div>
+                <div class="obx-dd" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:7px;color:#ff6b6b;font-size:13.5px;font-weight:500;cursor:pointer;"><i data-lucide="log-out" style="width:16px;height:16px;"></i>Sair</div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main style="flex:1;overflow-y:auto;padding:26px 28px 40px;">
+
+      <!-- PAGE HEADER -->
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:24px;">
+        <div>
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:7px;">
+            <h1 style="margin:0;font-size:27px;font-weight:800;letter-spacing:-0.02em;">Visão Geral</h1>
+            <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#38d9a9;background:rgba(56,217,169,0.12);padding:4px 11px;border-radius:999px;">
+              <span style="width:6px;height:6px;border-radius:50%;background:#38d9a9;"></span>Em andamento
+            </span>
+          </div>
+          <p style="margin:0;color:#8c92a4;font-size:14px;">Resumo financeiro e físico da obra · atualizado há 8 min</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="display:flex;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:3px;">
+            <button style="border:none;background:transparent;color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;">Mês</button>
+            <button style="border:none;background:#33384a;color:#fff;font-family:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;">Trimestre</button>
+            <button style="border:none;background:transparent;color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:6px 14px;border-radius:6px;cursor:pointer;">Obra</button>
+          </div>
+          <button class="obx-cta" onClick="{{ openModal }}" style="display:flex;align-items:center;gap:8px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;padding:10px 17px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:background .15s ease, box-shadow .15s ease;">
+            <i data-lucide="plus" style="width:17px;height:17px;"></i>Novo Orçamento
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI GRID -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px;">
+
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:#8c92a4;font-weight:700;">Custo Realizado</span>
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(132,94,247,0.14);display:flex;align-items:center;justify-content:center;"><i data-lucide="trending-down" style="color:#845ef7;width:17px;height:17px;"></i></div>
+          </div>
+          <div style="font-size:27px;font-weight:800;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;white-space:nowrap;">R$ 4,82<span style="font-size:15px;color:#8c92a4;font-weight:600;"> mi</span></div>
+          <div style="margin-top:9px;display:flex;align-items:center;gap:7px;font-size:12.5px;">
+            <span style="display:inline-flex;align-items:center;gap:3px;color:#38d9a9;font-weight:700;"><i data-lucide="arrow-down-right" style="width:14px;height:14px;"></i>5,5%</span>
+            <span style="color:#8c92a4;">vs. previsto R$ 5,10 mi</span>
+          </div>
+        </div>
+
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:#8c92a4;font-weight:700;">Receita Contratada</span>
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(56,217,169,0.14);display:flex;align-items:center;justify-content:center;"><i data-lucide="file-signature" style="color:#38d9a9;width:17px;height:17px;"></i></div>
+          </div>
+          <div style="font-size:27px;font-weight:800;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;white-space:nowrap;">R$ 7,40<span style="font-size:15px;color:#8c92a4;font-weight:600;"> mi</span></div>
+          <div style="margin-top:9px;display:flex;align-items:center;gap:7px;font-size:12.5px;">
+            <span style="display:inline-flex;align-items:center;gap:3px;color:#38d9a9;font-weight:700;"><i data-lucide="arrow-up-right" style="width:14px;height:14px;"></i>R$ 320 mil</span>
+            <span style="color:#8c92a4;">em aditivos</span>
+          </div>
+        </div>
+
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:#8c92a4;font-weight:700;">Margem Bruta</span>
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(56,217,169,0.14);display:flex;align-items:center;justify-content:center;"><i data-lucide="percent" style="color:#38d9a9;width:17px;height:17px;"></i></div>
+          </div>
+          <div style="font-size:27px;font-weight:800;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;white-space:nowrap;">34,8<span style="font-size:15px;color:#8c92a4;font-weight:600;">%</span></div>
+          <div style="margin-top:9px;display:flex;align-items:center;gap:7px;font-size:12.5px;">
+            <span style="display:inline-flex;align-items:center;gap:3px;color:#38d9a9;font-weight:700;"><i data-lucide="arrow-up-right" style="width:14px;height:14px;"></i>1,2 p.p.</span>
+            <span style="color:#8c92a4;">vs. mês anterior</span>
+          </div>
+        </div>
+
+        <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,107,107,0.22);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <span style="font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:#8c92a4;font-weight:700;">Avanço Físico</span>
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,107,107,0.16);display:flex;align-items:center;justify-content:center;"><i data-lucide="alert-triangle" style="color:#ff6b6b;width:17px;height:17px;"></i></div>
+          </div>
+          <div style="font-size:27px;font-weight:800;letter-spacing:-0.02em;font-family:'JetBrains Mono',monospace;white-space:nowrap;">64<span style="font-size:15px;color:#8c92a4;font-weight:600;">%</span></div>
+          <div style="margin-top:11px;height:6px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;position:relative;">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:64%;border-radius:999px;background:#ff6b6b;"></div>
+            <div style="position:absolute;left:71%;top:-3px;bottom:-3px;width:2px;background:#fff;opacity:0.55;"></div>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:7px;font-size:12.5px;">
+            <span style="display:inline-flex;align-items:center;gap:3px;color:#ff6b6b;font-weight:700;"><i data-lucide="arrow-down-right" style="width:14px;height:14px;"></i>7 p.p.</span>
+            <span style="color:#8c92a4;">abaixo do previsto (71%)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW: CURVA S + STATUS -->
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;margin-bottom:16px;">
+
+        <!-- CURVA S -->
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px 20px 16px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h3 style="margin:0 0 3px;font-size:16px;font-weight:700;">Curva S — Previsto x Realizado</h3>
+              <p style="margin:0;color:#8c92a4;font-size:13px;">Avanço acumulado · passe o mouse para valores exatos</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:18px;">
+              <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#b9bfce;font-weight:600;"><span style="width:14px;height:3px;border-radius:2px;background:#845ef7;display:inline-block;"></span>Previsto</span>
+              <span style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#b9bfce;font-weight:600;"><span style="width:14px;height:3px;border-radius:2px;background:#38d9a9;display:inline-block;"></span>Realizado</span>
+            </div>
+          </div>
+          <div style="width:100%;">{{ curvaSChart }}</div>
+        </div>
+
+        <!-- STATUS DA OBRA -->
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);display:flex;flex-direction:column;">
+          <h3 style="margin:0 0 4px;font-size:16px;font-weight:700;">Status da Obra</h3>
+          <p style="margin:0 0 18px;color:#8c92a4;font-size:13px;">Residencial Vila Aurora · 32 unidades</p>
+
+          <div style="display:flex;align-items:center;justify-content:center;margin-bottom:18px;">{{ progressRing }}</div>
+
+          <div style="display:flex;flex-direction:column;gap:13px;">
+            <div style="display:flex;align-items:center;gap:11px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;"><i data-lucide="calendar-clock" style="color:#8c92a4;width:16px;height:16px;"></i></div>
+              <div style="flex:1;"><div style="font-size:12px;color:#8c92a4;">Entrega prevista</div><div style="font-size:14px;font-weight:600;">Dez/2026</div></div>
+              <span style="font-size:12px;font-weight:700;color:#ff6b6b;background:rgba(255,107,107,0.12);padding:3px 9px;border-radius:999px;">18 dias atraso</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;"><i data-lucide="layers" style="color:#8c92a4;width:16px;height:16px;"></i></div>
+              <div style="flex:1;"><div style="font-size:12px;color:#8c92a4;">Etapa atual</div><div style="font-size:14px;font-weight:600;">Alvenaria · Torre B</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;">
+              <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;"><i data-lucide="users-round" style="color:#8c92a4;width:16px;height:16px;"></i></div>
+              <div style="flex:1;"><div style="font-size:12px;color:#8c92a4;">Equipe no canteiro</div><div style="font-size:14px;font-weight:600;">48 colaboradores</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW: FLUXO + CONTAS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+        <!-- FLUXO DE CAIXA -->
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div>
+              <h3 style="margin:0 0 3px;font-size:16px;font-weight:700;">Fluxo de Caixa Diário</h3>
+              <p style="margin:0;color:#8c92a4;font-size:13px;">Saldo líquido · últimos 15 dias úteis</p>
+            </div>
+            <div style="display:flex;gap:16px;text-align:right;">
+              <div><div style="font-size:11px;color:#8c92a4;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Entradas</div><div style="font-size:15px;font-weight:700;color:#38d9a9;font-family:'JetBrains Mono',monospace;">R$ 1,24 mi</div></div>
+              <div><div style="font-size:11px;color:#8c92a4;text-transform:uppercase;letter-spacing:0.05em;font-weight:700;">Saídas</div><div style="font-size:15px;font-weight:700;color:#ff6b6b;font-family:'JetBrains Mono',monospace;">R$ 0,98 mi</div></div>
+            </div>
+          </div>
+          <div style="width:100%;">{{ fluxoChart }}</div>
+        </div>
+
+        <!-- CONTAS A PAGAR / RECEBER -->
+        <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <h3 style="margin:0;font-size:16px;font-weight:700;">Contas a Pagar / Receber</h3>
+            <span style="font-size:12.5px;color:#8c92a4;font-weight:600;cursor:pointer;">Ver tudo</span>
+          </div>
+          <div style="display:flex;gap:10px;margin:12px 0 4px;">
+            <div style="flex:1;background:rgba(56,217,169,0.10);border:1px solid rgba(56,217,169,0.18);border-radius:8px;padding:11px 13px;">
+              <div style="font-size:11.5px;color:#38d9a9;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">A receber · 7d</div>
+              <div style="font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:2px;">R$ 544 mil</div>
+            </div>
+            <div style="flex:1;background:rgba(255,107,107,0.10);border:1px solid rgba(255,107,107,0.18);border-radius:8px;padding:11px 13px;">
+              <div style="font-size:11.5px;color:#ff6b6b;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">A pagar · 7d</div>
+              <div style="font-size:18px;font-weight:800;font-family:'JetBrains Mono',monospace;margin-top:2px;">R$ 298 mil</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;margin-top:8px;">
+            <sc-for list="{{ contas }}" as="c" hint-placeholder-count="5">
+              <div class="obx-row" style="display:flex;align-items:center;gap:12px;padding:10px 8px;border-bottom:1px solid rgba(255,255,255,0.04);border-radius:6px;">
+                <div style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:{{ c.iconBg }};">
+                  <i data-lucide="{{ c.icon }}" style="width:15px;height:15px;color:{{ c.color }};"></i>
+                </div>
+                <div style="min-width:0;flex:1;">
+                  <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ c.titulo }}</div>
+                  <div style="font-size:12px;color:#8c92a4;">{{ c.venc }}</div>
+                </div>
+                <div style="font-size:13.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:{{ c.color }};white-space:nowrap;">{{ c.valor }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <!-- CURVA ABC -->
+      <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:20px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0 0 3px;font-size:16px;font-weight:700;">Curva ABC de Insumos</h3>
+            <p style="margin:0;color:#8c92a4;font-size:13px;">Concentração de custo por insumo · classe A representa 55% do total</p>
+          </div>
+          <button class="obx-ghost" onClick="{{ openModal }}" style="display:flex;align-items:center;gap:7px;background:#2c313e;border:1px solid rgba(255,255,255,0.08);color:#b9bfce;font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .15s ease;">
+            <i data-lucide="external-link" style="width:15px;height:15px;"></i>Abrir orçamento
+          </button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <div style="display:grid;grid-template-columns:24px 1.6fr 2.4fr 96px 130px;gap:14px;padding:0 8px 10px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#5b6072;font-weight:700;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div>Cl.</div><div>Insumo</div><div>% acumulado do custo</div><div style="text-align:right;">% custo</div><div style="text-align:right;">Valor</div>
+          </div>
+          <sc-for list="{{ abc }}" as="a" hint-placeholder-count="6">
+            <div class="obx-row" style="display:grid;grid-template-columns:24px 1.6fr 2.4fr 96px 130px;gap:14px;align-items:center;padding:11px 8px;border-radius:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:{{ a.classColor }};background:{{ a.classBg }};">{{ a.classe }}</div>
+              <div style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ a.nome }}</div>
+              <div style="height:8px;border-radius:999px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden;">
+                <div style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:{{ a.barW }};background:{{ a.classColor }};"></div>
+              </div>
+              <div style="text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ a.pct }}</div>
+              <div style="text-align:right;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#b9bfce;">{{ a.valor }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ============ BUDGET MODAL ============ -->
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeModal }}" style="position:fixed;inset:0;background:rgba(10,11,15,0.66);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:32px;z-index:50;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:1080px;max-height:88vh;background:#1f222c;border:1px solid rgba(255,255,255,0.08);border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,0.55);display:flex;flex-direction:column;overflow:hidden;">
+
+        <!-- modal header -->
+        <div style="padding:20px 24px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:42px;height:42px;border-radius:10px;background:rgba(132,94,247,0.15);display:flex;align-items:center;justify-content:center;"><i data-lucide="file-text" style="color:#845ef7;width:21px;height:21px;"></i></div>
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <h2 style="margin:0;font-size:19px;font-weight:800;letter-spacing:-0.01em;">Estrutura — Torre B</h2>
+                  <span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#8c92a4;background:rgba(255,255,255,0.05);padding:3px 9px;border-radius:6px;">ORC-2026-0042</span>
+                </div>
+                <p style="margin:3px 0 0;color:#8c92a4;font-size:13px;">Residencial Vila Aurora · base SINAPI 04/2026 · BDI 24,5%</p>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <button class="obx-ghost" onClick="{{ genPdf }}" style="display:flex;align-items:center;gap:8px;background:{{ pdfBg }};border:1px solid {{ pdfBorder }};color:{{ pdfColor }};font-family:inherit;font-size:13px;font-weight:600;padding:9px 14px;border-radius:8px;cursor:pointer;transition:all .15s ease;">
+                <span class="{{ pdfSpin }}" style="display:inline-flex;align-items:center;"><i data-lucide="{{ pdfIcon }}" style="width:15px;height:15px;"></i></span>{{ pdfLabel }}
+              </button>
+              <button class="obx-icobtn" onClick="{{ closeModal }}" style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="x"></i></button>
+            </div>
+          </div>
+
+          <!-- tabs -->
+          <div style="display:flex;gap:4px;margin-top:18px;">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <button class="obx-ctab" onClick="{{ t.onClick }}" style="border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;padding:11px 16px;cursor:pointer;color:{{ t.color }};border-bottom:2px solid {{ t.border }};">{{ t.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- modal body -->
+        <div style="flex:1;overflow-y:auto;padding:24px;">
+
+          <!-- DADOS -->
+          <sc-if value="{{ isDados }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Cliente</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;">Aurora Incorporações SA</div></div>
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Obra</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;">Residencial Vila Aurora</div></div>
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Responsável técnico</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;">Marina Alves · CREA 12345-D</div></div>
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Regime</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;">Empreitada global</div></div>
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">Data base</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;font-family:'JetBrains Mono',monospace;">04/2026 · SINAPI</div></div>
+              <div><label style="font-size:12px;color:#8c92a4;font-weight:600;display:block;margin-bottom:6px;">BDI aplicado</label><div style="background:#242833;border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:11px 13px;font-size:14px;font-weight:600;font-family:'JetBrains Mono',monospace;">24,5%</div></div>
+            </div>
+          </sc-if>
+
+          <!-- CUSTOS — EAP hierárquica -->
+          <sc-if value="{{ isCustos }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="display:flex;align-items:center;gap:9px;margin-bottom:14px;color:#8c92a4;font-size:13px;">
+                <i data-lucide="pencil" style="width:15px;height:15px;color:#845ef7;"></i>
+                Estrutura analítica (EAP): <b style="color:#845ef7;font-weight:600;">Fase</b> › <b style="color:#b9bfce;font-weight:600;">Serviço</b> › Insumo. Edite Qtd. ou Preço — o total recalcula na hora.
+              </div>
+              <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+                <!-- header -->
+                <div style="display:grid;grid-template-columns:118px 1fr 52px 96px 124px 132px 34px;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">
+                  <div style="padding:11px 14px;">Código</div>
+                  <div style="padding:11px 14px;">Descrição</div>
+                  <div style="padding:11px 8px;">Un.</div>
+                  <div style="padding:11px 14px;text-align:right;">Qtd.</div>
+                  <div style="padding:11px 14px;text-align:right;">Preço unit.</div>
+                  <div style="padding:11px 14px;text-align:right;">Total</div>
+                  <div></div>
+                </div>
+
+                <sc-for list="{{ eapView }}" as="f" hint-placeholder-count="2">
+                  <!-- FASE -->
+                  <div onClick="{{ f.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:rgba(132,94,247,0.06);border-left:3px solid #845ef7;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;">
+                    <i data-lucide="{{ f.chev }}" style="width:16px;height:16px;color:#845ef7;"></i>
+                    <span style="font-size:13.5px;font-weight:700;color:#fff;flex:1;">{{ f.nome }}</span>
+                    <span style="font-size:13.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#845ef7;">{{ f.subtotalStr }}</span>
+                  </div>
+
+                  <sc-if value="{{ f.open }}" hint-placeholder-val="{{ true }}">
+                    <sc-for list="{{ f.servicos }}" as="s" hint-placeholder-count="2">
+                      <!-- SERVIÇO -->
+                      <div class="obx-srow" onClick="{{ s.onToggle }}" style="display:flex;align-items:center;gap:9px;padding:9px 14px 9px 30px;background:rgba(255,255,255,0.02);border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;">
+                        <i data-lucide="{{ s.chev }}" style="width:14px;height:14px;color:#8c92a4;"></i>
+                        <span style="font-size:13px;font-weight:600;color:#b9bfce;flex:1;">{{ s.nome }}</span>
+                        <span style="font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#8c92a4;">{{ s.subtotalStr }}</span>
+                      </div>
+
+                      <sc-if value="{{ s.open }}" hint-placeholder-val="{{ true }}">
+                        <sc-for list="{{ s.insumos }}" as="i" hint-placeholder-count="2">
+                          <div class="obx-irow" style="display:grid;grid-template-columns:118px 1fr 52px 96px 124px 132px 34px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.03);">
+                            <div style="padding:8px 14px 8px 54px;font-size:12px;font-family:'JetBrains Mono',monospace;color:#8c92a4;">{{ i.codigo }}</div>
+                            <div style="padding:8px 14px;font-size:13px;font-weight:500;">{{ i.desc }}</div>
+                            <div style="padding:8px;font-size:12px;color:#8c92a4;">{{ i.unid }}</div>
+                            <div style="padding:5px 8px;"><input class="obx-edit" type="text" defaultValue="{{ i.qtd }}" onInput="{{ i.onQtd }}" style="{{ i.qtdInput }}"></div>
+                            <div style="padding:5px 8px;"><input class="obx-edit" type="text" defaultValue="{{ i.preco }}" onInput="{{ i.onPreco }}" style="{{ i.precoInput }}"></div>
+                            <div style="padding:8px 14px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ i.totalStr }}</div>
+                            <div style="padding:8px 6px;display:flex;justify-content:center;"><i data-lucide="trash-2" class="obx-del" onClick="{{ i.onDel }}" style="width:15px;height:15px;color:#ff6b6b;cursor:pointer;"></i></div>
+                          </div>
+                        </sc-for>
+                        <div style="padding:7px 14px 9px 54px;border-bottom:1px solid rgba(255,255,255,0.03);">
+                          <button class="obx-add" onClick="{{ s.onAddIns }}" style="display:inline-flex;align-items:center;gap:6px;color:#845ef7;background:transparent;border:1px dashed rgba(132,94,247,0.4);padding:5px 12px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s ease;"><i data-lucide="plus" style="width:13px;height:13px;"></i>Adicionar insumo</button>
+                        </div>
+                      </sc-if>
+                    </sc-for>
+                    <div style="padding:8px 14px 10px 30px;border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <button class="obx-add" onClick="{{ f.onAddServ }}" style="display:inline-flex;align-items:center;gap:6px;color:#845ef7;background:transparent;border:1px dashed rgba(132,94,247,0.4);padding:5px 12px;border-radius:6px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s ease;"><i data-lucide="plus" style="width:13px;height:13px;"></i>Adicionar serviço</button>
+                    </div>
+                  </sc-if>
+                </sc-for>
+
+                <div style="padding:10px 14px;background:#1b1e27;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;">
+                  <button class="obx-add" onClick="{{ addFase }}" style="display:inline-flex;align-items:center;gap:6px;color:#845ef7;background:transparent;border:1px dashed rgba(132,94,247,0.4);padding:6px 13px;border-radius:6px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s ease;"><i data-lucide="plus" style="width:14px;height:14px;"></i>Adicionar fase</button>
+                  <button class="obx-ghost" onClick="{{ openImport }}" style="display:inline-flex;align-items:center;gap:6px;color:#b9bfce;background:#2c313e;border:1px solid rgba(255,255,255,0.08);padding:6px 13px;border-radius:6px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s ease;"><i data-lucide="file-spreadsheet" style="width:14px;height:14px;color:#38d9a9;"></i>Importar planilha</button>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:#242833;">
+                  <div style="display:flex;align-items:baseline;gap:14px;">
+                    <span style="font-size:13px;font-weight:700;color:#8c92a4;text-transform:uppercase;letter-spacing:0.05em;">Custo direto total</span>
+                    <span style="font-size:13px;font-family:'JetBrains Mono',monospace;color:#b9bfce;">{{ custoDiretoStr }}</span>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:10px;">
+                    <span style="font-size:12px;color:#8c92a4;">com BDI 24,5%</span>
+                    <span style="font-size:17px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#38d9a9;">{{ comBdiStr }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- VENDAS -->
+          <sc-if value="{{ isVendas }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px 20px;margin-bottom:16px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 32px;margin-bottom:18px;">
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;color:#b9bfce;">Markup global</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#845ef7;">{{ markupPct }}%</span></div>
+                  <input type="range" min="0" max="60" value="{{ markupPct }}" onInput="{{ setMarkup }}" style="width:100%;">
+                </div>
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;font-weight:600;color:#b9bfce;">Taxa de administração</span><span style="font-size:14px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#845ef7;">{{ admPct }}%</span></div>
+                  <input type="range" min="0" max="25" value="{{ admPct }}" onInput="{{ setAdm }}" style="width:100%;">
+                </div>
+              </div>
+              <div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;display:flex;flex-direction:column;gap:9px;">
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;"><span style="color:#8c92a4;">Custo direto total</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600;">{{ mkCusto }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;"><span style="color:#8c92a4;">+ Markup global ({{ markupPct }}%)</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#845ef7;">{{ mkMarkup }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;"><span style="color:#8c92a4;">+ Taxa de adm. ({{ admPct }}%)</span><span style="font-family:'JetBrains Mono',monospace;font-weight:600;color:#845ef7;">{{ mkAdm }}</span></div>
+                <div style="border-top:1px dashed rgba(255,255,255,0.10);margin-top:3px;padding-top:11px;display:flex;justify-content:space-between;align-items:baseline;">
+                  <span style="font-size:14px;font-weight:700;">Preço de venda</span><span style="font-size:19px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#38d9a9;">{{ mkPreco }}</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13.5px;"><span style="color:#8c92a4;">Margem efetiva</span><span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:#38d9a9;">{{ mkMargem }}</span></div>
+              </div>
+            </div>
+            <div style="font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:10px;">Margem por etapa</div>
+            <div style="display:flex;flex-direction:column;gap:11px;">
+              <sc-for list="{{ vendas }}" as="v" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:16px;background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:9px;padding:14px 16px;">
+                  <div style="flex:1;min-width:0;"><div style="font-size:13.5px;font-weight:600;">{{ v.etapa }}</div><div style="font-size:12px;color:#8c92a4;">Custo {{ v.custo }} · Venda {{ v.venda }}</div></div>
+                  <div style="width:160px;height:8px;border-radius:999px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative;"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ v.barW }};border-radius:999px;background:#38d9a9;"></div></div>
+                  <div style="width:78px;text-align:right;font-size:14px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#38d9a9;">{{ v.margem }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- CRONOGRAMA -->
+          <sc-if value="{{ isCronograma }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:200px 1fr;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="padding:11px 14px;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">Etapa</div>
+                <div style="display:grid;grid-template-columns:repeat(8,1fr);">
+                  <sc-for list="{{ cronoMonths }}" as="m" hint-placeholder-count="8"><div style="padding:11px 0;text-align:center;font-size:11px;color:#8c92a4;font-weight:700;">{{ m }}</div></sc-for>
+                </div>
+              </div>
+              <sc-for list="{{ crono }}" as="g" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:200px 1fr;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
+                  <div style="padding:12px 14px;font-size:13px;font-weight:600;">{{ g.etapa }}</div>
+                  <div style="position:relative;height:34px;margin:0 8px;">
+                    <div style="position:absolute;top:9px;height:16px;border-radius:6px;left:{{ g.left }};width:{{ g.width }};background:{{ g.color }};"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- CURVA ABC (in modal) -->
+          <sc-if value="{{ isABC }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <sc-for list="{{ abc }}" as="a" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:24px 1.6fr 2.4fr 96px 130px;gap:14px;align-items:center;padding:12px 8px;border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <div style="width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:{{ a.classColor }};background:{{ a.classBg }};">{{ a.classe }}</div>
+                  <div style="font-size:13.5px;font-weight:600;">{{ a.nome }}</div>
+                  <div style="height:8px;border-radius:999px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden;"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:{{ a.barW }};background:{{ a.classColor }};"></div></div>
+                  <div style="text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ a.pct }}</div>
+                  <div style="text-align:right;font-size:13px;font-weight:600;font-family:'JetBrains Mono',monospace;color:#b9bfce;">{{ a.valor }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- VERSÕES -->
+          <sc-if value="{{ isVersoes }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ compareClosed }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                  <h3 style="margin:0;font-size:16px;font-weight:700;">Histórico de revisões</h3>
+                  <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#2c313e;border:1px solid rgba(255,255,255,0.08);color:#b9bfce;font-family:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="plus" style="width:15px;height:15px;"></i>Nova revisão</button>
+                </div>
+                <div style="display:flex;flex-direction:column;">
+                  <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+                    <div style="display:flex;gap:14px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                      <div style="display:flex;flex-direction:column;align-items:center;padding-top:3px;"><span style="width:11px;height:11px;border-radius:50%;background:{{ v.dot }};border:2px solid #1f222c;box-shadow:0 0 0 2px {{ v.dot }}33;"></span></div>
+                      <div style="flex:1;">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                          <span style="font-size:14.5px;font-weight:700;">{{ v.rev }}</span>
+                          <sc-if value="{{ v.atual }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;color:#38d9a9;background:rgba(56,217,169,0.14);padding:2px 9px;border-radius:999px;">Atual</span></sc-if>
+                          <span style="font-size:12.5px;color:#8c92a4;font-family:'JetBrains Mono',monospace;">{{ v.data }}</span>
+                          <span style="font-size:12.5px;color:#8c92a4;">· {{ v.autor }}</span>
+                        </div>
+                        <div style="font-size:12.5px;color:#b9bfce;margin-top:5px;font-family:'JetBrains Mono',monospace;">{{ v.meta }}</div>
+                        <div style="display:flex;gap:8px;margin-top:10px;">
+                          <button class="obx-ghost" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#b9bfce;font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s ease;">Ver</button>
+                          <sc-if value="{{ v.atual }}" hint-placeholder-val="{{ false }}"><button class="obx-ghost" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#b9bfce;font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s ease;">Exportar PDF</button></sc-if>
+                          <sc-if value="{{ v.canCompare }}" hint-placeholder-val="{{ false }}"><button class="obx-ghost" onClick="{{ toggleCompare }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(132,94,247,0.4);color:#845ef7;font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s ease;"><i data-lucide="git-compare" style="width:13px;height:13px;"></i>Comparar com Rev 3</button></sc-if>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ compareOpen }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                  <button class="obx-icobtn" onClick="{{ toggleCompare }}" style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="arrow-left" style="width:17px;height:17px;"></i></button>
+                  <h3 style="margin:0;font-size:16px;font-weight:700;">Rev 2 <span style="color:#5b6072;">→</span> Rev 3</h3>
+                </div>
+                <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+                  <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr 1.1fr;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">
+                    <div style="padding:11px 14px;">Item</div>
+                    <div style="padding:11px 14px;text-align:right;">Rev 2</div>
+                    <div style="padding:11px 14px;text-align:right;">Rev 3</div>
+                    <div style="padding:11px 14px;text-align:right;">Diferença</div>
+                  </div>
+                  <sc-for list="{{ compareRows }}" as="c" hint-placeholder-count="5">
+                    <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr 1.1fr;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);background:{{ c.rowBg }};">
+                      <div style="padding:11px 14px;font-size:13px;font-weight:500;">{{ c.item }}</div>
+                      <div style="padding:11px 14px;text-align:right;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#8c92a4;">{{ c.r2 }}</div>
+                      <div style="padding:11px 14px;text-align:right;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#fff;">{{ c.r3 }}</div>
+                      <div style="padding:11px 14px;text-align:right;font-size:12.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:{{ c.diffColor }};">{{ c.diff }}</div>
+                    </div>
+                  </sc-for>
+                  <div style="display:grid;grid-template-columns:1.8fr 1fr 1fr 1.1fr;align-items:center;background:#242833;">
+                    <div style="padding:13px 14px;font-size:13px;font-weight:700;color:#8c92a4;text-transform:uppercase;letter-spacing:0.05em;">Valor total</div>
+                    <div style="padding:13px 14px;text-align:right;font-size:13px;font-family:'JetBrains Mono',monospace;color:#8c92a4;">R$ 7,12 mi</div>
+                    <div style="padding:13px 14px;text-align:right;font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:700;">R$ 7,40 mi</div>
+                    <div style="padding:13px 14px;text-align:right;font-size:13px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#38d9a9;">+R$ 280 mil</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </sc-if>
+
+        </div>
+        <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;background:#1b1e27;">
+          <div style="font-size:13px;color:#8c92a4;">Última edição há 2 min · salvo automaticamente</div>
+          <div style="display:flex;gap:10px;">
+            <button class="obx-ghost" onClick="{{ closeModal }}" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#b9bfce;font-family:inherit;font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Cancelar</button>
+            <button class="obx-cta" onClick="{{ closeModal }}" style="background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;padding:10px 20px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;">Salvar orçamento</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ XLSX IMPORT MODAL ============ -->
+  <sc-if value="{{ importOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeImport }}" style="position:fixed;inset:0;background:rgba(10,11,15,0.7);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:32px;z-index:60;">
+      <div onClick="{{ stop }}" style="width:100%;max-width:640px;background:#242833;border-radius:16px;box-shadow:0 0 40px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06);overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:space-between;">
+          <h2 style="margin:0;font-size:17px;font-weight:800;">Importar planilha de orçamento</h2>
+          <button class="obx-icobtn" onClick="{{ closeImport }}" style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="x"></i></button>
+        </div>
+
+        <!-- 3A upload -->
+        <sc-if value="{{ impUpload }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:24px;">
+            <div onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDropFile }}" onClick="{{ pickFile }}" style="background:#2d3142;border:2px dashed {{ impDzBorder }};border-radius:12px;padding:44px 24px;text-align:center;cursor:pointer;transition:all .15s ease;">
+              <i data-lucide="file-spreadsheet" style="width:48px;height:48px;color:#845ef7;"></i>
+              <div style="font-size:16px;font-weight:600;margin-top:10px;">Arraste sua planilha aqui</div>
+              <div style="font-size:13px;color:#8c92a4;margin-top:3px;">ou clique para selecionar</div>
+              <button class="obx-cta" style="margin-top:16px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);">Selecionar arquivo</button>
+              <div style="font-size:12px;color:#5b6072;margin-top:12px;">Aceita: .xlsx, .xls · Máx. 30 MB</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;margin-top:18px;font-size:13px;">
+              <i data-lucide="download" style="width:16px;height:16px;color:#ff6b6b;"></i>
+              <span style="color:#ff6b6b;font-weight:600;cursor:pointer;">Baixar template Obrax.xlsx</span>
+              <span style="color:#8c92a4;">— use o template para garantir importação sem erros</span>
+            </div>
+            <div style="margin-top:14px;font-size:12px;color:#8c92a4;font-family:'JetBrains Mono',monospace;background:rgba(255,255,255,0.03);border-radius:8px;padding:11px 13px;">Estrutura esperada: Fase | Serviço | Insumo | Un | Qtd | Preço unit.</div>
+          </div>
+        </sc-if>
+
+        <!-- 3B validating / errors -->
+        <sc-if value="{{ impValidate }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:24px;">
+            <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px;">
+              <i data-lucide="file-check-2" style="width:22px;height:22px;color:#38d9a9;"></i>
+              <div><div style="font-size:14px;font-weight:600;">orcamento_vila_aurora.xlsx</div><div style="font-size:12px;color:#8c92a4;">847 KB · 312 linhas detectadas</div></div>
+            </div>
+            <sc-if value="{{ impProcessing }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="height:6px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;margin-bottom:8px;"><div style="height:100%;width:75%;border-radius:999px;background:#845ef7;"></div></div>
+                <div style="font-size:13px;color:#8c92a4;">Validando estrutura…</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ impErrors }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:6px;"><i data-lucide="alert-triangle" style="width:18px;height:18px;color:#fcc419;"></i><span style="font-size:14px;font-weight:700;color:#fcc419;">3 erros encontrados</span></div>
+                <p style="margin:0 0 14px;font-size:12.5px;color:#8c92a4;">Corrija os erros abaixo antes de importar</p>
+                <div style="border:1px solid rgba(255,255,255,0.06);border-radius:9px;overflow:hidden;">
+                  <div style="display:grid;grid-template-columns:70px 130px 1fr;background:#2d3142;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;"><div style="padding:9px 12px;">Linha</div><div style="padding:9px 8px;">Campo</div><div style="padding:9px 8px;">Problema</div></div>
+                  <sc-for list="{{ impErrRows }}" as="e" hint-placeholder-count="3">
+                    <div class="obx-row" style="display:grid;grid-template-columns:70px 130px 1fr;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;" title="{{ e.hint }}">
+                      <div style="padding:10px 12px;font-size:12.5px;font-family:'JetBrains Mono',monospace;color:#ff6b6b;">{{ e.linha }}</div>
+                      <div style="padding:10px 8px;font-size:12.5px;color:#b9bfce;">{{ e.campo }}</div>
+                      <div style="padding:10px 8px;font-size:12.5px;color:#8c92a4;">{{ e.problema }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ impClean }}" hint-placeholder-val="{{ false }}">
+              <div style="background:rgba(56,217,169,0.08);border:1px solid rgba(56,217,169,0.2);border-radius:10px;padding:16px;">
+                <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px;"><i data-lucide="check-circle-2" style="width:18px;height:18px;color:#38d9a9;"></i><span style="font-size:14px;font-weight:700;color:#38d9a9;">312 linhas prontas</span></div>
+                <div style="font-size:13px;color:#b9bfce;">Preview: 4 Fases · 18 Serviços · 290 Insumos</div>
+                <div style="font-size:13px;color:#b9bfce;margin-top:3px;">Custo direto estimado: <b style="font-family:'JetBrains Mono',monospace;">R$ 2,84 mi</b></div>
+              </div>
+            </sc-if>
+          </div>
+          <div style="padding:16px 24px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:flex-end;gap:10px;background:#1b1e27;">
+            <button class="obx-ghost" onClick="{{ resetImport }}" style="background:transparent;border:1px solid rgba(255,255,255,0.12);color:#b9bfce;font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Escolher outro arquivo</button>
+            <button onClick="{{ doImport }}" style="background:{{ impBtnBg }};border:none;color:{{ impBtnColor }};font-family:inherit;font-size:13px;font-weight:700;padding:9px 20px;border-radius:8px;cursor:{{ impBtnCursor }};opacity:{{ impBtnOpacity }};box-shadow:0 4px 14px rgba(255,107,107,0.22);">Importar</button>
+          </div>
+        </sc-if>
+
+        <!-- 3C success -->
+        <sc-if value="{{ impDone }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:48px 24px;text-align:center;">
+            <i data-lucide="check-circle-2" style="width:64px;height:64px;color:#38d9a9;"></i>
+            <div style="font-size:20px;font-weight:800;margin-top:16px;">Importação concluída!</div>
+            <div style="font-size:13.5px;color:#8c92a4;margin-top:6px;">312 linhas importadas · 4 fases criadas</div>
+            <button class="obx-cta" onClick="{{ closeImport }}" style="margin-top:22px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;padding:11px 22px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);">Ver orçamento</button>
+            <div style="margin-top:14px;"><span onClick="{{ resetImport }}" style="font-size:13px;color:#ff6b6b;font-weight:600;cursor:pointer;">Importar outro arquivo</span></div>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    modalOpen: false,
+    tab: 'Custos',
+    hoverS: null,
+    hoverF: null,
+    rows: [
+      { id:1, codigo:'SINAPI 92916', desc:'Concreto usinado FCK 30 MPa, lançado', unid:'m³',  qtd:520,  preco:498.50, flash:null },
+      { id:2, codigo:'SINAPI 92761', desc:'Armação aço CA-50, corte e dobra',     unid:'kg',  qtd:38500, preco:9.85,  flash:null },
+      { id:3, codigo:'SINAPI 92423', desc:'Forma de compensado plastificado 18mm', unid:'m²', qtd:2840, preco:62.40, flash:null },
+      { id:4, codigo:'COMP-014',     desc:'Mão de obra — equipe de estrutura',     unid:'h',  qtd:6200, preco:34.20, flash:null },
+      { id:5, codigo:'SINAPI 88489', desc:'Escoramento metálico, locação mensal',  unid:'mês',qtd:8,    preco:14800, flash:null },
+      { id:6, codigo:'SINAPI 90586', desc:'Laje pré-moldada vigota treliçada',     unid:'m²', qtd:1960, preco:118.0, flash:null },
+    ],
+    markupPct: 25,
+    admPct: 8,
+    pdfState: 'idle',
+    importState: 'closed',
+    importDrag: false,
+    compareOpen: false,
+    sbCollapsed: false,
+    avatarOpen: false,
+    eap: [
+      { id:'f1', nome:'FASE 1 — Fundação', open:true, servicos:[
+        { id:'f1s1', nome:'Escavação mecânica', open:true, insumos:[
+          { id:'f1s1i1', codigo:'05.001', desc:'Escavação c/ retroescavadeira', unid:'m³', qtd:30, preco:400, flash:null },
+          { id:'f1s1i2', codigo:'05.002', desc:'Operador de máquina', unid:'h', qtd:8, preco:135, flash:null },
+        ]},
+        { id:'f1s2', nome:'Concretagem', open:true, insumos:[
+          { id:'f1s2i1', codigo:'05.010', desc:'Concreto magro FCK 15', unid:'m³', qtd:12, preco:380, flash:null },
+          { id:'f1s2i2', codigo:'05.011', desc:'Sapata armada FCK 30', unid:'m³', qtd:48, preco:620, flash:null },
+          { id:'f1s2i3', codigo:'05.012', desc:'Servente', unid:'h', qtd:120, preco:28, flash:null },
+        ]},
+      ]},
+      { id:'f2', nome:'FASE 2 — Estrutura', open:false, servicos:[
+        { id:'f2s1', nome:'Pilares e vigas', open:true, insumos:[
+          { id:'f2s1i1', codigo:'07.001', desc:'Concreto FCK 30 usinado', unid:'m³', qtd:220, preco:498.5, flash:null },
+          { id:'f2s1i2', codigo:'07.002', desc:'Aço CA-50 corte e dobra', unid:'kg', qtd:18500, preco:9.85, flash:null },
+          { id:'f2s1i3', codigo:'07.003', desc:'Forma compensado 18mm', unid:'m²', qtd:1240, preco:62.4, flash:null },
+        ]},
+        { id:'f2s2', nome:'Lajes', open:true, insumos:[
+          { id:'f2s2i1', codigo:'07.010', desc:'Laje pré-moldada treliçada', unid:'m²', qtd:980, preco:118, flash:null },
+          { id:'f2s2i2', codigo:'07.011', desc:'Carpinteiro', unid:'h', qtd:480, preco:38, flash:null },
+        ]},
+      ]},
+      { id:'f3', nome:'FASE 3 — Alvenaria', open:false, servicos:[
+        { id:'f3s1', nome:'Vedação', open:true, insumos:[
+          { id:'f3s1i1', codigo:'09.001', desc:'Bloco cerâmico 14x19x39', unid:'un', qtd:12500, preco:1.85, flash:null },
+          { id:'f3s1i2', codigo:'09.002', desc:'Argamassa de assentamento', unid:'m³', qtd:64, preco:290, flash:null },
+          { id:'f3s1i3', codigo:'09.003', desc:'Pedreiro', unid:'h', qtd:620, preco:34, flash:null },
+        ]},
+      ]},
+    ],
+  };
+
+  componentDidMount(){ this._lucide(); }
+  componentDidUpdate(){ this._lucide(); }
+  _lucide(){
+    try{
+      if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); }
+      else { clearTimeout(this._lt); this._lt = setTimeout(()=>this._lucide(), 120); }
+    }catch(e){}
+  }
+
+  openModal = () => this.setState({ modalOpen:true });
+  closeModal = () => this.setState({ modalOpen:false });
+  stop = (e) => { e.stopPropagation(); };
+  setTab = (t) => this.setState({ tab:t });
+
+  onCostEdit(id, field, raw){
+    const val = parseFloat(String(raw).replace(/\./g,'').replace(',','.')) || 0;
+    this.setState(s => ({ rows: s.rows.map(r => r.id===id ? {...r,[field]:val,flash:field} : r) }));
+    clearTimeout(this['_ft'+id+field]);
+    this['_ft'+id+field] = setTimeout(() => {
+      this.setState(s => ({ rows: s.rows.map(r => r.id===id ? {...r,flash:null} : r) }));
+    }, 1100);
+  }
+
+  money(v){ return 'R$ ' + v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  moneyk(v){ return 'R$ ' + v.toLocaleString('pt-BR',{maximumFractionDigits:0}); }
+  num(v){ return v.toLocaleString('pt-BR'); }
+
+  toggleFase = (fid) => this.setState(s => ({ eap: s.eap.map(f => f.id===fid ? {...f, open:!f.open} : f) }));
+  toggleServ = (fid,sid) => this.setState(s => ({ eap: s.eap.map(f => f.id!==fid ? f : {...f, servicos:f.servicos.map(sv => sv.id===sid ? {...sv, open:!sv.open} : sv)}) }));
+  _mapIns(eap,fid,sid,iid,fn){ return eap.map(f => f.id!==fid ? f : {...f, servicos:f.servicos.map(sv => sv.id!==sid ? sv : {...sv, insumos:sv.insumos.map(i => i.id===iid ? fn(i) : i)})}); }
+  onEapEdit(fid,sid,iid,field,raw){
+    const val = parseFloat(String(raw).replace(/\./g,'').replace(',','.')) || 0;
+    this.setState(s => ({ eap: this._mapIns(s.eap,fid,sid,iid,i => ({...i,[field]:val,flash:field})) }));
+    clearTimeout(this['_e'+iid+field]);
+    this['_e'+iid+field] = setTimeout(() => this.setState(s => ({ eap: this._mapIns(s.eap,fid,sid,iid,i => ({...i,flash:null})) })), 700);
+  }
+  addInsumo = (fid,sid) => { const nid='i'+Date.now(); this.setState(s => ({ eap: s.eap.map(f => f.id!==fid ? f : {...f, servicos:f.servicos.map(sv => sv.id!==sid ? sv : {...sv, insumos:[...sv.insumos, {id:nid,codigo:'—',desc:'Novo insumo',unid:'un',qtd:0,preco:0,flash:null}]})}) })); };
+  removeInsumo = (fid,sid,iid) => this.setState(s => ({ eap: s.eap.map(f => f.id!==fid ? f : {...f, servicos:f.servicos.map(sv => sv.id!==sid ? sv : {...sv, insumos:sv.insumos.filter(i => i.id!==iid)})}) }));
+  addServico = (fid) => { const nid='s'+Date.now(); this.setState(s => ({ eap: s.eap.map(f => f.id!==fid ? f : {...f, servicos:[...f.servicos, {id:nid,nome:'Novo serviço',open:true,insumos:[]}]}) })); };
+  addFase = () => { const nid='f'+Date.now(); this.setState(s => ({ eap:[...s.eap, {id:nid,nome:'NOVA FASE',open:true,servicos:[]}] })); };
+  genPdf = () => {
+    if(this.state.pdfState==='loading') return;
+    if(this.state.pdfState==='done'){ this.setState({pdfState:'idle'}); return; }
+    this.setState({pdfState:'loading'});
+    clearTimeout(this._pdf); this._pdf = setTimeout(() => this.setState({pdfState:'done'}), 2000);
+  };
+  toggleCompare = () => this.setState(s => ({ compareOpen:!s.compareOpen }));
+  toggleSb = () => this.setState(s => ({ sbCollapsed:!s.sbCollapsed }));
+  openImport = () => this.setState({ importState:'upload', importDrag:false });
+  closeImport = () => this.setState({ importState:'closed' });
+  resetImport = () => this.setState({ importState:'upload', importDrag:false });
+  onDragOver = (e) => { e.preventDefault(); if(!this.state.importDrag) this.setState({ importDrag:true }); };
+  onDragLeave = () => this.setState({ importDrag:false });
+  pickFile = () => this.startValidate();
+  onDropFile = (e) => { e.preventDefault(); this.setState({ importDrag:false }); this.startValidate(); };
+  startValidate = () => {
+    this.setState({ importState:'processing' });
+    const next = this._triedOnce ? 'clean' : 'errors';
+    this._triedOnce = true;
+    clearTimeout(this._iv); this._iv=setTimeout(()=>this.setState({ importState:next }), 1600);
+  };
+  doImport = () => {
+    if(this.state.importState!=='clean') return;
+    this.setState({ importState:'done' });
+  };
+  toggleAvatar = () => this.setState(s => ({ avatarOpen:!s.avatarOpen }));
+  setMarkup = (e) => this.setState({ markupPct:+e.target.value });
+  setAdm = (e) => this.setState({ admPct:+e.target.value });
+
+  smoothPath = (pts) => {
+    if(!pts || pts.length<2) return '';
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=0;i<pts.length-1;i++){
+      const p0 = pts[i-1]||pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2]||p2;
+      const c1x = p1[0]+(p2[0]-p0[0])/6, c1y = p1[1]+(p2[1]-p0[1])/6;
+      const c2x = p2[0]-(p3[0]-p1[0])/6, c2y = p2[1]-(p3[1]-p1[1])/6;
+      d += ` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+    }
+    return d;
+  };
+
+  buildCurvaS(){
+    const h = React.createElement;
+    const prev = [4,11,21,34,48,62,74,84,91,96,99,100];
+    const real = [3,9,18,29,41,52,60,64];
+    const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const W=760,H=300,L=46,R=18,T=18,B=34;
+    const plotW=W-L-R, plotH=H-T-B, base=5.10;
+    const x = i => L + (i/11)*plotW;
+    const y = p => T + (1-p/100)*plotH;
+    const prevPts = prev.map((p,i)=>[x(i),y(p)]);
+    const realPts = real.map((p,i)=>[x(i),y(p)]);
+    const prevLine = this.smoothPath(prevPts);
+    const realLine = this.smoothPath(realPts);
+    const prevArea = prevLine + ` L ${x(11)} ${T+plotH} L ${x(0)} ${T+plotH} Z`;
+    const realArea = realLine + ` L ${x(real.length-1)} ${T+plotH} L ${x(0)} ${T+plotH} Z`;
+    const hv = this.state.hoverS;
+    const kids = [];
+
+    kids.push(h('defs',{key:'d'},
+      h('linearGradient',{id:'gp',x1:0,y1:0,x2:0,y2:1},
+        h('stop',{offset:'0%',stopColor:'#845ef7',stopOpacity:0.28}),
+        h('stop',{offset:'100%',stopColor:'#845ef7',stopOpacity:0})),
+      h('linearGradient',{id:'gr',x1:0,y1:0,x2:0,y2:1},
+        h('stop',{offset:'0%',stopColor:'#38d9a9',stopOpacity:0.30}),
+        h('stop',{offset:'100%',stopColor:'#38d9a9',stopOpacity:0}))
+    ));
+    // gridlines + y labels
+    [0,25,50,75,100].forEach((g,gi)=>{
+      kids.push(h('line',{key:'g'+gi,x1:L,y1:y(g),x2:W-R,y2:y(g),stroke:'rgba(255,255,255,0.06)',strokeWidth:1}));
+      kids.push(h('text',{key:'gl'+gi,x:L-10,y:y(g)+4,textAnchor:'end',fill:'#5b6072',fontSize:11,fontFamily:'JetBrains Mono, monospace'},g+'%'));
+    });
+    // x labels
+    months.forEach((m,i)=>{
+      kids.push(h('text',{key:'xl'+i,x:x(i),y:H-12,textAnchor:'middle',fill:'#5b6072',fontSize:11,fontFamily:'Manrope, sans-serif'},m));
+    });
+    // areas + lines
+    kids.push(h('path',{key:'pa',d:prevArea,fill:'url(#gp)'}));
+    kids.push(h('path',{key:'ra',d:realArea,fill:'url(#gr)'}));
+    kids.push(h('path',{key:'pl',d:prevLine,fill:'none',stroke:'#845ef7',strokeWidth:2.5,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    kids.push(h('path',{key:'rl',d:realLine,fill:'none',stroke:'#38d9a9',strokeWidth:2.5,strokeLinecap:'round'}));
+    // hover guide + dots + tooltip
+    if(hv!=null){
+      kids.push(h('line',{key:'hg',x1:x(hv),y1:T,x2:x(hv),y2:T+plotH,stroke:'rgba(255,255,255,0.18)',strokeWidth:1,strokeDasharray:'3 3'}));
+      kids.push(h('circle',{key:'pd',cx:x(hv),cy:y(prev[hv]),r:4.5,fill:'#845ef7',stroke:'#1f222c',strokeWidth:2}));
+      if(real[hv]!=null) kids.push(h('circle',{key:'rd',cx:x(hv),cy:y(real[hv]),r:4.5,fill:'#38d9a9',stroke:'#1f222c',strokeWidth:2}));
+      const bw=210, bh=80, flip = x(hv) > W/2;
+      const bx = flip ? x(hv)-bw-12 : x(hv)+12;
+      const by = T+6;
+      const pv = (prev[hv]/100*base);
+      const rv = real[hv]!=null ? (real[hv]/100*base) : null;
+      kids.push(h('g',{key:'tt'},
+        h('rect',{x:bx,y:by,width:bw,height:bh,rx:8,fill:'#15171e',stroke:'rgba(255,255,255,0.12)',strokeWidth:1}),
+        h('text',{x:bx+13,y:by+22,fill:'#fff',fontSize:13,fontWeight:700,fontFamily:'Manrope, sans-serif'},months[hv]+' / 2026'),
+        h('circle',{cx:bx+17,cy:by+42,r:4,fill:'#845ef7'}),
+        h('text',{x:bx+28,y:by+46,fill:'#b9bfce',fontSize:12,fontFamily:'Manrope, sans-serif'},'Previsto'),
+        h('text',{x:bx+bw-13,y:by+46,textAnchor:'end',fill:'#fff',fontSize:12,fontWeight:700,fontFamily:'JetBrains Mono, monospace'},prev[hv]+'% · '+pv.toFixed(2).replace('.',',')+' mi'),
+        h('circle',{cx:bx+17,cy:by+63,r:4,fill:'#38d9a9'}),
+        h('text',{x:bx+28,y:by+67,fill:'#b9bfce',fontSize:12,fontFamily:'Manrope, sans-serif'},'Realizado'),
+        h('text',{x:bx+bw-13,y:by+67,textAnchor:'end',fill:'#fff',fontSize:12,fontWeight:700,fontFamily:'JetBrains Mono, monospace'}, rv!=null ? (real[hv]+'% · '+rv.toFixed(2).replace('.',',')+' mi') : '—')
+      ));
+    }
+    // hit rects
+    const stepHalf = plotW/11/2;
+    months.forEach((m,i)=>{
+      kids.push(h('rect',{key:'hr'+i,x:x(i)-stepHalf,y:T,width:stepHalf*2,height:plotH,fill:'transparent',
+        onMouseEnter:()=>this.setState({hoverS:i}), onMouseLeave:()=>this.setState({hoverS:null})}));
+    });
+    return h('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',display:'block',marginTop:'6px'}},kids);
+  }
+
+  buildFluxo(){
+    const h = React.createElement;
+    const net = [42,-18,30,12,-55,8,60,-22,15,38,-12,50,28,-40,66];
+    const W=440,H=200,L=34,R=10,T=14,B=26;
+    const plotW=W-L-R, plotH=H-T-B;
+    const maxAbs = 70;
+    const zeroY = T + plotH*(maxAbs/(maxAbs*2));
+    const n = net.length;
+    const slot = plotW/n;
+    const bw = slot*0.52;
+    const hv = this.state.hoverF;
+    const kids = [];
+    kids.push(h('line',{key:'z',x1:L,y1:zeroY,x2:W-R,y2:zeroY,stroke:'rgba(255,255,255,0.12)',strokeWidth:1}));
+    net.forEach((v,i)=>{
+      const cx = L + slot*i + slot/2;
+      const bh = Math.abs(v)/(maxAbs*2)*plotH;
+      const by = v>=0 ? zeroY-bh : zeroY;
+      const col = v>=0 ? '#38d9a9' : '#ff6b6b';
+      kids.push(h('rect',{key:'b'+i,x:cx-bw/2,y:by,width:bw,height:Math.max(bh,1.5),rx:3,
+        fill:col, opacity: hv==null||hv===i?1:0.4,
+        onMouseEnter:()=>this.setState({hoverF:i}), onMouseLeave:()=>this.setState({hoverF:null})}));
+    });
+    [1,5,10,15].forEach(d=>{
+      const cx = L + slot*(d-1) + slot/2;
+      kids.push(h('text',{key:'x'+d,x:cx,y:H-8,textAnchor:'middle',fill:'#5b6072',fontSize:10,fontFamily:'JetBrains Mono, monospace'},'D'+d));
+    });
+    if(hv!=null){
+      const v = net[hv];
+      const cx = L + slot*hv + slot/2;
+      const bw2=120, bh2=42, flip = cx > W/2;
+      const bx = Math.max(2, Math.min(W-bw2-2, flip ? cx-bw2 : cx));
+      kids.push(h('g',{key:'tt'},
+        h('rect',{x:bx,y:4,width:bw2,height:bh2,rx:7,fill:'#15171e',stroke:'rgba(255,255,255,0.12)'}),
+        h('text',{x:bx+11,y:21,fill:'#8c92a4',fontSize:11,fontFamily:'Manrope, sans-serif'},'Dia útil '+(hv+1)),
+        h('text',{x:bx+11,y:37,fill:v>=0?'#38d9a9':'#ff6b6b',fontSize:13,fontWeight:700,fontFamily:'JetBrains Mono, monospace'},(v>=0?'+':'−')+'R$ '+Math.abs(v)+'k')
+      ));
+    }
+    return h('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',display:'block'}},kids);
+  }
+
+  buildRing(){
+    const h = React.createElement;
+    const pct=64, r=52, c=2*Math.PI*r, sz=132;
+    return h('svg',{viewBox:`0 0 ${sz} ${sz}`,style:{width:'132px',height:'132px'}},
+      h('circle',{cx:sz/2,cy:sz/2,r,fill:'none',stroke:'rgba(255,255,255,0.07)',strokeWidth:11}),
+      h('circle',{cx:sz/2,cy:sz/2,r,fill:'none',stroke:'#ff6b6b',strokeWidth:11,strokeLinecap:'round',
+        strokeDasharray:`${c*pct/100} ${c}`,transform:`rotate(-90 ${sz/2} ${sz/2})`}),
+      h('text',{x:sz/2,y:sz/2-2,textAnchor:'middle',fill:'#fff',fontSize:30,fontWeight:800,fontFamily:'JetBrains Mono, monospace'},'64%'),
+      h('text',{x:sz/2,y:sz/2+18,textAnchor:'middle',fill:'#8c92a4',fontSize:12,fontFamily:'Manrope, sans-serif'},'concluído')
+    );
+  }
+
+  renderVals(){
+    const tabNames = ['Dados','Custos','Vendas','Cronograma','Curva ABC','Versões'];
+    const tabs = tabNames.map(t => ({
+      label: t,
+      onClick: () => this.setTab(t),
+      color: this.state.tab===t ? '#fff' : '#8c92a4',
+      border: this.state.tab===t ? '#ff6b6b' : 'transparent',
+    }));
+
+    const baseInput = {width:'100%',textAlign:'right',background:'transparent',border:'1px solid rgba(255,255,255,0.10)',borderRadius:'6px',padding:'7px 9px',color:'#fff',fontFamily:'JetBrains Mono, monospace',fontSize:'13px',fontWeight:600,cursor:'text'};
+    const flashInput = {...baseInput, background:'rgba(132,94,247,0.18)', borderColor:'#845ef7', boxShadow:'inset 2px 0 0 #845ef7'};
+    const rows = this.state.rows.map(r => ({
+      ...r,
+      totalStr: this.money(r.qtd*r.preco),
+      onQtd: (e)=>this.onCostEdit(r.id,'qtd',e.target.value),
+      onPreco: (e)=>this.onCostEdit(r.id,'preco',e.target.value),
+      qtdInput: r.flash==='qtd' ? flashInput : baseInput,
+      precoInput: r.flash==='preco' ? flashInput : baseInput,
+    }));
+    const grand = this.state.rows.reduce((s,r)=>s+r.qtd*r.preco,0)*1.245;
+
+    // ---- EAP hierárquica ----
+    const eapView = this.state.eap.map(f => {
+      let fsub = 0;
+      const servicos = f.servicos.map(sv => {
+        let ssub = 0;
+        const insumos = sv.insumos.map(i => {
+          const tot = i.qtd*i.preco; ssub += tot;
+          return {
+            ...i,
+            totalStr: this.money(tot),
+            onQtd: (e)=>this.onEapEdit(f.id,sv.id,i.id,'qtd',e.target.value),
+            onPreco: (e)=>this.onEapEdit(f.id,sv.id,i.id,'preco',e.target.value),
+            qtdInput: i.flash==='qtd' ? flashInput : baseInput,
+            precoInput: i.flash==='preco' ? flashInput : baseInput,
+            onDel: ()=>this.removeInsumo(f.id,sv.id,i.id),
+          };
+        });
+        fsub += ssub;
+        return { ...sv, insumos, subtotalStr:this.money(ssub), onToggle:()=>this.toggleServ(f.id,sv.id), chev: sv.open?'chevron-down':'chevron-right', onAddIns:()=>this.addInsumo(f.id,sv.id) };
+      });
+      return { ...f, servicos, subtotalStr:this.money(fsub), onToggle:()=>this.toggleFase(f.id), chev: f.open?'chevron-down':'chevron-right', onAddServ:()=>this.addServico(f.id), _sub:fsub };
+    });
+    const custoDireto = eapView.reduce((s,f)=>s+f._sub,0);
+    const comBdi = custoDireto*1.245;
+
+    // ---- Markup (aba Vendas) ----
+    const cd = 5820000;
+    const mk = cd*this.state.markupPct/100;
+    const adm = cd*this.state.admPct/100;
+    const pv = cd+mk+adm;
+    const margem = pv>0 ? (pv-cd)/pv*100 : 0;
+
+    // ---- Versões ----
+    const versions = [
+      { rev:'Rev 3', atual:true,  canCompare:false, data:'04/Jun/2026', autor:'Marina Alves', meta:'R$ 7,40 mi · BDI 24,5% · 142 itens', dot:'#38d9a9' },
+      { rev:'Rev 2', atual:false, canCompare:true,  data:'18/Mai/2026', autor:'Carlos Motta', meta:'R$ 7,12 mi · BDI 23,0% · 138 itens', dot:'#5b6072' },
+      { rev:'Rev 1', atual:false, canCompare:true,  data:'02/Mai/2026', autor:'Carlos Motta', meta:'R$ 6,89 mi · BDI 22,0% · 130 itens', dot:'#5b6072' },
+    ];
+    const cmp = [
+      { item:'Concreto FCK 30 usinado', r2:'R$ 1.020.000', r3:'R$ 1.096.700', diff:'+R$ 76.700', type:'up' },
+      { item:'Aço CA-50', r2:'R$ 798.000', r3:'R$ 868.200', diff:'+R$ 70.200', type:'up' },
+      { item:'Escoramento metálico', r2:'R$ 168.000', r3:'R$ 118.400', diff:'−R$ 49.600', type:'down' },
+      { item:'Laje pré-moldada', r2:'—', r3:'R$ 337.000', diff:'+R$ 337.000', type:'up' },
+      { item:'BDI aplicado', r2:'23,0%', r3:'24,5%', diff:'+1,5 p.p.', type:'up' },
+    ];
+    const compareRows = cmp.map(c => ({
+      ...c,
+      rowBg: c.type==='up' ? 'rgba(56,217,169,0.08)' : 'rgba(255,107,107,0.08)',
+      diffColor: c.type==='up' ? '#38d9a9' : '#ff6b6b',
+    }));
+
+    // ---- PDF / chrome ----
+    const ps = this.state.pdfState;
+    const pdfMap = {
+      idle:    { label:'Gerar PDF',          icon:'file-down',  spin:'',         bg:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.10)', color:'#b9bfce' },
+      loading: { label:'Gerando PDF…',       icon:'loader-2',   spin:'obx-spin', bg:'rgba(255,255,255,0.05)', border:'rgba(255,255,255,0.10)', color:'#8c92a4' },
+      done:    { label:'PDF pronto — Baixar', icon:'check',      spin:'',         bg:'rgba(56,217,169,0.14)',  border:'rgba(56,217,169,0.4)',   color:'#38d9a9' },
+    };
+    const pdf = pdfMap[ps];
+
+    const contas = [
+      { titulo:'Medição 07 — Aurora Inc.', venc:'Recebe 05/07', valor:'+ R$ 480.000', color:'#38d9a9', iconBg:'rgba(56,217,169,0.14)', icon:'arrow-down-left' },
+      { titulo:'Concreteira Premix',       venc:'Vence 02/07',   valor:'− R$ 128.400', color:'#ff6b6b', iconBg:'rgba(255,107,107,0.14)', icon:'arrow-up-right' },
+      { titulo:'Folha — equipe estrutura', venc:'Vence 05/07',   valor:'− R$ 96.200',  color:'#ff6b6b', iconBg:'rgba(255,107,107,0.14)', icon:'arrow-up-right' },
+      { titulo:'Aço Gerdau — pedido #4412',venc:'Vence 08/07',   valor:'− R$ 73.500',  color:'#ff6b6b', iconBg:'rgba(255,107,107,0.14)', icon:'arrow-up-right' },
+      { titulo:'Aditivo elétrica',         venc:'Recebe 12/07',  valor:'+ R$ 64.000',  color:'#38d9a9', iconBg:'rgba(56,217,169,0.14)', icon:'arrow-down-left' },
+    ];
+
+    const A='#845ef7', Bc='#5c7cfa', Cc='#8c92a4';
+    const abc = [
+      { classe:'A', nome:'Concreto usinado FCK 30',  pct:'22%', barW:'100%', valor:'R$ 1,06 mi', classColor:A, classBg:'rgba(132,94,247,0.16)' },
+      { classe:'A', nome:'Armação aço CA-50',        pct:'18%', barW:'82%',  valor:'R$ 868 mil', classColor:A, classBg:'rgba(132,94,247,0.16)' },
+      { classe:'A', nome:'Mão de obra estrutura',    pct:'15%', barW:'68%',  valor:'R$ 723 mil', classColor:A, classBg:'rgba(132,94,247,0.16)' },
+      { classe:'B', nome:'Forma de compensado',      pct:'9%',  barW:'41%',  valor:'R$ 434 mil', classColor:Bc, classBg:'rgba(92,124,250,0.16)' },
+      { classe:'B', nome:'Laje pré-moldada',         pct:'7%',  barW:'32%',  valor:'R$ 337 mil', classColor:Bc, classBg:'rgba(92,124,250,0.16)' },
+      { classe:'C', nome:'Revestimento cerâmico',    pct:'4%',  barW:'18%',  valor:'R$ 193 mil', classColor:Cc, classBg:'rgba(140,146,164,0.16)' },
+    ];
+
+    const vendas = [
+      { etapa:'Fundação',         custo:'R$ 0,92 mi', venda:'R$ 1,28 mi', barW:'72%', margem:'28%' },
+      { etapa:'Estrutura',        custo:'R$ 2,15 mi', venda:'R$ 3,10 mi', barW:'88%', margem:'31%' },
+      { etapa:'Alvenaria / Vedação',custo:'R$ 1,18 mi',venda:'R$ 1,74 mi',barW:'80%', margem:'32%' },
+      { etapa:'Acabamento',       custo:'R$ 1,42 mi', venda:'R$ 2,38 mi', barW:'100%', margem:'40%' },
+    ];
+
+    const crono = [
+      { etapa:'Fundação',  left:'0%',   width:'18%', color:'#38d9a9' },
+      { etapa:'Estrutura', left:'12%',  width:'40%', color:'#845ef7' },
+      { etapa:'Alvenaria', left:'40%',  width:'30%', color:'#5c7cfa' },
+      { etapa:'Instalações',left:'55%', width:'28%', color:'#5c7cfa' },
+      { etapa:'Acabamento',left:'72%',  width:'28%', color:'#ff6b6b' },
+    ];
+    const cronoMonths = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago'];
+
+    return {
+      modalOpen: this.state.modalOpen,
+      openModal: this.openModal,
+      closeModal: this.closeModal,
+      stop: this.stop,
+      tabs,
+      isDados: this.state.tab==='Dados',
+      isCustos: this.state.tab==='Custos',
+      isVendas: this.state.tab==='Vendas',
+      isCronograma: this.state.tab==='Cronograma',
+      isABC: this.state.tab==='Curva ABC',
+      isVersoes: this.state.tab==='Versões',
+      rows,
+      grandTotal: this.money(grand),
+      contas, abc, vendas, crono, cronoMonths,
+      curvaSChart: this.buildCurvaS(),
+      fluxoChart: this.buildFluxo(),
+      progressRing: this.buildRing(),
+
+      // EAP
+      eapView,
+      addFase: this.addFase,
+      custoDiretoStr: this.money(custoDireto),
+      comBdiStr: this.money(comBdi),
+
+      // Markup
+      markupPct: this.state.markupPct,
+      admPct: this.state.admPct,
+      setMarkup: this.setMarkup,
+      setAdm: this.setAdm,
+      mkCusto: this.moneyk(cd),
+      mkMarkup: '+ ' + this.moneyk(mk),
+      mkAdm: '+ ' + this.moneyk(adm),
+      mkPreco: this.moneyk(pv),
+      mkMargem: margem.toFixed(1).replace('.',',') + '%',
+
+      // Versões
+      versions, compareRows,
+      compareOpen: this.state.compareOpen,
+      compareClosed: !this.state.compareOpen,
+      toggleCompare: this.toggleCompare,
+
+      // PDF
+      genPdf: this.genPdf,
+      pdfLabel: pdf.label, pdfIcon: pdf.icon, pdfSpin: pdf.spin,
+      pdfBg: pdf.bg, pdfBorder: pdf.border, pdfColor: pdf.color,
+
+      // XLSX import
+      openImport: this.openImport, closeImport: this.closeImport, resetImport: this.resetImport,
+      onDragOver: this.onDragOver, onDragLeave: this.onDragLeave, onDropFile: this.onDropFile, pickFile: this.pickFile, doImport: this.doImport,
+      importOpen: this.state.importState!=='closed',
+      impUpload: this.state.importState==='upload',
+      impValidate: this.state.importState==='processing' || this.state.importState==='errors' || this.state.importState==='clean',
+      impProcessing: this.state.importState==='processing',
+      impErrors: this.state.importState==='errors',
+      impClean: this.state.importState==='clean',
+      impDone: this.state.importState==='done',
+      impDzBorder: this.state.importDrag ? '#845ef7' : '#3a3f52',
+      impBtnBg: this.state.importState==='clean' ? '#ff6b6b' : '#3a3f52',
+      impBtnColor: this.state.importState==='clean' ? '#fff' : '#5b6072',
+      impBtnCursor: this.state.importState==='clean' ? 'pointer' : 'not-allowed',
+      impBtnOpacity: this.state.importState==='clean' ? '1' : '0.6',
+      impErrRows: [
+        { linha:'47', campo:'Preço unit.', problema:'Valor inválido: "R$abc"', hint:'Use apenas números, ex.: 498,50' },
+        { linha:'89', campo:'Fase', problema:'Fase vazia — obrigatório', hint:'Toda linha precisa de uma fase' },
+        { linha:'201', campo:'Unidade', problema:'"M2" → use "m²"', hint:'Padronize a unidade para m²' },
+      ],
+
+      // Chrome
+      sbClass: this.state.sbCollapsed ? 'col' : '',
+      sbIcon: this.state.sbCollapsed ? 'panel-left-open' : 'panel-left-close',
+      toggleSb: this.toggleSb,
+      avatarOpen: this.state.avatarOpen,
+      toggleAvatar: this.toggleAvatar,
+    };
+  }
+}
+</script>
+</body>
+</html>

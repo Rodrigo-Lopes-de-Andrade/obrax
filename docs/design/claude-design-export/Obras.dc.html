@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.10);border-radius:8px;border:2px solid #1a1c24;}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.18);}
+  input::placeholder{color:#5b6072;}
+  a{text-decoration:none;color:inherit;}
+  .obx-nav:hover{background:rgba(255,255,255,0.05)!important;color:#fff!important;}
+  .obx-navdis:hover .obx-tip{opacity:1!important;}
+  .obx-icobtn:hover{background:rgba(255,255,255,0.08)!important;color:#fff!important;}
+  .obx-card{transition:box-shadow .2s ease, transform .2s ease, border-color .2s ease;}
+  .obx-kpi:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,0.34);border-color:rgba(255,255,255,0.10);}
+  .obx-obra:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(0,0,0,0.36);border-color:rgba(255,255,255,0.12)!important;}
+  .obx-row:hover{background:rgba(255,255,255,0.025)!important;}
+  .obx-cta:hover{background:#ff7f7f!important;box-shadow:0 8px 22px rgba(255,107,107,0.32)!important;}
+  .obx-ghost:hover{background:rgba(255,255,255,0.06)!important;border-color:rgba(255,255,255,0.18)!important;}
+  .obx-dd:hover{background:rgba(255,255,255,0.05)!important;color:#fff!important;}
+  .obx-doc:hover{border-color:rgba(255,255,255,0.14)!important;transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,0.30);}
+  .obx-doc:hover .obx-docmenu{opacity:1;}
+  .obx-tab{transition:color .15s ease, border-color .15s ease;}
+  i[data-lucide]{width:18px;height:18px;}
+  @keyframes obxpulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .obx-dot{animation:obxpulse 1.6s ease-in-out infinite;}
+  .obx-sb{transition:width .2s ease;}
+  .obx-sb.col{width:64px !important;min-width:64px !important;max-width:64px !important;flex-basis:64px !important;padding-left:8px !important;padding-right:8px !important;}
+  .obx-sb.col .lbl{display:none !important;}
+  .obx-sb.col .obx-nav,.obx-sb.col .obx-navtop{justify-content:center !important;}
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;background:#1a1c24;font-family:'Manrope',sans-serif;color:#fff;overflow:hidden;-webkit-font-smoothing:antialiased;">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="obx-sb {{ sbClass }}" style="width:248px;flex-shrink:0;background:#15171e;border-right:1px solid rgba(255,255,255,0.05);display:flex;flex-direction:column;padding:20px 14px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:11px;padding:6px 8px 14px 8px;">
+      <div style="width:38px;height:38px;border-radius:9px;background:#ff6b6b;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(255,107,107,0.35);flex-shrink:0;"><i data-lucide="hard-hat" style="color:#fff;width:21px;height:21px;"></i></div>
+      <div class="lbl" style="font-weight:800;font-size:21px;letter-spacing:-0.02em;">Obra<span style="color:#ff6b6b;">x</span></div>
+    </div>
+    <button class="obx-navtop" onClick="{{ toggleSb }}" title="Recolher menu" style="display:flex;align-items:center;justify-content:flex-end;margin:0 0 8px;padding:4px 8px;border:none;background:transparent;color:#5b6072;cursor:pointer;">
+      <i data-lucide="{{ sbIcon }}" style="width:18px;height:18px;"></i>
+    </button>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:8px 8px 8px;">Gestão</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <a href="Obrax Dashboard.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="layout-dashboard"></i><span class="lbl">Dashboard</span></a>
+      <div class="obx-navtop" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;background:rgba(255,107,107,0.12);color:#fff;font-weight:600;font-size:14px;cursor:pointer;position:relative;"><span style="position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;background:#ff6b6b;"></span><i data-lucide="building-2"></i><span class="lbl">Obras</span></div>
+      <a href="Clientes.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="users"></i><span class="lbl">Clientes</span></a>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="file-text"></i><span class="lbl">Orçamentos</span></div>
+      <a href="Compras.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="shopping-cart"></i><span class="lbl">Compras</span></a>
+      <a href="Financeiro.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="wallet"></i><span class="lbl">Financeiro</span></a>
+      <a href="Relatorios.dc.html" class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;"><i data-lucide="bar-chart-3"></i><span class="lbl">Relatórios</span></a>
+    </nav>
+    <div class="lbl" style="font-size:10px;letter-spacing:0.09em;text-transform:uppercase;color:#5b6072;font-weight:700;padding:14px 8px 6px;">Inteligência</div>
+    <nav style="display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="bot"></i><span class="lbl">Assistente IA</span><span class="lbl" style="margin-left:auto;font-size:10px;font-weight:700;background:rgba(132,94,247,0.2);color:#845ef7;padding:2px 8px;border-radius:999px;">PRO</span></div>
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="shield-check"></i><span class="lbl">Auditoria IA</span></div>
+    </nav>
+    <div style="margin-top:auto;display:flex;flex-direction:column;gap:3px;">
+      <div class="obx-nav" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:#8c92a4;font-weight:500;font-size:14px;cursor:pointer;"><i data-lucide="settings"></i><span class="lbl">Configurações</span></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:11px 10px;margin-top:6px;border-radius:10px;background:#1f222c;border:1px solid rgba(255,255,255,0.05);">
+        <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">MA</div>
+        <div class="lbl" style="min-width:0;line-height:1.2;"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Marina Alves</div><div style="font-size:11px;color:#8c92a4;">Engenheira</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
+    <header style="height:68px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.05);background:#1a1c24;display:flex;align-items:center;gap:18px;padding:0 24px;">
+      <div style="position:relative;flex:1;max-width:440px;">
+        <i data-lucide="search" style="position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#5b6072;width:17px;height:17px;"></i>
+        <input type="text" placeholder="Buscar obras, clientes, insumos…" style="width:100%;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:9px 12px 9px 38px;color:#fff;font-family:inherit;font-size:13.5px;">
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <button class="obx-icobtn" style="position:relative;width:38px;height:38px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="bell"></i><span style="position:absolute;top:9px;right:9px;width:7px;height:7px;border-radius:50%;background:#ff6b6b;border:1.5px solid #242833;"></span></button>
+        <div style="width:1px;height:26px;background:rgba(255,255,255,0.08);margin:0 4px;"></div>
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#845ef7,#5c7cfa);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;">MA</div>
+      </div>
+    </header>
+
+    <main style="flex:1;overflow-y:auto;padding:26px 28px 40px;">
+
+      <!-- ============ LISTAGEM ============ -->
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <h1 style="margin:0;font-size:27px;font-weight:800;letter-spacing:-0.02em;">Obras</h1>
+              <span style="font-size:12.5px;font-weight:600;color:#8c92a4;background:rgba(255,255,255,0.06);padding:4px 11px;border-radius:999px;">8 ativas</span>
+            </div>
+            <button class="obx-cta" style="display:flex;align-items:center;gap:8px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13.5px;font-weight:700;padding:10px 17px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;"><i data-lucide="plus" style="width:17px;height:17px;"></i>Nova Obra</button>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#fff;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Todas <i data-lucide="chevron-down" style="width:14px;height:14px;color:#8c92a4;"></i></button>
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Status <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>
+            <button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.07);color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;">Cliente <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>
+            <div style="position:relative;flex:1;min-width:200px;max-width:300px;margin-left:auto;">
+              <i data-lucide="search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#5b6072;width:16px;height:16px;"></i>
+              <input type="text" placeholder="Buscar obra…" style="width:100%;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:8px 12px 8px 36px;color:#fff;font-family:inherit;font-size:13px;">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            <sc-for list="{{ obras }}" as="o" hint-placeholder-count="6">
+              <div class="obx-card obx-obra" onClick="{{ o.onOpen }}" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);cursor:pointer;display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;">
+                  <div style="width:40px;height:40px;border-radius:9px;background:{{ o.iconBg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="{{ o.icon }}" style="width:20px;height:20px;color:{{ o.iconColor }};"></i></div>
+                  <div style="min-width:0;flex:1;">
+                    <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ o.nome }}</div>
+                    <div style="font-size:12.5px;color:#8c92a4;margin-top:2px;">{{ o.cliente }}</div>
+                  </div>
+                </div>
+                <div style="height:7px;border-radius:999px;background:rgba(255,255,255,0.07);overflow:hidden;position:relative;margin-bottom:6px;"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:{{ o.progress }};background:{{ o.progColor }};"></div></div>
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:#8c92a4;margin-bottom:14px;"><span>{{ o.progressLabel }}</span><span style="font-family:'JetBrains Mono',monospace;color:#b9bfce;font-weight:600;">{{ o.progress }}</span></div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:7px;">
+                  <i data-lucide="calendar" style="width:14px;height:14px;color:#8c92a4;"></i><span style="color:#8c92a4;">Prazo {{ o.prazo }}</span>
+                  <sc-if value="{{ o.atrasada }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:11px;font-weight:700;color:#ff6b6b;background:rgba(255,107,107,0.12);padding:2px 8px;border-radius:999px;">{{ o.atraso }}</span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-family:'JetBrains Mono',monospace;margin-bottom:16px;"><span style="font-weight:700;">{{ o.valor }}</span><span style="color:#8c92a4;">· Margem {{ o.margem }}</span></div>
+                <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;">
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:{{ o.stColor }};background:{{ o.stBg }};padding:4px 11px;border-radius:999px;"><span class="{{ o.stDot }}" style="width:6px;height:6px;border-radius:50%;background:{{ o.stColor }};"></span>{{ o.status }}</span>
+                  <span style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:#845ef7;">Ver detalhes <i data-lucide="arrow-right" style="width:14px;height:14px;"></i></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ============ DETALHE ============ -->
+      <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+            <button class="obx-ghost" onClick="{{ backToList }}" style="display:flex;align-items:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.10);color:#8c92a4;font-family:inherit;font-size:13px;font-weight:600;padding:7px 13px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="arrow-left" style="width:15px;height:15px;"></i>Obras</button>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap;">
+            <div style="width:52px;height:52px;border-radius:11px;background:rgba(255,107,107,0.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i data-lucide="hard-hat" style="width:26px;height:26px;color:#ff6b6b;"></i></div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h1 style="margin:0;font-size:24px;font-weight:800;letter-spacing:-0.02em;">Residencial Vila Aurora</h1>
+                <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#38d9a9;background:rgba(56,217,169,0.12);padding:4px 11px;border-radius:999px;"><span class="obx-dot" style="width:6px;height:6px;border-radius:50%;background:#38d9a9;"></span>Em execução</span>
+              </div>
+              <p style="margin:5px 0 0;color:#8c92a4;font-size:13.5px;">Aurora Inc. SA · São Paulo/SP · Obra <span style="font-family:'JetBrains Mono',monospace;">#OBR-2026-012</span></p>
+            </div>
+            <button class="obx-icobtn" style="width:38px;height:38px;border-radius:9px;background:#242833;border:1px solid rgba(255,255,255,0.06);color:#8c92a4;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i data-lucide="more-vertical"></i></button>
+          </div>
+
+          <div style="display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:22px;overflow-x:auto;">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+              <button class="obx-tab" onClick="{{ t.onClick }}" style="border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;padding:11px 16px;cursor:pointer;white-space:nowrap;color:{{ t.color }};border-bottom:2px solid {{ t.border }};">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <!-- VISÃO GERAL -->
+          <sc-if value="{{ isVisao }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+                <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:9px;">Custo Realizado</div><div style="font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;white-space:nowrap;">R$ 4,82 mi</div></div>
+                <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:9px;">Receita</div><div style="font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;white-space:nowrap;">R$ 7,40 mi</div></div>
+                <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:9px;">Margem</div><div style="font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#38d9a9;white-space:nowrap;">34,8%</div></div>
+                <div class="obx-card obx-kpi" style="background:#242833;border:1px solid rgba(255,107,107,0.22);border-radius:10px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,0.22);"><div style="font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:#8c92a4;font-weight:700;margin-bottom:9px;">Avanço Físico</div><div style="font-size:22px;font-weight:800;font-family:'JetBrains Mono',monospace;color:#ff6b6b;white-space:nowrap;">64%</div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;">
+                <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><h3 style="margin:0;font-size:15px;font-weight:700;">Curva S — Previsto x Realizado</h3><div style="display:flex;gap:14px;"><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#b9bfce;font-weight:600;"><span style="width:13px;height:3px;border-radius:2px;background:#845ef7;"></span>Previsto</span><span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#b9bfce;font-weight:600;"><span style="width:13px;height:3px;border-radius:2px;background:#38d9a9;"></span>Realizado</span></div></div>
+                  <div style="width:100%;">{{ curvaSChart }}</div>
+                </div>
+                <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.22);display:flex;flex-direction:column;align-items:center;">
+                  <h3 style="margin:0 0 14px;font-size:15px;font-weight:700;align-self:flex-start;">Status</h3>
+                  {{ progressRing }}
+                  <div style="width:100%;margin-top:16px;display:flex;flex-direction:column;gap:11px;">
+                    <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Entrega prevista</span><span style="font-weight:600;">Dez/2026</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Etapa atual</span><span style="font-weight:600;">Alvenaria · Torre B</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:#8c92a4;">Equipe</span><span style="font-weight:600;">48 colaboradores</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- DOCUMENTOS (GED) -->
+          <sc-if value="{{ isDocs }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <!-- bulk action bar -->
+              <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:12px;background:rgba(132,94,247,0.10);border:1px solid rgba(132,94,247,0.3);border-radius:10px;padding:11px 16px;margin-bottom:14px;">
+                  <span style="font-size:13.5px;font-weight:700;color:#845ef7;">{{ selectedCount }} selecionados</span>
+                  <div style="width:1px;height:18px;background:rgba(255,255,255,0.12);"></div>
+                  <button class="obx-ghost" onClick="{{ bulkShow }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#38d9a9;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .15s ease;"><i data-lucide="eye" style="width:14px;height:14px;"></i>Tornar visíveis</button>
+                  <button class="obx-ghost" onClick="{{ bulkHide }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#8c92a4;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .15s ease;"><i data-lucide="eye-off" style="width:14px;height:14px;"></i>Ocultar</button>
+                  <button class="obx-ghost" onClick="{{ bulkDelete }}" style="display:flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#ff6b6b;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:7px;cursor:pointer;transition:all .15s ease;"><i data-lucide="trash-2" style="width:14px;height:14px;"></i>Excluir</button>
+                  <button onClick="{{ clearSel }}" style="margin-left:auto;background:transparent;border:none;color:#8c92a4;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;"><i data-lucide="x" style="width:14px;height:14px;"></i>Cancelar</button>
+                </div>
+              </sc-if>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:11px;"><h3 style="margin:0;font-size:16px;font-weight:700;">Documentos</h3><span style="font-size:12.5px;color:#8c92a4;font-weight:600;">{{ docCount }} arquivos</span></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="display:flex;background:#242833;border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:3px;">
+                    <button onClick="{{ setGrid }}" style="display:flex;align-items:center;gap:6px;border:none;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;background:{{ gridBg }};color:{{ gridColor }};"><i data-lucide="layout-grid" style="width:14px;height:14px;"></i>Grid</button>
+                    <button onClick="{{ setListView }}" style="display:flex;align-items:center;gap:6px;border:none;font-family:inherit;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;background:{{ listBg }};color:{{ listColor }};"><i data-lucide="list" style="width:14px;height:14px;"></i>Lista</button>
+                  </div>
+                  <button class="obx-cta" style="display:flex;align-items:center;gap:7px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;"><i data-lucide="upload" style="width:15px;height:15px;"></i>Enviar arquivos</button>
+                </div>
+              </div>
+
+              <!-- dropzone -->
+              <div onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="border:2px dashed {{ dzBorder }};background:{{ dzBg }};border-radius:12px;padding:26px;text-align:center;margin-bottom:16px;transition:all .15s ease;">
+                <i data-lucide="upload-cloud" style="width:34px;height:34px;color:#845ef7;"></i>
+                <div style="font-size:14.5px;font-weight:600;margin-top:8px;">Arraste arquivos aqui ou clique para selecionar</div>
+                <div style="font-size:12.5px;color:#8c92a4;margin-top:4px;">PDF, DWG, JPG, PNG, XLSX, DOCX · até 50 MB</div>
+              </div>
+
+              <!-- uploads in progress -->
+              <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
+                <sc-for list="{{ uploads }}" as="u" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:12px;background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:9px;padding:11px 14px;">
+                    <i data-lucide="{{ u.icon }}" style="width:18px;height:18px;color:{{ u.color }};"></i>
+                    <span style="font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ u.name }}</span>
+                    <div style="width:180px;height:6px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;position:relative;"><div style="position:absolute;left:0;top:0;bottom:0;border-radius:999px;width:{{ u.pct }};background:{{ u.barColor }};"></div></div>
+                    <span style="font-size:12.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:{{ u.color }};width:42px;text-align:right;">{{ u.pctLabel }}</span>
+                    <i data-lucide="{{ u.statusIcon }}" style="width:15px;height:15px;color:{{ u.color }};"></i>
+                  </div>
+                </sc-for>
+              </div>
+
+              <!-- GRID -->
+              <sc-if value="{{ isGrid }}" hint-placeholder-val="{{ true }}">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+                  <sc-for list="{{ docsView }}" as="d" hint-placeholder-count="8">
+                    <div class="obx-doc obx-card" style="background:#242833;border:1px solid {{ d.cardBorder }};border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.22);position:relative;">
+                      <div onClick="{{ d.onSelect }}" style="position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:5px;border:1.5px solid {{ d.checkBorder }};background:{{ d.checkBg }};display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2;"><sc-if value="{{ d.selected }}" hint-placeholder-val="{{ false }}"><i data-lucide="check" style="width:13px;height:13px;color:#fff;"></i></sc-if></div>
+                      <div style="height:104px;background:{{ d.thumbBg }};display:flex;align-items:center;justify-content:center;border-bottom:1px solid rgba(255,255,255,0.05);"><i data-lucide="{{ d.icon }}" style="width:34px;height:34px;color:{{ d.iconColor }};"></i></div>
+                      <div style="padding:12px;">
+                        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ d.name }}</div>
+                        <div style="font-size:11.5px;color:#8c92a4;margin-top:3px;">{{ d.typeLabel }} · {{ d.size }}</div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+                          <span style="font-size:11px;font-weight:600;color:#b9bfce;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:999px;">{{ d.cat }}</span>
+                          <span onClick="{{ d.onToggle }}" title="{{ d.visTip }}" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:{{ d.visColor }};cursor:pointer;"><i data-lucide="{{ d.visIcon }}" style="width:15px;height:15px;"></i>{{ d.visLabel }}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px;padding-top:9px;border-top:1px solid rgba(255,255,255,0.04);">
+                          <span style="font-size:11px;color:#8c92a4;">{{ d.date }} · {{ d.author }}</span>
+                          <i data-lucide="more-vertical" class="obx-docmenu" style="width:15px;height:15px;color:#8c92a4;opacity:0;transition:opacity .15s ease;cursor:pointer;"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <!-- LISTA -->
+              <sc-if value="{{ isListView }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+                  <div style="display:grid;grid-template-columns:28px 1fr 130px 90px 130px 100px 90px 34px;align-items:center;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">
+                    <div></div><div style="padding:11px 14px;">Nome</div><div style="padding:11px 8px;">Categoria</div><div style="padding:11px 8px;">Tamanho</div><div style="padding:11px 8px;">Enviado por</div><div style="padding:11px 8px;">Data</div><div style="padding:11px 8px;text-align:center;">Visível</div><div></div>
+                  </div>
+                  <sc-for list="{{ docsView }}" as="d" hint-placeholder-count="8">
+                    <div class="obx-row" style="display:grid;grid-template-columns:28px 1fr 130px 90px 130px 100px 90px 34px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);">
+                      <div onClick="{{ d.onSelect }}" style="display:flex;justify-content:center;cursor:pointer;"><div style="width:18px;height:18px;border-radius:5px;border:1.5px solid {{ d.checkBorder }};background:{{ d.checkBg }};display:flex;align-items:center;justify-content:center;"><sc-if value="{{ d.selected }}" hint-placeholder-val="{{ false }}"><i data-lucide="check" style="width:12px;height:12px;color:#fff;"></i></sc-if></div></div>
+                      <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;min-width:0;"><i data-lucide="{{ d.icon }}" style="width:17px;height:17px;color:{{ d.iconColor }};flex-shrink:0;"></i><span style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ d.name }}</span></div>
+                      <div style="padding:10px 8px;font-size:12px;color:#b9bfce;">{{ d.cat }}</div>
+                      <div style="padding:10px 8px;font-size:12px;color:#8c92a4;font-family:'JetBrains Mono',monospace;">{{ d.size }}</div>
+                      <div style="padding:10px 8px;font-size:12.5px;color:#b9bfce;">{{ d.author }}</div>
+                      <div style="padding:10px 8px;font-size:12px;color:#8c92a4;">{{ d.date }}</div>
+                      <div style="padding:10px 8px;display:flex;justify-content:center;"><span onClick="{{ d.onToggle }}" title="{{ d.visTip }}" style="cursor:pointer;color:{{ d.visColor }};"><i data-lucide="{{ d.visIcon }}" style="width:17px;height:17px;"></i></span></div>
+                      <div style="padding:10px 6px;display:flex;justify-content:center;"><i data-lucide="more-vertical" style="width:15px;height:15px;color:#8c92a4;cursor:pointer;"></i></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ORÇAMENTOS -->
+          <sc-if value="{{ isOrc }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+              <div style="display:grid;grid-template-columns:1.6fr 110px 110px 130px 110px;align-items:center;background:#242833;border-bottom:1px solid rgba(255,255,255,0.06);font-size:11px;letter-spacing:0.05em;text-transform:uppercase;color:#8c92a4;font-weight:700;">
+                <div style="padding:11px 14px;">Orçamento</div><div style="padding:11px 8px;">Versão</div><div style="padding:11px 8px;text-align:right;">Valor</div><div style="padding:11px 8px;text-align:center;">Status</div><div></div>
+              </div>
+              <sc-for list="{{ orcamentos }}" as="b" hint-placeholder-count="3">
+                <div class="obx-row" style="display:grid;grid-template-columns:1.6fr 110px 110px 130px 110px;align-items:center;border-bottom:1px solid rgba(255,255,255,0.04);">
+                  <div style="padding:12px 14px;"><div style="font-size:13.5px;font-weight:600;">{{ b.nome }}</div><div style="font-size:12px;color:#8c92a4;font-family:'JetBrains Mono',monospace;">{{ b.codigo }}</div></div>
+                  <div style="padding:12px 8px;font-size:13px;color:#b9bfce;">{{ b.rev }}</div>
+                  <div style="padding:12px 8px;text-align:right;font-size:13px;font-weight:700;font-family:'JetBrains Mono',monospace;">{{ b.valor }}</div>
+                  <div style="padding:12px 8px;text-align:center;"><span style="font-size:12px;font-weight:600;color:{{ b.stColor }};background:{{ b.stBg }};padding:3px 10px;border-radius:999px;">{{ b.status }}</span></div>
+                  <div style="padding:12px 8px;text-align:right;"><a href="Obrax Dashboard.dc.html" class="obx-ghost" style="display:inline-flex;align-items:center;gap:5px;background:transparent;border:1px solid rgba(255,255,255,0.12);color:#b9bfce;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;cursor:pointer;transition:all .15s ease;">Abrir</a></div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- FOTOS -->
+          <sc-if value="{{ isFotos }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><h3 style="margin:0;font-size:16px;font-weight:700;">Galeria da obra</h3><button class="obx-cta" style="display:flex;align-items:center;gap:7px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;"><i data-lucide="camera" style="width:15px;height:15px;"></i>Adicionar fotos</button></div>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+                <sc-for list="{{ fotos }}" as="p" hint-placeholder-count="8">
+                  <div class="obx-card" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;overflow:hidden;">
+                    <div style="height:120px;background:{{ p.bg }};display:flex;align-items:center;justify-content:center;"><i data-lucide="image" style="width:28px;height:28px;color:rgba(255,255,255,0.4);"></i></div>
+                    <div style="padding:11px 12px;"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:12px;color:#8c92a4;">{{ p.data }}</span><span style="cursor:pointer;color:{{ p.visColor }};"><i data-lucide="{{ p.visIcon }}" style="width:16px;height:16px;"></i></span></div><div style="font-size:11.5px;color:#8c92a4;margin-top:3px;">{{ p.autor }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- TICKETS -->
+          <sc-if value="{{ isTickets }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><h3 style="margin:0;font-size:16px;font-weight:700;">Chamados</h3><button class="obx-cta" style="display:flex;align-items:center;gap:7px;background:#ff6b6b;border:none;color:#fff;font-family:inherit;font-size:13px;font-weight:700;padding:9px 15px;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,107,0.28);transition:all .15s ease;"><i data-lucide="plus" style="width:15px;height:15px;"></i>Novo chamado</button></div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <sc-for list="{{ tickets }}" as="k" hint-placeholder-count="3">
+                  <div class="obx-card obx-row" style="background:#242833;border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:15px 17px;box-shadow:0 2px 10px rgba(0,0,0,0.22);">
+                    <div style="display:flex;align-items:center;gap:10px;"><span style="font-size:12px;font-family:'JetBrains Mono',monospace;color:#8c92a4;">{{ k.id }}</span><span style="font-size:14px;font-weight:600;flex:1;">{{ k.titulo }}</span><span style="font-size:12px;font-weight:600;color:{{ k.stColor }};background:{{ k.stBg }};padding:3px 10px;border-radius:999px;">{{ k.status }}</span></div>
+                    <div style="font-size:12.5px;color:#8c92a4;margin-top:7px;">Aberto em {{ k.data }} · {{ k.msg }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- EQUIPE -->
+          <sc-if value="{{ isEquipe }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;"><h3 style="margin:0;font-size:16px;font-weight:700;">Equipe da obra</h3><button class="obx-ghost" style="display:flex;align-items:center;gap:7px;background:#242833;border:1px solid rgba(255,255,255,0.08);color:#b9bfce;font-family:inherit;font-size:13px;font-weight:600;padding:9px 15px;border-radius:8px;cursor:pointer;transition:all .15s ease;"><i data-lucide="user-plus" style="width:15px;height:15px;"></i>Convidar membro</button></div>
+              <div style="border:1px solid rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;">
+                <sc-for list="{{ equipe }}" as="m" hint-placeholder-count="4">
+                  <div class="obx-row" style="display:flex;align-items:center;gap:13px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.04);">
+                    <div style="width:36px;height:36px;border-radius:50%;background:{{ m.avatarBg }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;flex-shrink:0;">{{ m.iniciais }}</div>
+                    <div style="flex:1;"><div style="font-size:13.5px;font-weight:600;">{{ m.nome }}</div><div style="font-size:12px;color:#8c92a4;">{{ m.role }}</div></div>
+                    <span style="font-size:12px;color:#8c92a4;">{{ m.acesso }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    view: 'list',
+    tab: 'Visão Geral',
+    gedView: 'grid',
+    dragOver: false,
+    selected: [],
+    sbCollapsed: false,
+    docs: [
+      { id:1,  name:'Planta_baixa_Torre_B.pdf', type:'pdf',  size:'4,2 MB', cat:'Projeto',      visible:true,  date:'18 Jun', author:'Carlos' },
+      { id:2,  name:'Orçamento_Rev3.xlsx',       type:'xlsx', size:'1,1 MB', cat:'Financeiro',   visible:false, date:'16 Jun', author:'Marina' },
+      { id:3,  name:'Fachada_render.jpg',         type:'img',  size:'3,8 MB', cat:'Projeto',      visible:true,  date:'14 Jun', author:'Marina' },
+      { id:4,  name:'Memorial_descritivo.docx',   type:'docx', size:'820 KB', cat:'Documentação', visible:false, date:'12 Jun', author:'Carlos' },
+      { id:5,  name:'Estrutural_pilares.dwg',     type:'dwg',  size:'6,4 MB', cat:'Projeto',      visible:false, date:'10 Jun', author:'Carlos' },
+      { id:6,  name:'ART_responsavel.pdf',        type:'pdf',  size:'240 KB', cat:'Documentação', visible:true,  date:'08 Jun', author:'Marina' },
+      { id:7,  name:'Foto_fundacao_01.jpg',       type:'img',  size:'2,9 MB', cat:'Obra',         visible:true,  date:'06 Jun', author:'João' },
+      { id:8,  name:'Cronograma_fisico.xlsx',     type:'xlsx', size:'540 KB', cat:'Planejamento', visible:false, date:'04 Jun', author:'Marina' },
+      { id:9,  name:'Contrato_assinado.pdf',      type:'pdf',  size:'1,8 MB', cat:'Jurídico',     visible:false, date:'02 Jun', author:'Carlos' },
+      { id:10, name:'Laudo_sondagem_solo.pdf',    type:'pdf',  size:'3,1 MB', cat:'Técnico',      visible:true,  date:'30 Mai', author:'Carlos' },
+      { id:11, name:'Render_area_lazer.png',      type:'img',  size:'4,5 MB', cat:'Projeto',      visible:true,  date:'28 Mai', author:'Marina' },
+      { id:12, name:'Planilha_medicao_06.xlsx',   type:'xlsx', size:'690 KB', cat:'Financeiro',   visible:true,  date:'26 Mai', author:'Marina' },
+      { id:13, name:'Detalhe_hidraulica.dwg',     type:'dwg',  size:'5,2 MB', cat:'Projeto',      visible:false, date:'24 Mai', author:'Carlos' },
+      { id:14, name:'Diario_obra_jun.pdf',        type:'pdf',  size:'1,2 MB', cat:'Obra',         visible:true,  date:'22 Mai', author:'João' },
+    ],
+  };
+
+  componentDidMount(){ this._lucide(); }
+  componentDidUpdate(){ this._lucide(); }
+  _lucide(){ try{ if(window.lucide && window.lucide.createIcons){ window.lucide.createIcons(); } else { clearTimeout(this._lt); this._lt=setTimeout(()=>this._lucide(),120);} }catch(e){} }
+
+  openDetail = () => this.setState({ view:'detail', tab:'Visão Geral' });
+  backToList = () => this.setState({ view:'list', selected:[] });
+  setTab = (t) => this.setState({ tab:t });
+  toggleSb = () => this.setState(s => ({ sbCollapsed:!s.sbCollapsed }));
+  setGedView = (v) => this.setState({ gedView:v });
+  toggleVisible = (id) => this.setState(s => ({ docs: s.docs.map(d => d.id===id ? {...d, visible:!d.visible} : d) }));
+  toggleSelect = (id) => this.setState(s => ({ selected: s.selected.includes(id) ? s.selected.filter(x=>x!==id) : [...s.selected, id] }));
+  clearSel = () => this.setState({ selected:[] });
+  bulkShow = () => this.setState(s => ({ docs: s.docs.map(d => s.selected.includes(d.id) ? {...d,visible:true} : d), selected:[] }));
+  bulkHide = () => this.setState(s => ({ docs: s.docs.map(d => s.selected.includes(d.id) ? {...d,visible:false} : d), selected:[] }));
+  bulkDelete = () => this.setState(s => ({ docs: s.docs.filter(d => !s.selected.includes(d.id)), selected:[] }));
+  onDragOver = (e) => { e.preventDefault(); if(!this.state.dragOver) this.setState({dragOver:true}); };
+  onDragLeave = () => this.setState({dragOver:false});
+  onDrop = (e) => { e.preventDefault(); this.setState({dragOver:false}); };
+
+  smoothPath(pts){
+    if(!pts || pts.length<2) return '';
+    let d = `M ${pts[0][0]} ${pts[0][1]}`;
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[i-1]||pts[i],p1=pts[i],p2=pts[i+1],p3=pts[i+2]||p2;
+      const c1x=p1[0]+(p2[0]-p0[0])/6,c1y=p1[1]+(p2[1]-p0[1])/6,c2x=p2[0]-(p3[0]-p1[0])/6,c2y=p2[1]-(p3[1]-p1[1])/6;
+      d+=` C ${c1x.toFixed(1)} ${c1y.toFixed(1)}, ${c2x.toFixed(1)} ${c2y.toFixed(1)}, ${p2[0]} ${p2[1]}`;
+    }
+    return d;
+  }
+  buildCurvaS(){
+    const h=React.createElement;
+    const prev=[4,11,21,34,48,62,74,84,91,96,99,100], real=[3,9,18,29,41,52,60,64];
+    const months=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    const W=620,H=240,L=40,R=14,T=14,B=28, plotW=W-L-R, plotH=H-T-B;
+    const x=i=>L+(i/11)*plotW, y=p=>T+(1-p/100)*plotH;
+    const pl=this.smoothPath(prev.map((p,i)=>[x(i),y(p)])), rl=this.smoothPath(real.map((p,i)=>[x(i),y(p)]));
+    const kids=[];
+    kids.push(h('defs',{key:'d'},h('linearGradient',{id:'gp2',x1:0,y1:0,x2:0,y2:1},h('stop',{offset:'0%',stopColor:'#845ef7',stopOpacity:0.26}),h('stop',{offset:'100%',stopColor:'#845ef7',stopOpacity:0})),h('linearGradient',{id:'gr2',x1:0,y1:0,x2:0,y2:1},h('stop',{offset:'0%',stopColor:'#38d9a9',stopOpacity:0.3}),h('stop',{offset:'100%',stopColor:'#38d9a9',stopOpacity:0}))));
+    [0,50,100].forEach((g,gi)=>{kids.push(h('line',{key:'g'+gi,x1:L,y1:y(g),x2:W-R,y2:y(g),stroke:'rgba(255,255,255,0.06)'}));kids.push(h('text',{key:'gl'+gi,x:L-8,y:y(g)+4,textAnchor:'end',fill:'#5b6072',fontSize:10,fontFamily:'JetBrains Mono, monospace'},g+'%'));});
+    months.forEach((m,i)=>{ if(i%2===0) kids.push(h('text',{key:'x'+i,x:x(i),y:H-9,textAnchor:'middle',fill:'#5b6072',fontSize:10},m)); });
+    kids.push(h('path',{key:'pa',d:pl+` L ${x(11)} ${T+plotH} L ${x(0)} ${T+plotH} Z`,fill:'url(#gp2)'}));
+    kids.push(h('path',{key:'ra',d:rl+` L ${x(7)} ${T+plotH} L ${x(0)} ${T+plotH} Z`,fill:'url(#gr2)'}));
+    kids.push(h('path',{key:'pl',d:pl,fill:'none',stroke:'#845ef7',strokeWidth:2.5,strokeDasharray:'6 5',strokeLinecap:'round'}));
+    kids.push(h('path',{key:'rl',d:rl,fill:'none',stroke:'#38d9a9',strokeWidth:2.5,strokeLinecap:'round'}));
+    return h('svg',{viewBox:`0 0 ${W} ${H}`,style:{width:'100%',height:'auto',display:'block',marginTop:'6px'}},kids);
+  }
+  buildRing(){
+    const h=React.createElement, pct=64,r=46,c=2*Math.PI*r,sz=118;
+    return h('svg',{viewBox:`0 0 ${sz} ${sz}`,style:{width:'118px',height:'118px'}},
+      h('circle',{cx:sz/2,cy:sz/2,r,fill:'none',stroke:'rgba(255,255,255,0.07)',strokeWidth:10}),
+      h('circle',{cx:sz/2,cy:sz/2,r,fill:'none',stroke:'#ff6b6b',strokeWidth:10,strokeLinecap:'round',strokeDasharray:`${c*pct/100} ${c}`,transform:`rotate(-90 ${sz/2} ${sz/2})`}),
+      h('text',{x:sz/2,y:sz/2-1,textAnchor:'middle',fill:'#fff',fontSize:27,fontWeight:800,fontFamily:'JetBrains Mono, monospace'},'64%'),
+      h('text',{x:sz/2,y:sz/2+17,textAnchor:'middle',fill:'#8c92a4',fontSize:11},'concluído'));
+  }
+
+  renderVals(){
+    const STA = {
+      execucao: { status:'Em execução', stColor:'#38d9a9', stBg:'rgba(56,217,169,0.12)', dot:'obx-dot' },
+      proposta: { status:'Em proposta', stColor:'#fcc419', stBg:'rgba(252,196,25,0.12)', dot:'' },
+      pausada:  { status:'Pausada',     stColor:'#8c92a4', stBg:'rgba(140,146,164,0.14)', dot:'' },
+      concluida:{ status:'Concluída',   stColor:'#845ef7', stBg:'rgba(132,94,247,0.14)', dot:'' },
+    };
+    const rawObras = [
+      { nome:'Residencial Vila Aurora', cliente:'Aurora Inc. SA · São Paulo/SP', icon:'building-2', iconColor:'#ff6b6b', iconBg:'rgba(255,107,107,0.14)', progress:'64%', progColor:'#ff6b6b', progressLabel:'Avanço físico', prazo:'Dez/2026', atrasada:true, atraso:'18d atraso', valor:'R$ 7,40 mi', margem:'34,8%', st:'execucao' },
+      { nome:'Edifício Corporativo Mirante', cliente:'Mirante Empreend. · Campinas/SP', icon:'building', iconColor:'#845ef7', iconBg:'rgba(132,94,247,0.14)', progress:'38%', progColor:'#845ef7', progressLabel:'Avanço físico', prazo:'Mar/2027', atrasada:false, atraso:'', valor:'R$ 12,80 mi', margem:'29,0%', st:'execucao' },
+      { nome:'Cond. Jardim das Acácias', cliente:'Acácias Ltda · Sorocaba/SP', icon:'building-2', iconColor:'#38d9a9', iconBg:'rgba(56,217,169,0.14)', progress:'92%', progColor:'#38d9a9', progressLabel:'Avanço físico', prazo:'Ago/2026', atrasada:false, atraso:'', valor:'R$ 4,20 mi', margem:'31,0%', st:'execucao' },
+      { nome:'Galpão Logístico BR-101', cliente:'TransLog SA · Joinville/SC', icon:'warehouse', iconColor:'#845ef7', iconBg:'rgba(132,94,247,0.14)', progress:'100%', progColor:'#845ef7', progressLabel:'Concluída', prazo:'Jun/2026', atrasada:false, atraso:'', valor:'R$ 9,60 mi', margem:'27,0%', st:'concluida' },
+      { nome:'Reforma Hospital Santa Inês', cliente:'Santa Inês · Curitiba/PR', icon:'cross', iconColor:'#fcc419', iconBg:'rgba(252,196,25,0.14)', progress:'0%', progColor:'#fcc419', progressLabel:'Proposta em análise', prazo:'a definir', atrasada:false, atraso:'', valor:'R$ 3,10 mi', margem:'—', st:'proposta' },
+      { nome:'Loteamento Vista Verde', cliente:'Verde Urbanismo · Goiânia/GO', icon:'map', iconColor:'#8c92a4', iconBg:'rgba(140,146,164,0.14)', progress:'21%', progColor:'#8c92a4', progressLabel:'Pausada', prazo:'Set/2027', atrasada:false, atraso:'', valor:'R$ 6,50 mi', margem:'25,0%', st:'pausada' },
+    ];
+    const obras = rawObras.map(o => ({ ...o, ...STA[o.st], onOpen:this.openDetail }));
+
+    const tabNames = ['Visão Geral','Documentos','Orçamentos','Fotos','Tickets','Equipe'];
+    const tabs = tabNames.map(t => ({ label:t, onClick:()=>this.setTab(t), color: this.state.tab===t ? '#fff':'#8c92a4', border: this.state.tab===t ? '#ff6b6b':'transparent' }));
+
+    const TYPE = {
+      pdf:  { icon:'file-text', iconColor:'#ff6b6b', thumbBg:'rgba(255,107,107,0.10)', label:'PDF' },
+      dwg:  { icon:'box',       iconColor:'#5c7cfa', thumbBg:'rgba(92,124,250,0.10)',  label:'DWG' },
+      xlsx: { icon:'sheet',     iconColor:'#38d9a9', thumbBg:'rgba(56,217,169,0.10)',  label:'XLSX' },
+      docx: { icon:'file-type', iconColor:'#5c7cfa', thumbBg:'rgba(92,124,250,0.10)',  label:'DOCX' },
+      img:  { icon:'image',     iconColor:'#fcc419', thumbBg:'linear-gradient(135deg,rgba(132,94,247,0.35),rgba(56,217,169,0.25))', label:'Imagem' },
+    };
+    const sel = this.state.selected;
+    const docsView = this.state.docs.map(d => {
+      const t = TYPE[d.type];
+      const isSel = sel.includes(d.id);
+      return {
+        ...d,
+        icon:t.icon, iconColor:t.iconColor, thumbBg:t.thumbBg, typeLabel:t.label,
+        selected:isSel,
+        cardBorder: isSel ? 'rgba(132,94,247,0.5)' : 'rgba(255,255,255,0.05)',
+        checkBorder: isSel ? '#845ef7' : 'rgba(255,255,255,0.3)',
+        checkBg: isSel ? '#845ef7' : 'rgba(26,28,36,0.6)',
+        visIcon: d.visible ? 'eye' : 'eye-off',
+        visColor: d.visible ? '#38d9a9' : '#5b6072',
+        visLabel: d.visible ? 'Visível' : 'Oculto',
+        visTip: d.visible ? 'Visível no portal do cliente' : 'Oculto para o cliente',
+        onToggle: ()=>this.toggleVisible(d.id),
+        onSelect: ()=>this.toggleSelect(d.id),
+      };
+    });
+
+    const uploads = [
+      { name:'Planta_baixa_Torre_B.pdf', icon:'file-text', color:'#8c92a4', pct:'78%', pctLabel:'78%', barColor:'#845ef7', statusIcon:'x' },
+      { name:'Orçamento_Rev3.xlsx', icon:'sheet', color:'#38d9a9', pct:'100%', pctLabel:'100%', barColor:'#38d9a9', statusIcon:'check' },
+    ];
+
+    const orcamentos = [
+      { nome:'Estrutura — Torre B', codigo:'ORC-2026-0042', rev:'Rev 3', valor:'R$ 7,40 mi', status:'Aprovado', stColor:'#38d9a9', stBg:'rgba(56,217,169,0.12)' },
+      { nome:'Fundação e contenção', codigo:'ORC-2026-0031', rev:'Rev 2', valor:'R$ 1,28 mi', status:'Aprovado', stColor:'#38d9a9', stBg:'rgba(56,217,169,0.12)' },
+      { nome:'Acabamento — fase 1',  codigo:'ORC-2026-0058', rev:'Rev 1', valor:'R$ 2,38 mi', status:'Em análise', stColor:'#fcc419', stBg:'rgba(252,196,25,0.12)' },
+    ];
+
+    const fotos = ['09:15','10:42','14:07','08:30','11:55','15:20','16:48','07:50'].map((t,i)=>({
+      data:'28 Jun · '+t, autor: i%2?'Carlos':'João',
+      bg: i%3===0 ? 'linear-gradient(135deg,#2c313e,#384a6b)' : (i%3===1 ? 'linear-gradient(135deg,#384a6b,#5c7cfa44)' : 'linear-gradient(135deg,#2c313e,#845ef744)'),
+      visIcon: i%4===3 ? 'eye-off':'eye', visColor: i%4===3 ? '#5b6072':'#38d9a9',
+    }));
+
+    const tickets = [
+      { id:'#T-004', titulo:'Infiltração no teto do apto 302', status:'Em andamento', stColor:'#fcc419', stBg:'rgba(252,196,25,0.12)', data:'25/Jun', msg:'Última: "Equipe vai verificar amanhã" · há 2h' },
+      { id:'#T-003', titulo:'Piso do corredor com imperfeição', status:'Resolvido', stColor:'#38d9a9', stBg:'rgba(56,217,169,0.12)', data:'20/Jun', msg:'Resolvido em 23/Jun' },
+      { id:'#T-002', titulo:'Vazamento registro hidrômetro', status:'Resolvido', stColor:'#38d9a9', stBg:'rgba(56,217,169,0.12)', data:'14/Jun', msg:'Resolvido em 15/Jun' },
+    ];
+
+    const equipe = [
+      { nome:'Marina Alves', role:'Engenheira responsável · Admin', iniciais:'MA', avatarBg:'linear-gradient(135deg,#845ef7,#5c7cfa)', acesso:'há 2 min' },
+      { nome:'Carlos Motta', role:'Mestre de obras · Campo', iniciais:'CM', avatarBg:'linear-gradient(135deg,#38d9a9,#5c7cfa)', acesso:'há 3h' },
+      { nome:'João Oliveira', role:'Encarregado · Campo', iniciais:'JO', avatarBg:'linear-gradient(135deg,#fcc419,#ff6b6b)', acesso:'há 1 dia' },
+      { nome:'Renata Silva', role:'Contato do cliente · Visualizador', iniciais:'RS', avatarBg:'linear-gradient(135deg,#ff6b6b,#845ef7)', acesso:'há 5h' },
+    ];
+
+    const gv = this.state.gedView;
+    return {
+      sbClass: this.state.sbCollapsed ? 'col':'',
+      sbIcon: this.state.sbCollapsed ? 'panel-left-open':'panel-left-close',
+      toggleSb: this.toggleSb,
+      isList: this.state.view==='list',
+      isDetail: this.state.view==='detail',
+      obras, backToList:this.backToList, tabs,
+      isVisao: this.state.tab==='Visão Geral',
+      isDocs: this.state.tab==='Documentos',
+      isOrc: this.state.tab==='Orçamentos',
+      isFotos: this.state.tab==='Fotos',
+      isTickets: this.state.tab==='Tickets',
+      isEquipe: this.state.tab==='Equipe',
+      curvaSChart: this.buildCurvaS(),
+      progressRing: this.buildRing(),
+      // GED
+      docsView, uploads, orcamentos, fotos, tickets, equipe,
+      docCount: this.state.docs.length,
+      isGrid: gv==='grid', isListView: gv==='list',
+      setGrid: ()=>this.setGedView('grid'), setListView: ()=>this.setGedView('list'),
+      gridBg: gv==='grid' ? '#33384a':'transparent', gridColor: gv==='grid' ? '#fff':'#8c92a4',
+      listBg: gv==='list' ? '#33384a':'transparent', listColor: gv==='list' ? '#fff':'#8c92a4',
+      hasSelection: sel.length>0, selectedCount: sel.length,
+      clearSel:this.clearSel, bulkShow:this.bulkShow, bulkHide:this.bulkHide, bulkDelete:this.bulkDelete,
+      dragOver: this.state.dragOver, onDragOver:this.onDragOver, onDragLeave:this.onDragLeave, onDrop:this.onDrop,
+      dzBorder: this.state.dragOver ? '#845ef7':'rgba(132,94,247,0.4)',
+      dzBg: this.state.dragOver ? 'rgba(132,94,247,0.06)':'transparent',
+    };
+  }
+}
+</script>
+</body>
+</html>
