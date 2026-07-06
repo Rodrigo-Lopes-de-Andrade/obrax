@@ -36,7 +36,9 @@ class Company(Base):
     )
     cnpj: Mapped[str] = mapped_column(CITEXT, unique=True, nullable=False)
     razao_social: Mapped[str] = mapped_column(Text, nullable=False)
-    tier: Mapped[str] = mapped_column(company_tier, nullable=False, server_default=text("'starter'"))
+    tier: Mapped[str] = mapped_column(
+        company_tier, nullable=False, server_default=text("'starter'")
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     # Adicionada em alembic/versions/0006_add_companies_timezone.py — migration
     # de exemplo (ADD COLUMN NOT NULL com DEFAULT) para validar o fluxo forward-only.

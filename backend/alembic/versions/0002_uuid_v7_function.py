@@ -65,7 +65,9 @@ def upgrade() -> None:
         $$;
         """
     )
-    op.execute("COMMENT ON FUNCTION uuid_generate_v7() IS 'Gera UUID v7 (RFC 9562), ordenável por tempo'")
+    op.execute(
+        "COMMENT ON FUNCTION uuid_generate_v7() IS 'Gera UUID v7 (RFC 9562), ordenável por tempo'"
+    )
     op.execute("GRANT EXECUTE ON FUNCTION uuid_generate_v7() TO app_user, app_admin")
 
 

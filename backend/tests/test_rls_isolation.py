@@ -53,14 +53,18 @@ def test_user_company_role_isolation(app_user_conn: psycopg.Connection, two_tena
 
 
 def test_users_isolation_via_join(app_user_conn: psycopg.Connection, two_tenants: dict) -> None:
-    rows_a = _select_as_tenant(app_user_conn, two_tenants["A"]["company_id"], "SELECT id FROM users")
+    rows_a = _select_as_tenant(
+        app_user_conn, two_tenants["A"]["company_id"], "SELECT id FROM users"
+    )
     ids_a = {str(r[0]) for r in rows_a}
 
     assert two_tenants["A"]["user_id"] in ids_a
     assert two_tenants["B"]["user_id"] not in ids_a
 
 
-def test_no_tenant_set_returns_nothing(app_user_conn: psycopg.Connection, two_tenants: dict) -> None:
+def test_no_tenant_set_returns_nothing(
+    app_user_conn: psycopg.Connection, two_tenants: dict
+) -> None:
     """Fail-closed: sem `app.company_id` setado, nenhuma linha é visível."""
     with app_user_conn.transaction():
         with app_user_conn.cursor() as cur:
@@ -69,6 +73,8 @@ def test_no_tenant_set_returns_nothing(app_user_conn: psycopg.Connection, two_te
     assert rows == []
 
 
-def test_unknown_company_id_returns_nothing(app_user_conn: psycopg.Connection, two_tenants: dict) -> None:
+def test_unknown_company_id_returns_nothing(
+    app_user_conn: psycopg.Connection, two_tenants: dict
+) -> None:
     rows = _select_as_tenant(app_user_conn, str(uuid.uuid4()), "SELECT id FROM companies")
     assert rows == []
