@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   HardHat,
   LayoutDashboard,
@@ -20,8 +21,8 @@ import { cn } from "@/lib/utils";
 import { useUiStore } from "@/state/ui";
 
 const navGestao = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", active: true },
-  { label: "Obra", icon: Building2, href: "#" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Obra", icon: Building2, href: "/obras" },
   { label: "Clientes", icon: Users, href: "#" },
   { label: "Orçamentos", icon: FileText, href: "#", isOrcamento: true },
 ];
@@ -42,6 +43,8 @@ export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const openBudgetModal = useUiStore((s) => s.openBudgetModal);
+  const pathname = usePathname();
+  const isActive = (href: string) => href !== "#" && pathname.startsWith(href);
 
   return (
     <aside
@@ -83,6 +86,7 @@ export function Sidebar() {
           <SidebarLink
             key={item.label}
             {...item}
+            active={isActive(item.href)}
             collapsed={collapsed}
             onClick={item.isOrcamento ? openBudgetModal : undefined}
           />
@@ -99,7 +103,12 @@ export function Sidebar() {
       )}
       <nav className="flex flex-col gap-0.5">
         {navRelatorios.map((item) => (
-          <SidebarLink key={item.label} {...item} collapsed={collapsed} />
+          <SidebarLink
+            key={item.label}
+            {...item}
+            active={isActive(item.href)}
+            collapsed={collapsed}
+          />
         ))}
       </nav>
 
@@ -110,7 +119,12 @@ export function Sidebar() {
       )}
       <nav className="flex flex-col gap-0.5">
         {navIa.map((item) => (
-          <SidebarLink key={item.label} {...item} collapsed={collapsed} />
+          <SidebarLink
+            key={item.label}
+            {...item}
+            active={isActive(item.href)}
+            collapsed={collapsed}
+          />
         ))}
       </nav>
 
