@@ -22,6 +22,10 @@ def obras_por_tenant(two_tenants: dict) -> Iterator[dict[str, dict[str, str]]]:
     """Semeia 1 cliente + 1 obra em cada tenant (via `obrax`, bypassa RLS). O
     cleanup é feito pelo teardown de `two_tenants`: deletar a company cascateia
     para clientes/obras (FK company_id ON DELETE CASCADE)."""
+    # CPFs válidos (dígito verificador) por tenant: desde 0012 há CHECK no banco
+    # rejeitando documento inválido. O valor em si é irrelevante para o teste de
+    # RLS — só precisa passar na validação.
+    cpf_por_label = {"A": "52998224725", "B": "39053344705"}
     seeded: dict[str, dict[str, str]] = {}
     with SessionLocal() as session:
         for label, tenant in two_tenants.items():
@@ -31,7 +35,7 @@ def obras_por_tenant(two_tenants: dict) -> Iterator[dict[str, dict[str, str]]]:
                     "INSERT INTO clientes (company_id, tipo_pessoa, documento, nome) "
                     "VALUES (:cid, 'PF', :doc, :nome) RETURNING id"
                 ),
-                {"cid": cid, "doc": f"documento-{label}", "nome": f"Cliente {label}"},
+                {"cid": cid, "doc": cpf_por_label[label], "nome": f"Cliente {label}"},
             ).scalar_one()
             obra_id = session.execute(
                 text(
@@ -103,8 +107,10 @@ def test_insert_cross_tenant_bloqueado_por_with_check(
                     "SELECT set_config('app.company_id', %s, true)",
                     (two_tenants["A"]["company_id"],),
                 )
+                # Documento válido de propósito: a única razão de falha deve ser
+                # o WITH CHECK da RLS (não o CHECK de documento de 0012).
                 cur.execute(
                     "INSERT INTO clientes (company_id, tipo_pessoa, documento, nome) "
-                    "VALUES (%s, 'PF', 'x', 'Intruso')",
+                    "VALUES (%s, 'PF', '46892787258', 'Intruso')",
                     (two_tenants["B"]["company_id"],),
                 )
