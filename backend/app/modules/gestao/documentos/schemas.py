@@ -53,6 +53,16 @@ class DocumentoUploadOut(BaseModel):
     expires_in: int
 
 
+class DocumentoUpdate(BaseModel):
+    """PATCH parcial: categorização e visibilidade ao cliente (US-06). Campos
+    ausentes ficam inalterados; corpo vazio é no-op."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    categoria: str | None = Field(default=None, min_length=1, max_length=128)
+    visivel_cliente: bool | None = None
+
+
 class DocumentoOut(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -67,3 +77,11 @@ class DocumentoOut(BaseModel):
     # `true` quando o upload foi confirmado (storage_path preenchido no confirm).
     confirmed: bool
     created_at: datetime
+
+
+class DocumentoPage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[DocumentoOut]
+    # Cursor para a próxima página (o `id` do último item); None = fim.
+    next_cursor: str | None

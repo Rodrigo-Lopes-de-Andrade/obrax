@@ -23,7 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.integrations.storage import StorageClient
-from app.modules.gestao.documentos.schemas import DocumentoCreate
+from app.modules.gestao.documentos.schemas import DocumentoCreate, DocumentoUpdate
 
 # `storage_path IS NOT NULL AS confirmed`: expõe o estado sincronizado sem
 # vazar o caminho interno no bucket.
@@ -176,3 +176,97 @@ def confirm_upload(
         .one()
     )
     return dict(row)
+
+
+def list_documentos(
+    session: Session,
+    *,
+    obra_id: uuid.UUID,
+    categoria: str | None,
+    cursor: str | None,
+    limit: int,
+) -> tuple[list[dict[str, Any]], str | None]:
+    # Recurso aninhado: obra inexistente/de outro tenant (escondida pela RLS)
+    # → 404, em vez de devolver página vazia silenciosa.
+    if session.execute(text("SELECT 1 FROM obras WHERE id = :id"), {"id": obra_id}).first() is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="obra não encontrada")
+
+    if cursor is not None:
+        try:
+            uuid.UUID(cursor)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="cursor inválido"
+            ) from exc
+
+    rows = (
+        session.execute(
+            text(
+                f"SELECT {_OUT_COLUMNS} FROM documento "
+                "WHERE obra_id = :obra_id AND deleted_at IS NULL "
+                "  AND (CAST(:cursor AS uuid) IS NULL OR id < CAST(:cursor AS uuid)) "
+                "  AND (CAST(:categoria AS text) IS NULL OR categoria = CAST(:categoria AS text)) "
+                "ORDER BY id DESC "
+                "LIMIT :limit_plus_one"
+            ),
+            {
+                "obra_id": obra_id,
+                "cursor": cursor,
+                "categoria": categoria,
+                "limit_plus_one": limit + 1,
+            },
+        )
+        .mappings()
+        .all()
+    )
+    has_more = len(rows) > limit
+    page = [dict(r) for r in rows[:limit]]
+    next_cursor = str(page[-1]["id"]) if has_more else None
+    return page, next_cursor
+
+
+def update_documento(
+    session: Session, *, documento_id: uuid.UUID, payload: DocumentoUpdate
+) -> dict[str, Any]:
+    existing = session.execute(
+        text("SELECT 1 FROM documento WHERE id = :id AND deleted_at IS NULL FOR UPDATE"),
+        {"id": documento_id},
+    ).first()
+    if existing is None:
+        raise _NOT_FOUND
+
+    data = payload.model_dump(exclude_unset=True)
+    set_cols = [col for col in ("categoria", "visivel_cliente") if col in data]
+    if not set_cols:
+        return _get_out(session, documento_id)
+
+    set_clause = ", ".join(f"{col} = :{col}" for col in set_cols)
+    params: dict[str, Any] = {col: data[col] for col in set_cols}
+    params["id"] = documento_id
+    row = (
+        session.execute(
+            text(
+                f"UPDATE documento SET {set_clause} "
+                "WHERE id = :id AND deleted_at IS NULL "
+                f"RETURNING {_OUT_COLUMNS}"
+            ),
+            params,
+        )
+        .mappings()
+        .one()
+    )
+    return dict(row)
+
+
+def soft_delete_documento(session: Session, documento_id: uuid.UUID) -> None:
+    # Soft delete: mantém o objeto no storage (restauração/auditoria); a limpeza
+    # física de órfãos fica para o job de cleanup.
+    row = session.execute(
+        text(
+            "UPDATE documento SET deleted_at = now() "
+            "WHERE id = :id AND deleted_at IS NULL RETURNING id"
+        ),
+        {"id": documento_id},
+    ).first()
+    if row is None:
+        raise _NOT_FOUND
