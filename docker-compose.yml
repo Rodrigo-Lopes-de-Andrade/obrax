@@ -29,5 +29,40 @@ services:
       timeout: 3s
       retries: 12
 
+  # Mock local do object store (Supabase Storage é S3-compatível). O
+  # StorageClient (app/integrations/storage.py) fala S3 via boto3 — mesmo código
+  # aponta pro MinIO em dev e pro endpoint S3 do Supabase em staging/prod.
+  minio:
+    image: minio/minio
+    container_name: obrax-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: obrax
+      MINIO_ROOT_PASSWORD: obrax-dev-secret
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # console web
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # Cria os buckets de dev uma vez (idempotente). Sai com 0 após criar.
+  minio-init:
+    image: minio/mc
+    container_name: obrax-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 obrax obrax-dev-secret; do sleep 1; done;
+      mc mb -p local/documents-dev local/photos-dev local/pdfs-dev local/exports-dev;
+      exit 0;
+      "
+
 volumes:
   pgdata:
+  miniodata:

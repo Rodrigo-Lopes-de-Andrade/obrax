@@ -52,6 +52,17 @@ class Settings:
     # "development" desliga o atributo `Secure` do cookie de refresh (permite
     # testar via curl/http local); qualquer outro valor liga `Secure`.
     environment: str
+    # Object store S3-compatível (Supabase Storage em staging/prod; MinIO local
+    # em dev — ver docker-compose.yml). O mesmo cliente boto3 serve os dois via
+    # `endpoint_url`. Defaults abaixo apontam pro MinIO local; sobrescreva por
+    # env (secrets manager) em staging/prod.
+    storage_endpoint_url: str
+    storage_region: str
+    storage_access_key: str
+    storage_secret_key: str
+    storage_bucket_documents: str
+    # TTL das URLs de upload assinadas (docs/ESPEC.md § 7: presigned PUT 15 min).
+    storage_presign_ttl: int
 
 
 def _to_psycopg_dsn(url: str) -> str:
@@ -101,6 +112,12 @@ def get_settings() -> Settings:
         app_admin_database_url=_to_psycopg_dsn(app_admin_dsn),
         jwt_secret=jwt_secret,
         environment=os.environ.get("ENVIRONMENT", "development"),
+        storage_endpoint_url=os.environ.get("STORAGE_ENDPOINT_URL", "http://localhost:9000"),
+        storage_region=os.environ.get("STORAGE_REGION", "us-east-1"),
+        storage_access_key=os.environ.get("STORAGE_ACCESS_KEY", "obrax"),
+        storage_secret_key=os.environ.get("STORAGE_SECRET_KEY", "obrax-dev-secret"),
+        storage_bucket_documents=os.environ.get("STORAGE_BUCKET_DOCUMENTS", "documents-dev"),
+        storage_presign_ttl=int(os.environ.get("STORAGE_PRESIGN_TTL", "900")),
     )
 
 
