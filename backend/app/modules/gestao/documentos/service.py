@@ -183,6 +183,7 @@ def list_documentos(
     *,
     obra_id: uuid.UUID,
     categoria: str | None,
+    search: str | None,
     cursor: str | None,
     limit: int,
 ) -> tuple[list[dict[str, Any]], str | None]:
@@ -199,6 +200,11 @@ def list_documentos(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="cursor inválido"
             ) from exc
 
+    # Busca vazia/em branco = sem filtro (evita plainto_tsquery('') que não casa
+    # nada). plainto_tsquery tolera entrada livre do usuário (sem erro de sintaxe).
+    if search is not None and not search.strip():
+        search = None
+
     rows = (
         session.execute(
             text(
@@ -206,6 +212,10 @@ def list_documentos(
                 "WHERE obra_id = :obra_id AND deleted_at IS NULL "
                 "  AND (CAST(:cursor AS uuid) IS NULL OR id < CAST(:cursor AS uuid)) "
                 "  AND (CAST(:categoria AS text) IS NULL OR categoria = CAST(:categoria AS text)) "
+                "  AND (CAST(:search AS text) IS NULL OR "
+                "       to_tsvector('portuguese', "
+                "         translate(nome, '._-/', '    ') || ' ' || coalesce(ocr_text, '')) "
+                "       @@ plainto_tsquery('portuguese', translate(CAST(:search AS text), '._-/', '    '))) "
                 "ORDER BY id DESC "
                 "LIMIT :limit_plus_one"
             ),
@@ -213,6 +223,7 @@ def list_documentos(
                 "obra_id": obra_id,
                 "cursor": cursor,
                 "categoria": categoria,
+                "search": search,
                 "limit_plus_one": limit + 1,
             },
         )

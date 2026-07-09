@@ -61,11 +61,12 @@ def list_documentos(
     obra_id: UUID,
     session: Session = Depends(get_db),
     categoria: str | None = Query(default=None),
+    search: str | None = Query(default=None),
     cursor: str | None = Query(default=None),
     limit: int = Query(default=50, ge=1, le=100),
 ) -> DocumentoPage:
     items, next_cursor = service.list_documentos(
-        session, obra_id=obra_id, categoria=categoria, cursor=cursor, limit=limit
+        session, obra_id=obra_id, categoria=categoria, search=search, cursor=cursor, limit=limit
     )
     return DocumentoPage(
         items=[DocumentoOut.model_validate(row) for row in items], next_cursor=next_cursor
