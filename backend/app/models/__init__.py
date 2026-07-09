@@ -13,6 +13,8 @@ from app.models.documento import Documento
 from app.models.invitation import Invitation
 from app.models.obra import Obra
 from app.models.obra_membro import ObraMembro
+from app.models.ticket import Ticket
+from app.models.ticket_mensagem import TicketMensagem
 from app.models.user import User
 from app.models.user_company_role import UserCompanyRole
 
@@ -26,6 +28,8 @@ __all__ = [
     "Invitation",
     "Obra",
     "ObraMembro",
+    "Ticket",
+    "TicketMensagem",
     "User",
     "UserCompanyRole",
 ]
