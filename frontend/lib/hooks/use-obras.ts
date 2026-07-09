@@ -38,6 +38,8 @@ export function useObra(id: string) {
   return useQuery({
     queryKey: obrasKeys.detail(id),
     queryFn: () => getObra(id),
+    // Guarda contra id vazio (ex.: obra_id de um ticket ainda carregando).
+    enabled: id !== "",
   });
 }
 
