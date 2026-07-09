@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx|*.js|*.jsx) ;; *) exit 0 ;; esac; npx eslint --fix \"$f\" >/dev/null 2>&1 || true; err=$(npx eslint \"$f\" 2>&1); code=$?; if [ $code -ne 0 ]; then echo \"$err\" >&2; exit 2; fi"
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx|*.js|*.jsx) ;; *) exit 0 ;; esac; case \"$f\" in */frontend/*) ;; *) exit 0 ;; esac; d=\"${f%/frontend/*}/frontend\"; cd \"$d\" || exit 0; npx eslint --fix \"$f\" >/dev/null 2>&1 || true; err=$(npx eslint \"$f\" 2>&1); code=$?; if [ $code -ne 0 ]; then echo \"$err\" >&2; exit 2; fi"
           }
         ]
       }

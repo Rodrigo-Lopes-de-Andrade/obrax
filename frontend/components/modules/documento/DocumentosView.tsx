@@ -18,8 +18,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useDeleteDocumento, useDocumentos } from "@/lib/hooks/use-documentos";
+import {
+  useBulkVisibilidade,
+  useDeleteDocumento,
+  useDocumentos,
+  useToggleVisibilidade,
+} from "@/lib/hooks/use-documentos";
+import type { Documento } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
+import { BulkBar } from "./BulkBar";
 import { CATEGORIAS_SUGERIDAS } from "./doc-meta";
 import { DocumentosGallery } from "./DocumentosGallery";
 import { DocumentosTable } from "./DocumentosTable";
@@ -34,6 +41,7 @@ export function DocumentosView({ obraId }: { obraId: string }) {
   const [searchInput, setSearchInput] = React.useState("");
   const [search, setSearch] = React.useState("");
   const [cursorStack, setCursorStack] = React.useState<string[]>([]);
+  const [selected, setSelected] = React.useState<Set<string>>(new Set());
 
   // Debounce da busca (evita um request por tecla).
   React.useEffect(() => {
@@ -47,6 +55,12 @@ export function DocumentosView({ obraId }: { obraId: string }) {
   }, [categoria, search]);
 
   const cursor = cursorStack.length ? cursorStack[cursorStack.length - 1] : null;
+
+  // Limpa a seleção ao trocar de página/filtro/visualização.
+  React.useEffect(() => {
+    setSelected(new Set());
+  }, [categoria, search, cursor, view]);
+
   const { data, isLoading, isFetching, isError } = useDocumentos(obraId, {
     categoria: categoria === TODAS ? null : categoria,
     search: search || null,
@@ -54,11 +68,40 @@ export function DocumentosView({ obraId }: { obraId: string }) {
     limit: PAGE_SIZE,
   });
   const deleteDoc = useDeleteDocumento(obraId);
+  const toggleVis = useToggleVisibilidade(obraId);
+  const bulkVis = useBulkVisibilidade(obraId);
 
   const items = data?.items ?? [];
   const nextCursor = data?.next_cursor ?? null;
   const canPrev = cursorStack.length > 0;
   const deletingId = deleteDoc.isPending ? (deleteDoc.variables ?? null) : null;
+
+  const onToggleVisibilidade = (doc: Documento) =>
+    toggleVis.mutate({ id: doc.id, visivel: !doc.visivel_cliente });
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    setSelected((prev) => {
+      const allSelected = items.length > 0 && items.every((d) => prev.has(d.id));
+      if (allSelected) return new Set();
+      return new Set(items.map((d) => d.id));
+    });
+  }
+
+  function applyBulk(visivel: boolean) {
+    bulkVis.mutate(
+      { ids: [...selected], visivel },
+      { onSuccess: () => setSelected(new Set()) },
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -107,6 +150,16 @@ export function DocumentosView({ obraId }: { obraId: string }) {
         </div>
       </div>
 
+      {view === "list" && selected.size > 0 ? (
+        <BulkBar
+          count={selected.size}
+          pending={bulkVis.isPending}
+          onVisible={() => applyBulk(true)}
+          onInterno={() => applyBulk(false)}
+          onClear={() => setSelected(new Set())}
+        />
+      ) : null}
+
       {isError ? (
         <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           Não foi possível carregar os documentos. Tente novamente.
@@ -125,6 +178,10 @@ export function DocumentosView({ obraId }: { obraId: string }) {
                 loading={isLoading}
                 deletingId={deletingId}
                 onDelete={(doc) => deleteDoc.mutate(doc.id)}
+                selected={selected}
+                onToggleSelect={toggleSelect}
+                onToggleAll={toggleAll}
+                onToggleVisibilidade={onToggleVisibilidade}
               />
             ) : (
               <DocumentosGallery
@@ -132,6 +189,7 @@ export function DocumentosView({ obraId }: { obraId: string }) {
                 loading={isLoading}
                 deletingId={deletingId}
                 onDelete={(doc) => deleteDoc.mutate(doc.id)}
+                onToggleVisibilidade={onToggleVisibilidade}
               />
             )}
           </div>

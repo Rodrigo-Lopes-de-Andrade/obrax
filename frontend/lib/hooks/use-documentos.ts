@@ -18,7 +18,7 @@ import {
   type ListDocumentosParams,
   type UploadOptions,
 } from "@/lib/api/documentos";
-import type { DocumentoUpdateInput } from "@/lib/api/types";
+import type { Documento, DocumentoUpdateInput, Page } from "@/lib/api/types";
 
 export const documentosKeys = {
   all: (obraId: string) => ["documentos", obraId] as const,
@@ -124,6 +124,71 @@ export function useDeleteDocumento(obraId: string) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: documentosKeys.all(obraId) });
       toast.success("Documento excluído");
+    },
+    onError: (error) => toast.error(errorMessage(error)),
+  });
+}
+
+/** Escreve `visivel_cliente` em todas as listas em cache desta obra. */
+function patchCaches(
+  qc: ReturnType<typeof useQueryClient>,
+  obraId: string,
+  ids: Set<string>,
+  visivel: boolean,
+) {
+  qc.setQueriesData<Page<Documento>>(
+    { queryKey: documentosKeys.all(obraId) },
+    (old) =>
+      old
+        ? {
+            ...old,
+            items: old.items.map((d) =>
+              ids.has(d.id) ? { ...d, visivel_cliente: visivel } : d,
+            ),
+          }
+        : old,
+  );
+}
+
+/** Toggle otimista da visibilidade ao cliente (US-06): reflete imediato,
+ * reverte no erro. A auditoria roda no backend via trigger (D3.2). */
+export function useToggleVisibilidade(obraId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, visivel }: { id: string; visivel: boolean }) =>
+      updateDocumento(id, { visivel_cliente: visivel }),
+    onMutate: async ({ id, visivel }) => {
+      await qc.cancelQueries({ queryKey: documentosKeys.all(obraId) });
+      const prev = qc.getQueriesData<Page<Documento>>({
+        queryKey: documentosKeys.all(obraId),
+      });
+      patchCaches(qc, obraId, new Set([id]), visivel);
+      return { prev };
+    },
+    onError: (error, _vars, ctx) => {
+      ctx?.prev.forEach(([key, data]) => qc.setQueryData(key, data));
+      toast.error(errorMessage(error));
+    },
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: documentosKeys.all(obraId) });
+    },
+  });
+}
+
+/** Aplica visibilidade em lote (PATCH por documento — o backend ainda não tem
+ * endpoint de bulk; contagens de documentos são pequenas no MVP). */
+export function useBulkVisibilidade(obraId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ ids, visivel }: { ids: string[]; visivel: boolean }) =>
+      Promise.all(
+        ids.map((id) => updateDocumento(id, { visivel_cliente: visivel })),
+      ),
+    onSuccess: (_data, { ids, visivel }) => {
+      qc.invalidateQueries({ queryKey: documentosKeys.all(obraId) });
+      toast.success(
+        `${ids.length} documento(s) marcado(s) como ${visivel ? "visível ao cliente" : "interno"}`,
+      );
     },
     onError: (error) => toast.error(errorMessage(error)),
   });

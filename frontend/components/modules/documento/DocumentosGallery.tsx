@@ -1,18 +1,18 @@
 "use client";
 
-import { Eye, EyeOff } from "lucide-react";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Documento } from "@/lib/api/types";
 import { formatBytes, formatDate } from "@/lib/format";
 import { DocDeleteButton } from "./DocDeleteButton";
 import { DocTipoBadge, DocTipoIcon } from "./doc-meta";
+import { VisibilidadeToggle } from "./VisibilidadeToggle";
 
 interface DocumentosGalleryProps {
   docs: Documento[];
   loading: boolean;
   deletingId: string | null;
   onDelete: (doc: Documento) => void;
+  onToggleVisibilidade: (doc: Documento) => void;
 }
 
 const GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3";
@@ -22,6 +22,7 @@ export function DocumentosGallery({
   loading,
   deletingId,
   onDelete,
+  onToggleVisibilidade,
 }: DocumentosGalleryProps) {
   if (loading) {
     return (
@@ -72,15 +73,10 @@ export function DocumentosGallery({
               <span className="text-xs text-muted-foreground">{doc.categoria}</span>
             ) : null}
             <span className="ml-auto">
-              {doc.visivel_cliente ? (
-                <span className="inline-flex items-center gap-1 text-xs text-primary">
-                  <Eye className="size-3.5" /> Cliente
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                  <EyeOff className="size-3.5" /> Interno
-                </span>
-              )}
+              <VisibilidadeToggle
+                visivel={doc.visivel_cliente}
+                onToggle={() => onToggleVisibilidade(doc)}
+              />
             </span>
           </div>
         </div>
