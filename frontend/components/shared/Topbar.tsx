@@ -2,9 +2,12 @@
 
 import { useRef } from "react";
 import { Building, ChevronDown, Search, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
+import { Avatar } from "@/components/shared/Avatar";
 import { useUiStore } from "@/state/ui";
 import { obraAtual } from "@/lib/mock/dashboard-obra";
 import { useOnClickOutside } from "@/lib/hooks/use-on-click-outside";
+
+const USUARIO = { nome: "Marina Alves", email: "marina@obrax.com.br" };
 
 export function Topbar() {
   const avatarOpen = useUiStore((s) => s.avatarMenuOpen);
@@ -56,17 +59,15 @@ export function Topbar() {
             onClick={toggleAvatarMenu}
             className="flex items-center gap-2 rounded-full border-none bg-transparent p-0.75"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-[var(--chart-4)] text-[13px] font-bold text-white">
-              MA
-            </div>
+            <Avatar name={USUARIO.nome} variant="gradient" className="size-9 text-[13px]" />
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
 
           {avatarOpen && (
             <div className="absolute top-12 right-0 z-40 w-57 overflow-hidden rounded-[10px] border border-white/8 bg-popover shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
               <div className="border-b border-white/6 px-4 py-3.5">
-                <div className="text-sm font-bold">Marina Alves</div>
-                <div className="mt-px text-xs text-muted-foreground">marina@obrax.com.br</div>
+                <div className="text-sm font-bold">{USUARIO.nome}</div>
+                <div className="mt-px text-xs text-muted-foreground">{USUARIO.email}</div>
                 <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-secondary/16 px-2.5 py-0.75 text-[11px] font-bold text-secondary">
                   <Star className="h-3 w-3" />
                   Plano Pro
