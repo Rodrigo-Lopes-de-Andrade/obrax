@@ -11,12 +11,14 @@ import uuid
 from typing import Any
 
 from fastapi import HTTPException, status
-from sqlalchemy import text
+from sqlalchemy import Text, bindparam, text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session
 
-from app.modules.gestao.tickets.schemas import TicketCreate
+from app.modules.gestao.tickets.schemas import MensagemCreate, TicketCreate
 
 _COLUMNS = "id, obra_id, titulo, descricao, status, created_by, created_at"
+_MSG_COLUMNS = "id, ticket_id, author_id, content, attachment_paths, created_at"
 _NOT_FOUND = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ticket não encontrado")
 _OBRA_INVALIDA = HTTPException(
     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="obra não encontrada"
@@ -148,3 +150,88 @@ def soft_delete_ticket(session: Session, ticket_id: uuid.UUID) -> None:
     ).first()
     if row is None:
         raise _NOT_FOUND
+
+
+def _assert_ticket_do_tenant(session: Session, ticket_id: uuid.UUID) -> None:
+    """Ticket inexistente/de outro tenant (escondido pela RLS) → 404, em vez de
+    inserir/listar mensagem num ticket que o tenant não enxerga."""
+    row = session.execute(
+        text("SELECT 1 FROM ticket WHERE id = :id AND deleted_at IS NULL"),
+        {"id": ticket_id},
+    ).first()
+    if row is None:
+        raise _NOT_FOUND
+
+
+# Bind tipado do array: SQLAlchemy serializa `list[str]` como `text[]` de forma
+# robusta (inclusive lista vazia → '{}'), sem CAST manual no SQL.
+_INSERT_MENSAGEM = text(
+    "INSERT INTO ticket_mensagem "
+    "(company_id, ticket_id, author_id, content, attachment_paths) "
+    "VALUES (:company_id, :ticket_id, :author_id, :content, :attachment_paths) "
+    f"RETURNING {_MSG_COLUMNS}"
+).bindparams(bindparam("attachment_paths", type_=ARRAY(Text)))
+
+
+def create_mensagem(
+    session: Session,
+    *,
+    company_id: str,
+    ticket_id: uuid.UUID,
+    author_id: uuid.UUID,
+    payload: MensagemCreate,
+) -> dict[str, Any]:
+    _assert_ticket_do_tenant(session, ticket_id)
+    row = (
+        session.execute(
+            _INSERT_MENSAGEM,
+            {
+                "company_id": company_id,
+                "ticket_id": ticket_id,
+                "author_id": author_id,
+                "content": payload.content,
+                "attachment_paths": payload.attachment_paths,
+            },
+        )
+        .mappings()
+        .one()
+    )
+    return dict(row)
+
+
+def list_mensagens(
+    session: Session,
+    *,
+    ticket_id: uuid.UUID,
+    cursor: str | None,
+    limit: int,
+) -> tuple[list[dict[str, Any]], str | None]:
+    _assert_ticket_do_tenant(session, ticket_id)
+    if cursor is not None:
+        try:
+            uuid.UUID(cursor)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="cursor inválido"
+            ) from exc
+
+    # Mais recentes primeiro (id v7 ~ tempo), como as demais listagens; o chat
+    # carrega histórico mais antigo via `next_cursor` e inverte na exibição.
+    rows = (
+        session.execute(
+            text(
+                f"SELECT {_MSG_COLUMNS} FROM ticket_mensagem "
+                "WHERE ticket_id = :ticket_id "
+                "  AND (CAST(:cursor AS uuid) IS NULL OR id < CAST(:cursor AS uuid)) "
+                "ORDER BY id DESC "
+                "LIMIT :limit_plus_one"
+            ),
+            {"ticket_id": ticket_id, "cursor": cursor, "limit_plus_one": limit + 1},
+        )
+        .mappings()
+        .all()
+    )
+    has_more = len(rows) > limit
+    page = [dict(r) for r in rows[:limit]]
+    next_cursor = str(page[-1]["id"]) if has_more else None
+    return page, next_cursor

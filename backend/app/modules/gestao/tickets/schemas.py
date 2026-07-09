@@ -8,12 +8,16 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 TicketStatus = Literal["aberto", "andamento", "resolvido", "fechado"]
 
 # docs/SPRINTS.md B4.2: descrição com até 5KB.
 MAX_DESCRICAO = 5000
+# docs/SPRINTS.md B4.3: mensagem com texto + até 5 anexos.
+MAX_CONTENT = 5000
+MAX_ATTACHMENTS = 5
+MAX_PATH_LEN = 512
 
 
 class TicketCreate(BaseModel):
@@ -45,4 +49,41 @@ class TicketPage(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     items: list[TicketOut]
+    next_cursor: str | None
+
+
+class MensagemCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    content: str = Field(min_length=1, max_length=MAX_CONTENT)
+    attachment_paths: list[str] = Field(default_factory=list, max_length=MAX_ATTACHMENTS)
+
+    @field_validator("attachment_paths")
+    @classmethod
+    def _paths_sao_do_storage(cls, paths: list[str]) -> list[str]:
+        # Anexos são caminhos no bucket (nunca URLs — docs/CLAUDE.md). A URL é
+        # (re)assinada na leitura, como em documentos.
+        for p in paths:
+            if not p or len(p) > MAX_PATH_LEN:
+                raise ValueError("anexo inválido: caminho vazio ou grande demais")
+            if "://" in p:
+                raise ValueError("anexo deve ser um caminho no storage, não uma URL")
+        return paths
+
+
+class MensagemOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    ticket_id: UUID
+    author_id: UUID | None
+    content: str
+    attachment_paths: list[str]
+    created_at: datetime
+
+
+class MensagemPage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[MensagemOut]
     next_cursor: str | None

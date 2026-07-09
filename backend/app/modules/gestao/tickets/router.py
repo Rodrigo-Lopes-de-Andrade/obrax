@@ -1,9 +1,15 @@
-"""Router de tickets — chamados de obra (B4.2, US-08).
+"""Router de tickets — chamados de obra (B4.2 CRUD, B4.3 chat; US-08).
 
 Montado sem prefixo (paths absolutos): create aninhado na obra
 (`/obras/{id}/tickets`) e os demais planos (`/tickets*`), conforme
-docs/ESPEC.md § 6. Abrir chamado: qualquer usuário do tenant. Mudar status /
-excluir: `owner`/`admin`/`gestor`. Isolamento por empresa via RLS no `get_db`.
+docs/ESPEC.md § 6. Abrir chamado e conversar no chat: qualquer usuário do
+tenant (o cliente também responde). Mudar status / excluir:
+`owner`/`admin`/`gestor`. Isolamento por empresa via RLS no `get_db`.
+
+Realtime (B4.3): ao gravar uma mensagem, transmitimos um evento no canal do
+ticket via `events.emit` — best-effort e desacoplado do INSERT (o publisher é
+no-op em dev/CI e faz broadcast no Supabase em staging/prod; ver
+app/integrations/events.py e a decisão de realtime em docs/PRD.md).
 """
 
 from __future__ import annotations
@@ -15,8 +21,12 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_db, get_tenant, require_roles
 from app.core.middleware import AuthContext
+from app.integrations.events import DomainEvent, EventPublisher, emit, get_event_publisher
 from app.modules.gestao.tickets import service
 from app.modules.gestao.tickets.schemas import (
+    MensagemCreate,
+    MensagemOut,
+    MensagemPage,
     TicketCreate,
     TicketOut,
     TicketPage,
@@ -27,6 +37,9 @@ from app.modules.gestao.tickets.schemas import (
 router = APIRouter(tags=["tickets"])
 
 _WRITE_ROLES = require_roles("owner", "admin", "gestor")
+
+# Nome do evento de realtime (mesmo string que o frontend escuta no canal).
+EVENT_MENSAGEM_CREATED = "ticket.mensagem.created"
 
 
 @router.post(
@@ -98,3 +111,52 @@ def update_status(
 )
 def delete_ticket(ticket_id: UUID, session: Session = Depends(get_db)) -> None:
     service.soft_delete_ticket(session, ticket_id)
+
+
+@router.post(
+    "/tickets/{ticket_id}/mensagens",
+    response_model=MensagemOut,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_mensagem(
+    ticket_id: UUID,
+    payload: MensagemCreate,
+    company_id: str = Depends(get_tenant),
+    auth: AuthContext = Depends(get_current_user),
+    session: Session = Depends(get_db),
+    publisher: EventPublisher = Depends(get_event_publisher),
+) -> MensagemOut:
+    row = service.create_mensagem(
+        session,
+        company_id=company_id,
+        ticket_id=ticket_id,
+        author_id=auth.user_id,
+        payload=payload,
+    )
+    out = MensagemOut.model_validate(row)
+    # Persistiu → transmite no canal do ticket. `emit` é best-effort: uma falha
+    # de realtime nunca derruba o request (o banco é a fonte da verdade).
+    emit(
+        publisher,
+        DomainEvent(
+            channel=f"ticket:{ticket_id}",
+            event=EVENT_MENSAGEM_CREATED,
+            payload=out.model_dump(mode="json"),
+        ),
+    )
+    return out
+
+
+@router.get("/tickets/{ticket_id}/mensagens", response_model=MensagemPage)
+def list_mensagens(
+    ticket_id: UUID,
+    session: Session = Depends(get_db),
+    cursor: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=100),
+) -> MensagemPage:
+    items, next_cursor = service.list_mensagens(
+        session, ticket_id=ticket_id, cursor=cursor, limit=limit
+    )
+    return MensagemPage(
+        items=[MensagemOut.model_validate(row) for row in items], next_cursor=next_cursor
+    )

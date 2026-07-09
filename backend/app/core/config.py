@@ -63,6 +63,12 @@ class Settings:
     storage_bucket_documents: str
     # TTL das URLs de upload assinadas (docs/ESPEC.md § 7: presigned PUT 15 min).
     storage_presign_ttl: int
+    # Realtime (B4.3): entrega de eventos do chat de tickets no canal Supabase.
+    # Desligado por padrão (dev/CI usam o publisher no-op); ligue em staging/prod
+    # com REALTIME_ENABLED=true + SUPABASE_URL + SUPABASE_SERVICE_KEY.
+    realtime_enabled: bool
+    supabase_url: str
+    supabase_service_key: str
 
 
 def _to_psycopg_dsn(url: str) -> str:
@@ -118,6 +124,9 @@ def get_settings() -> Settings:
         storage_secret_key=os.environ.get("STORAGE_SECRET_KEY", "obrax-dev-secret"),
         storage_bucket_documents=os.environ.get("STORAGE_BUCKET_DOCUMENTS", "documents-dev"),
         storage_presign_ttl=int(os.environ.get("STORAGE_PRESIGN_TTL", "900")),
+        realtime_enabled=os.environ.get("REALTIME_ENABLED", "").lower() in ("1", "true", "yes"),
+        supabase_url=os.environ.get("SUPABASE_URL", ""),
+        supabase_service_key=os.environ.get("SUPABASE_SERVICE_KEY", ""),
     )
 
 
