@@ -24,6 +24,7 @@ import {
 } from "@/lib/hooks/use-orcamentos";
 import { ORCAMENTO_STATUS_OPTIONS, nextStatuses } from "../status";
 import { EstruturaTab } from "./EstruturaTab";
+import { ImportDialog } from "./ImportDialog";
 import { PrecificacaoTab } from "./PrecificacaoTab";
 import { ResumoTab } from "./ResumoTab";
 
@@ -38,6 +39,7 @@ const TABS: { key: TabKey; label: string }[] = [
 export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
   const router = useRouter();
   const [tab, setTab] = React.useState<TabKey>("estrutura");
+  const [importOpen, setImportOpen] = React.useState(false);
 
   const orcQuery = useOrcamento(orcamentoId);
   const orc = orcQuery.data;
@@ -152,7 +154,12 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
             ))}
           </div>
         ) : tab === "estrutura" ? (
-          <EstruturaTab versaoId={versaoId} itens={itens} locked={locked} />
+          <EstruturaTab
+            versaoId={versaoId}
+            itens={itens}
+            locked={locked}
+            onImport={() => setImportOpen(true)}
+          />
         ) : tab === "precificacao" ? (
           <PrecificacaoTab versaoId={versaoId} versao={versao} itens={itens} locked={locked} />
         ) : (
@@ -177,6 +184,10 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
         />
         <SummaryStat label="Margem" value={formatPercent(versao?.margem)} />
       </footer>
+
+      {versaoId ? (
+        <ImportDialog open={importOpen} onOpenChange={setImportOpen} versaoId={versaoId} />
+      ) : null}
     </div>
   );
 }

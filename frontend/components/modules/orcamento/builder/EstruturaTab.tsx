@@ -22,6 +22,7 @@ import {
 } from "@/lib/hooks/use-orcamentos";
 import { buildTree, TIPO_META, type TreeNode } from "./eap-utils";
 import { InlineEdit } from "./InlineEdit";
+import { InsumoPicker } from "./InsumoPicker";
 
 /** Remove zeros à direita para exibir/editar quantidade e preço. */
 function cleanNum(s: string): string {
@@ -45,6 +46,8 @@ interface EstruturaTabProps {
 
 export function EstruturaTab({ versaoId, itens, locked, onImport }: EstruturaTabProps) {
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
+  // Serviço-alvo do seletor de insumos (F5.6); null = fechado.
+  const [pickerParent, setPickerParent] = React.useState<string | null>(null);
   const bulk = useBulkCreateItens(versaoId);
   const update = useUpdateItem(versaoId);
   const remove = useDeleteItem(versaoId);
@@ -61,17 +64,48 @@ export function EstruturaTab({ versaoId, itens, locked, onImport }: EstruturaTab
     });
 
   const addChild = (parentId: string | null, tipo: ItemCreateInput["tipo"]) => {
-    const input: ItemCreateInput = {
-      tipo,
-      parent_id: parentId,
-      descricao: DEFAULT_DESC[tipo],
-    };
+    // Adicionar insumo abre o autocomplete do catálogo (F5.6).
     if (tipo === "I") {
-      input.quantidade = "1";
-      input.preco_unitario = "0";
-      input.unidade = "un";
+      setPickerParent(parentId);
+      return;
     }
-    bulk.mutate([input]);
+    bulk.mutate([{ tipo, parent_id: parentId, descricao: DEFAULT_DESC[tipo] }]);
+  };
+
+  const addInsumoBlank = () => {
+    if (!pickerParent) return;
+    bulk.mutate([
+      {
+        tipo: "I",
+        parent_id: pickerParent,
+        descricao: DEFAULT_DESC.I,
+        quantidade: "1",
+        preco_unitario: "0",
+        unidade: "un",
+      },
+    ]);
+    setPickerParent(null);
+  };
+
+  const addInsumoFromCatalog = (insumo: {
+    codigo: string;
+    descricao: string;
+    unidade: string | null;
+    preco_unitario: string;
+  }) => {
+    if (!pickerParent) return;
+    bulk.mutate([
+      {
+        tipo: "I",
+        parent_id: pickerParent,
+        codigo: insumo.codigo,
+        descricao: insumo.descricao,
+        unidade: insumo.unidade,
+        quantidade: "1",
+        preco_unitario: insumo.preco_unitario,
+      },
+    ]);
+    setPickerParent(null);
   };
 
   const patch = (id: string, field: string, value: string) =>
@@ -141,6 +175,13 @@ export function EstruturaTab({ versaoId, itens, locked, onImport }: EstruturaTab
           </div>
         )}
       </div>
+
+      <InsumoPicker
+        open={pickerParent !== null}
+        onOpenChange={(o) => !o && setPickerParent(null)}
+        onPick={addInsumoFromCatalog}
+        onAddBlank={addInsumoBlank}
+      />
     </div>
   );
 }
