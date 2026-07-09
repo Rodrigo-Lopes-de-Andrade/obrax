@@ -195,8 +195,10 @@ export function ensureSeed(): void {
   seedCliente("Roberto Carlos Dias", "PF", "39053344705", null, "roberto.dias@uol.com.br");
   seedCliente("Empreendimentos Sol Nascente", "PJ", "22333444000155", "(11) 4004-5005", "contato@solnascente.com.br");
   seedObras();
-  // GED + equipe povoados nas duas primeiras obras (para demo/skeletons).
-  seedDocumentosParaObra(obras[0].id);
-  seedDocumentosParaObra(obras[1].id);
-  seedMembrosParaObra(obras[0].id);
+  // GED + equipe povoados nas obras mais recentes (topo da listagem DESC, para
+  // demo e para a primeira obra clicada já vir com conteúdo).
+  const n = obras.length;
+  seedDocumentosParaObra(obras[n - 1].id);
+  seedDocumentosParaObra(obras[n - 2].id);
+  seedMembrosParaObra(obras[n - 1].id);
 }
