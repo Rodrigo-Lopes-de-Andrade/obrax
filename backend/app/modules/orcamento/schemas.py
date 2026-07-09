@@ -205,3 +205,32 @@ class EapTree(BaseModel):
 
     versao: VersaoResumo
     itens: list[ItemOut]
+
+
+# --------------------------------------------------------------------------- #
+# Catálogo de insumos / SINAPI (B5.6, US-05)
+# --------------------------------------------------------------------------- #
+class InsumoOut(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    codigo: str
+    descricao: str
+    unidade: str | None
+    categoria: str | None
+    preco_unitario: Decimal
+    # True = insumo próprio do tenant; False = catálogo SINAPI global.
+    is_custom: bool
+
+
+class InsumoPage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[InsumoOut]
+    next_cursor: str | None
+
+
+class InsumoCategorias(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    categorias: list[str]
