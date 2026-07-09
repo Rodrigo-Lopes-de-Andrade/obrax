@@ -1,13 +1,26 @@
+import Decimal from "decimal.js";
 import { http, HttpResponse, delay } from "msw";
 
-import type { Documento, DocumentoTipo, Obra, ObraStatus } from "@/lib/api/types";
+import type {
+  DashboardSummary,
+  Documento,
+  DocumentoTipo,
+  Obra,
+  ObraStatus,
+  Ticket,
+  TicketMensagem,
+  TicketStatus,
+} from "@/lib/api/types";
 import {
   clientes,
+  currentUser,
   documentos,
   ensureSeed,
   membros,
+  mensagens,
   nextId,
   obras,
+  tickets,
   usuarios,
   type MockMembro,
 } from "./db";
@@ -277,5 +290,129 @@ export const handlers = [
     if (idx === -1) return problem(404, "membro não encontrado");
     membros.splice(idx, 1);
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // ── Sessão ──────────────────────────────────────────────────────────
+  http.get("/api/v1/me", async () => {
+    await delay(80);
+    return HttpResponse.json(currentUser());
+  }),
+
+  // ── Dashboard (KPIs, B4.4) ──────────────────────────────────────────
+  http.get("/api/v1/dashboard/summary", async () => {
+    await delay(LATENCY);
+    const ativas = obras.filter(
+      (o) => o.status !== "concluida" && o.status !== "cancelada",
+    );
+    const valorTotal = ativas.reduce(
+      (acc, o) => acc.plus(o.valor_contrato ?? 0),
+      new Decimal(0),
+    );
+    const body: DashboardSummary = {
+      obras_ativas: ativas.length,
+      obras_valor_total: valorTotal.toFixed(2),
+      tickets_abertos: tickets.filter((t) => t.status === "aberto").length,
+      orcamentos_pendentes: 0,
+    };
+    return HttpResponse.json(body);
+  }),
+
+  // ── Tickets (chamados, B4.2–B4.5) ───────────────────────────────────
+  http.get("/api/v1/tickets", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    const obraId = url.searchParams.get("obra_id");
+    const status = url.searchParams.get("status") as TicketStatus | null;
+    const search = url.searchParams.get("search")?.trim().toLowerCase() ?? "";
+    const cursor = url.searchParams.get("cursor");
+    const limit = Number(url.searchParams.get("limit") ?? "50");
+
+    let rows = tickets;
+    if (obraId) rows = rows.filter((t) => t.obra_id === obraId);
+    if (status) rows = rows.filter((t) => t.status === status);
+    if (search) {
+      rows = rows.filter(
+        (t) =>
+          t.titulo.toLowerCase().includes(search) ||
+          (t.descricao?.toLowerCase().includes(search) ?? false),
+      );
+    }
+    return HttpResponse.json(paginate(rows, cursor, limit));
+  }),
+
+  http.get("/api/v1/tickets/:id", async ({ params }) => {
+    await delay(LATENCY);
+    const t = tickets.find((x) => x.id === params.id);
+    return t ? HttpResponse.json(t) : problem(404, "ticket não encontrado");
+  }),
+
+  http.post("/api/v1/obras/:obraId/tickets", async ({ params, request }) => {
+    await delay(LATENCY);
+    const obraId = params.obraId as string;
+    if (!obras.some((o) => o.id === obraId)) return problem(422, "obra não encontrada");
+    const body = (await request.json()) as { titulo?: string; descricao?: string | null };
+    if (!body.titulo || !body.titulo.trim()) return problem(422, "título obrigatório");
+    const t: Ticket = {
+      id: nextId(),
+      obra_id: obraId,
+      titulo: body.titulo,
+      descricao: body.descricao ?? null,
+      status: "aberto",
+      created_by: currentUser().id,
+      created_at: new Date().toISOString(),
+    };
+    tickets.push(t);
+    return HttpResponse.json(t, { status: 201 });
+  }),
+
+  http.patch("/api/v1/tickets/:id/status", async ({ params, request }) => {
+    await delay(LATENCY);
+    const t = tickets.find((x) => x.id === params.id);
+    if (!t) return problem(404, "ticket não encontrado");
+    const body = (await request.json()) as { status: TicketStatus };
+    const valid: TicketStatus[] = ["aberto", "andamento", "resolvido", "fechado"];
+    if (!valid.includes(body.status)) return problem(422, "status inválido");
+    t.status = body.status;
+    return HttpResponse.json(t);
+  }),
+
+  http.delete("/api/v1/tickets/:id", async ({ params }) => {
+    await delay(LATENCY);
+    const idx = tickets.findIndex((x) => x.id === params.id);
+    if (idx === -1) return problem(404, "ticket não encontrado");
+    tickets.splice(idx, 1);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get("/api/v1/tickets/:ticketId/mensagens", async ({ params, request }) => {
+    await delay(LATENCY);
+    const ticketId = params.ticketId as string;
+    if (!tickets.some((t) => t.id === ticketId)) return problem(404, "ticket não encontrado");
+    const url = new URL(request.url);
+    const cursor = url.searchParams.get("cursor");
+    const limit = Number(url.searchParams.get("limit") ?? "50");
+    const rows = mensagens.filter((m) => m.ticket_id === ticketId);
+    return HttpResponse.json(paginate(rows, cursor, limit));
+  }),
+
+  http.post("/api/v1/tickets/:ticketId/mensagens", async ({ params, request }) => {
+    await delay(LATENCY);
+    const ticketId = params.ticketId as string;
+    if (!tickets.some((t) => t.id === ticketId)) return problem(404, "ticket não encontrado");
+    const body = (await request.json()) as {
+      content?: string;
+      attachment_paths?: string[];
+    };
+    if (!body.content || !body.content.trim()) return problem(422, "conteúdo obrigatório");
+    const msg: TicketMensagem = {
+      id: nextId(),
+      ticket_id: ticketId,
+      author_id: currentUser().id,
+      content: body.content,
+      attachment_paths: body.attachment_paths ?? [],
+      created_at: new Date().toISOString(),
+    };
+    mensagens.push(msg);
+    return HttpResponse.json(msg, { status: 201 });
   }),
 ];

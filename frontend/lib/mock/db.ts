@@ -11,6 +11,9 @@ import type {
   Membro,
   Obra,
   ObraStatus,
+  Ticket,
+  TicketMensagem,
+  TicketStatus,
   TipoPessoa,
   Usuario,
 } from "@/lib/api/types";
@@ -39,6 +42,13 @@ export const obras: Obra[] = [];
 export const documentos: Documento[] = [];
 export const membros: MockMembro[] = [];
 export const usuarios: Usuario[] = [];
+export const tickets: Ticket[] = [];
+export const mensagens: TicketMensagem[] = [];
+
+/** Usuário "logado" na sessão mock (o backend real vem do JWT). */
+export function currentUser(): Usuario {
+  return usuarios[0];
+}
 
 const nowIso = () => new Date().toISOString();
 
@@ -180,6 +190,72 @@ function seedMembrosParaObra(obraId: string): void {
   });
 }
 
+const hoursAgo = (h: number): string =>
+  new Date(Date.now() - h * 3_600_000).toISOString();
+
+const TICKET_STATUSES: TicketStatus[] = [
+  "aberto",
+  "andamento",
+  "resolvido",
+  "fechado",
+];
+
+const TICKET_SEED: [string, string | null][] = [
+  ["Vazamento na laje do 3º pavimento", "Infiltração aparente após a última chuva; verificar impermeabilização."],
+  ["Divergência no projeto elétrico", "Prumadas do quadro geral não batem com o executado em campo."],
+  ["Atraso na entrega do aço CA-50", "Fornecedor sinalizou remarcação; impacto no cronograma de fundação."],
+  ["Solicitação de vistoria do cliente", "Cliente pediu visita técnica para acompanhar o andamento da alvenaria."],
+  ["Reparo em fissura na parede oeste", "Fissura de retração mapeada; avaliar tratamento com tela."],
+  ["Ajuste no cronograma de concretagem", null],
+  ["Falta de EPI no canteiro", "Equipe reportou falta de luvas e óculos de proteção."],
+  ["Dúvida sobre acabamento do piso", "Cliente questionou o modelo de porcelanato especificado."],
+  ["Revisão da medição do mês", "Divergência de 4% entre medição prevista e realizada."],
+  ["Problema no fornecimento de água", "Cavalete sem pressão desde ontem; obra parada no molhado."],
+];
+
+function seedTickets(): void {
+  const n = obras.length;
+  const total = 30;
+  for (let i = 0; i < total; i++) {
+    const obra = obras[n - 1 - (i % 8)];
+    const [titulo, descricao] = TICKET_SEED[i % TICKET_SEED.length];
+    tickets.push({
+      id: nextId(),
+      obra_id: obra.id,
+      titulo,
+      descricao,
+      status: TICKET_STATUSES[i % TICKET_STATUSES.length],
+      created_by: usuarios[i % usuarios.length].id,
+      created_at: hoursAgo(total - i + (i % 5)),
+    });
+  }
+  // Chat povoado no ticket mais recente (topo da listagem DESC), para demo.
+  seedMensagens(tickets[tickets.length - 1]);
+}
+
+const CHAT_SEED: [number, string][] = [
+  [0, "Bom dia! Registrei o chamado sobre a infiltração na laje."],
+  [1, "Recebido. Vamos enviar a equipe de impermeabilização ainda hoje."],
+  [1, "Pode nos mandar uma foto do ponto exato do vazamento?"],
+  [0, "Claro, segue em anexo a foto tirada agora pela manhã."],
+  [1, "Perfeito, identificamos o problema. Orçamento do reparo até amanhã."],
+];
+
+function seedMensagens(ticket: Ticket): void {
+  // author 0 = cliente (usuarios[1]), 1 = equipe/eu (usuarios[0]).
+  const autores = [usuarios[1].id, usuarios[0].id];
+  CHAT_SEED.forEach(([autor, content], i) => {
+    mensagens.push({
+      id: nextId(),
+      ticket_id: ticket.id,
+      author_id: autores[autor],
+      content,
+      attachment_paths: content.includes("anexo") ? ["mock/obra/foto-laje.jpg"] : [],
+      created_at: hoursAgo(CHAT_SEED.length - i),
+    });
+  });
+}
+
 let seeded = false;
 
 export function ensureSeed(): void {
@@ -201,4 +277,5 @@ export function ensureSeed(): void {
   seedDocumentosParaObra(obras[n - 1].id);
   seedDocumentosParaObra(obras[n - 2].id);
   seedMembrosParaObra(obras[n - 1].id);
+  seedTickets();
 }

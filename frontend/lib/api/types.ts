@@ -130,6 +130,46 @@ export interface Usuario {
   email: string;
 }
 
+export type TicketStatus = "aberto" | "andamento" | "resolvido" | "fechado";
+
+export interface Ticket {
+  id: string;
+  obra_id: string;
+  titulo: string;
+  descricao: string | null;
+  status: TicketStatus;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface TicketCreateInput {
+  titulo: string;
+  descricao?: string | null;
+}
+
+export interface TicketMensagem {
+  id: string;
+  ticket_id: string;
+  author_id: string | null;
+  content: string;
+  attachment_paths: string[];
+  created_at: string;
+}
+
+export interface MensagemCreateInput {
+  content: string;
+  attachment_paths?: string[];
+}
+
+/** KPIs agregados do dashboard admin (GET /dashboard/summary, B4.4).
+ * `obras_valor_total` é Decimal serializado como string. */
+export interface DashboardSummary {
+  obras_ativas: number;
+  obras_valor_total: string;
+  tickets_abertos: number;
+  orcamentos_pendentes: number;
+}
+
 export interface Page<T> {
   items: T[];
   /** `id` do último item; `null` = fim. */
