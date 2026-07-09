@@ -65,6 +65,71 @@ export interface ObraUpdateInput {
   valor_contrato?: string | null;
 }
 
+export type DocumentoTipo =
+  | "projeto"
+  | "contrato"
+  | "nota_fiscal"
+  | "foto"
+  | "outro";
+
+export interface Documento {
+  id: string;
+  obra_id: string;
+  nome: string;
+  tipo: DocumentoTipo;
+  categoria: string | null;
+  visivel_cliente: boolean;
+  size_bytes: number | null;
+  sha256: string | null;
+  /** `true` quando o upload foi confirmado (storage_path preenchido). */
+  confirmed: boolean;
+  created_at: string;
+}
+
+/** Corpo do POST /obras/{id}/documentos (cria o registro pendente). */
+export interface DocumentoCreateInput {
+  nome: string;
+  tipo: DocumentoTipo;
+  sha256: string;
+  size_bytes: number;
+  categoria?: string | null;
+}
+
+/** Resposta do create: a URL assinada para o PUT direto no storage. */
+export interface DocumentoUpload {
+  documento_id: string;
+  upload_url: string;
+  method: string;
+  expires_in: number;
+}
+
+/** PATCH /documentos/{id}: categoria e/ou visibilidade. */
+export interface DocumentoUpdateInput {
+  categoria?: string | null;
+  visivel_cliente?: boolean;
+}
+
+export interface Membro {
+  id: string;
+  user_id: string;
+  nome: string;
+  email: string;
+  papel: string;
+  created_at: string;
+}
+
+export interface MembroCreateInput {
+  user_id: string;
+  papel: string;
+}
+
+/** Usuário do tenant (para o seletor de "adicionar membro"). */
+export interface Usuario {
+  id: string;
+  nome: string;
+  email: string;
+}
+
 export interface Page<T> {
   items: T[];
   /** `id` do último item; `null` = fim. */

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   flexRender,
   getCoreRowModel,
@@ -159,7 +160,12 @@ export function ObrasTable({
         accessorKey: "codigo",
         header: ({ column }) => <SortHeader column={column}>Código</SortHeader>,
         cell: ({ row }) => (
-          <span className="font-mono text-xs">{row.original.codigo}</span>
+          <Link
+            href={`/obras/${row.original.id}/documentos`}
+            className="font-mono text-xs text-primary underline-offset-4 hover:underline"
+          >
+            {row.original.codigo}
+          </Link>
         ),
       },
       {

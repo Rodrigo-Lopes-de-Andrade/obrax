@@ -4,7 +4,16 @@
  * simulado (um único tenant). Trocado por `fetch` real quando o backend
  * estiver plugado.
  */
-import type { Cliente, Obra, ObraStatus, TipoPessoa } from "@/lib/api/types";
+import type {
+  Cliente,
+  Documento,
+  DocumentoTipo,
+  Membro,
+  Obra,
+  ObraStatus,
+  TipoPessoa,
+  Usuario,
+} from "@/lib/api/types";
 
 let seq = 0;
 
@@ -21,10 +30,23 @@ export function nextId(): string {
   return `${n.slice(0, 8)}-${n.slice(8, 12)}-7000-8000-${r}00000000`;
 }
 
+/** No mock, o membro guarda `obra_id` para filtrar por obra (a resposta da API
+ * o omite — vem implícito na URL). */
+export type MockMembro = Membro & { obra_id: string };
+
 export const clientes: Cliente[] = [];
 export const obras: Obra[] = [];
+export const documentos: Documento[] = [];
+export const membros: MockMembro[] = [];
+export const usuarios: Usuario[] = [];
 
 const nowIso = () => new Date().toISOString();
+
+function fakeSha(): string {
+  return Array.from({ length: 64 }, () =>
+    Math.floor(Math.random() * 16).toString(16),
+  ).join("");
+}
 
 function seedCliente(
   nome: string,
@@ -93,11 +115,77 @@ function seedObras(): void {
   }
 }
 
+const USUARIOS_SEED: [string, string][] = [
+  ["Marcos Vinícius Prado", "marcos@construtora.com"],
+  ["Carla Menezes", "carla@construtora.com"],
+  ["Douglas Ferreira", "douglas@construtora.com"],
+  ["Patrícia Nunes", "patricia@construtora.com"],
+  ["Rafael Antunes", "rafael@construtora.com"],
+  ["Juliana Castro", "juliana@construtora.com"],
+];
+
+function seedUsuarios(): void {
+  for (const [nome, email] of USUARIOS_SEED) {
+    usuarios.push({ id: nextId(), nome, email });
+  }
+}
+
+interface DocSeed {
+  nome: string;
+  tipo: DocumentoTipo;
+  categoria: string | null;
+  visivel: boolean;
+}
+
+const DOC_SEED: DocSeed[] = [
+  { nome: "planta-baixa-pavimento-terreo.pdf", tipo: "projeto", categoria: "Projetos", visivel: true },
+  { nome: "contrato-empreitada-global.pdf", tipo: "contrato", categoria: "Contratos", visivel: true },
+  { nome: "memorial-descritivo.pdf", tipo: "projeto", categoria: "Projetos", visivel: false },
+  { nome: "nf-cimento-votoran-lote12.pdf", tipo: "nota_fiscal", categoria: "Notas Fiscais", visivel: false },
+  { nome: "registro-fundacao-01.jpg", tipo: "foto", categoria: "Registro de Obra", visivel: true },
+  { nome: "cronograma-fisico-financeiro.xlsx", tipo: "outro", categoria: null, visivel: false },
+];
+
+function seedDocumentosParaObra(obraId: string): void {
+  for (const d of DOC_SEED) {
+    documentos.push({
+      id: nextId(),
+      obra_id: obraId,
+      nome: d.nome,
+      tipo: d.tipo,
+      categoria: d.categoria,
+      visivel_cliente: d.visivel,
+      size_bytes: 120_000 + Math.floor(Math.random() * 4_000_000),
+      sha256: fakeSha(),
+      confirmed: true,
+      created_at: nowIso(),
+    });
+  }
+}
+
+const PAPEIS_SEED = ["Mestre de obras", "Eletricista", "Pedreiro"];
+
+function seedMembrosParaObra(obraId: string): void {
+  PAPEIS_SEED.forEach((papel, i) => {
+    const u = usuarios[i];
+    membros.push({
+      id: nextId(),
+      obra_id: obraId,
+      user_id: u.id,
+      nome: u.nome,
+      email: u.email,
+      papel,
+      created_at: nowIso(),
+    });
+  });
+}
+
 let seeded = false;
 
 export function ensureSeed(): void {
   if (seeded) return;
   seeded = true;
+  seedUsuarios();
   seedCliente("Construtora Vale Verde Ltda", "PJ", "12345678000190", "(11) 3344-5566", "contato@valeverde.com.br");
   seedCliente("Incorporadora Horizonte SA", "PJ", "98765432000121", "(11) 2233-4455", "obras@horizonte.com.br");
   seedCliente("Marina Ribeiro Arquitetura", "PJ", "45678912000134", "(21) 99876-5432", "marina@ribeiroarq.com");
@@ -107,4 +195,8 @@ export function ensureSeed(): void {
   seedCliente("Roberto Carlos Dias", "PF", "39053344705", null, "roberto.dias@uol.com.br");
   seedCliente("Empreendimentos Sol Nascente", "PJ", "22333444000155", "(11) 4004-5005", "contato@solnascente.com.br");
   seedObras();
+  // GED + equipe povoados nas duas primeiras obras (para demo/skeletons).
+  seedDocumentosParaObra(obras[0].id);
+  seedDocumentosParaObra(obras[1].id);
+  seedMembrosParaObra(obras[0].id);
 }

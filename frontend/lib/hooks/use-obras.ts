@@ -12,6 +12,7 @@ import { ApiError } from "@/lib/api/client";
 import {
   createObra,
   deleteObra,
+  getObra,
   listObras,
   updateObra,
   type ListObrasParams,
@@ -21,6 +22,7 @@ import type { ObraCreateInput, ObraUpdateInput } from "@/lib/api/types";
 export const obrasKeys = {
   all: ["obras"] as const,
   list: (params: ListObrasParams) => ["obras", "list", params] as const,
+  detail: (id: string) => ["obras", "detail", id] as const,
 };
 
 export function useObras(params: ListObrasParams) {
@@ -29,6 +31,13 @@ export function useObras(params: ListObrasParams) {
     queryFn: () => listObras(params),
     // Mantém a página atual visível durante o refetch (paginação/filtro suaves).
     placeholderData: keepPreviousData,
+  });
+}
+
+export function useObra(id: string) {
+  return useQuery({
+    queryKey: obrasKeys.detail(id),
+    queryFn: () => getObra(id),
   });
 }
 
