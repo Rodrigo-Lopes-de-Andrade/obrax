@@ -10,6 +10,7 @@ Leitura: qualquer usuário do tenant (a RLS já limita ao tenant).
 
 from __future__ import annotations
 
+from decimal import Decimal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
@@ -18,6 +19,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_user, get_db, get_tenant, require_roles
 from app.core.middleware import AuthContext
 from app.modules.orcamento.schemas import (
+    CurvaAbc,
     OrcamentoCreate,
     OrcamentoDetail,
     OrcamentoOut,
@@ -72,6 +74,15 @@ def list_orcamentos(
 @router.get("/orcamentos/{orcamento_id}", response_model=OrcamentoDetail)
 def get_orcamento(orcamento_id: UUID, session: Session = Depends(get_db)) -> OrcamentoDetail:
     return OrcamentoDetail.model_validate(service.get_orcamento(session, orcamento_id))
+
+
+@router.get("/orcamentos/{orcamento_id}/curva-abc", response_model=CurvaAbc)
+def get_curva_abc(orcamento_id: UUID, session: Session = Depends(get_db)) -> CurvaAbc:
+    """Curva ABC (US-14) da versão atual — itens classificados A/B/C + resumo."""
+    data = service.get_curva_abc(session, orcamento_id)
+    if data is None:  # versão sem itens ainda → curva vazia
+        return CurvaAbc(custo_total=Decimal(0), itens=[], classes=[])
+    return CurvaAbc.model_validate(data)
 
 
 @router.patch(

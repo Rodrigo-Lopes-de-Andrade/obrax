@@ -208,6 +208,49 @@ class EapTree(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
+# Curva ABC (B6.1, US-14)
+# --------------------------------------------------------------------------- #
+AbcClasseNome = Literal["A", "B", "C"]
+
+
+class AbcItem(BaseModel):
+    """Item-folha (insumo) classificado na curva ABC por custo acumulado."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    codigo: str | None
+    descricao: str
+    unidade: str | None
+    custo: Decimal
+    pct: Decimal  # participação individual no custo total
+    pct_acumulado: Decimal  # participação acumulada (linha de Pareto)
+    classe: AbcClasseNome
+
+
+class AbcClasse(BaseModel):
+    """Resumo de uma classe (A/B/C): quantos itens e quanto custo concentram."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    classe: AbcClasseNome
+    count: int
+    custo: Decimal
+    pct: Decimal
+
+
+class CurvaAbc(BaseModel):
+    """Curva ABC da versão — itens ordenados por custo desc + resumo por classe.
+    Denormalizada em `orcamento_versao.curva_abc_json` pelo recálculo (D6.1)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    custo_total: Decimal
+    itens: list[AbcItem]
+    classes: list[AbcClasse]
+
+
+# --------------------------------------------------------------------------- #
 # Catálogo de insumos / SINAPI (B5.6, US-05)
 # --------------------------------------------------------------------------- #
 class InsumoOut(BaseModel):

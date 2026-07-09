@@ -189,6 +189,22 @@ def update_status(session: Session, *, orcamento_id: uuid.UUID, new_status: str)
     return _detail(session, orcamento_id)
 
 
+def get_curva_abc(session: Session, orcamento_id: uuid.UUID) -> dict[str, Any] | None:
+    """curva_abc_json denormalizada da versão atual (B6.1/D6.1). `None` quando a
+    versão nunca foi recalculada (sem itens) — o router devolve uma curva vazia."""
+    row = session.execute(
+        text(
+            "SELECT v.curva_abc_json FROM orcamento o "
+            "JOIN orcamento_versao v ON v.orcamento_id = o.id AND v.numero = o.versao_atual "
+            "WHERE o.id = :id AND o.deleted_at IS NULL"
+        ),
+        {"id": orcamento_id},
+    ).first()
+    if row is None:
+        raise _NOT_FOUND
+    return row[0]  # type: ignore[no-any-return]
+
+
 def soft_delete_orcamento(session: Session, orcamento_id: uuid.UUID) -> None:
     row = session.execute(
         text(

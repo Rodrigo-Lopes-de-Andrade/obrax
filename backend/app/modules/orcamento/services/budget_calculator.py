@@ -31,6 +31,7 @@ from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlalchemy.orm import Session
 
 from app.modules.orcamento.schemas import BudgetSnapshot, ItemSubtotal
+from app.modules.orcamento.services import curva_abc
 
 _CENT = Decimal("0.01")
 _RATE = Decimal("0.0001")
@@ -48,7 +49,8 @@ _LOCK_VERSAO = text(
     "SELECT markup_global, taxa_adm, is_locked FROM orcamento_versao WHERE id = :vid FOR UPDATE"
 )
 _LOAD_ITENS = text(
-    "SELECT id, parent_id, quantidade, preco_unitario, markup_override "
+    "SELECT id, parent_id, quantidade, preco_unitario, markup_override, "
+    "       codigo, descricao, unidade "
     "FROM orcamento_item WHERE versao_id = :vid"
 )
 # Um único UPDATE p/ N linhas via unnest de arrays paralelos (id, subtotal).
@@ -61,7 +63,8 @@ _BULK_UPDATE_SUBTOTAL = text(
 )
 _UPDATE_VERSAO = text(
     "UPDATE orcamento_versao "
-    "SET custo_direto = :cd, preco_venda = :pv, margem = :mg WHERE id = :vid"
+    "SET custo_direto = :cd, preco_venda = :pv, margem = :mg, "
+    "    curva_abc_json = CAST(:abc AS jsonb) WHERE id = :vid"
 )
 
 
@@ -85,6 +88,8 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
 
     subtotal: dict[uuid.UUID, Decimal] = {}
     custo_direto = Decimal(0)
+    # Folhas (insumos) com seu custo direto — insumo p/ a curva ABC (B6.1).
+    leaves: list[dict[str, Any]] = []
 
     def effective_markup(node: Any) -> Decimal:
         cur: Any | None = node
@@ -105,7 +110,17 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
             # aplicar markup. custo_direto acumula o custo já em centavos (casa
             # com a coluna GENERATED custo_total NUMERIC(18,2)).
             custo = node["quantidade"] * node["preco_unitario"]
-            custo_direto += custo.quantize(_CENT, ROUND_HALF_UP)
+            custo_cent = custo.quantize(_CENT, ROUND_HALF_UP)
+            custo_direto += custo_cent
+            leaves.append(
+                {
+                    "id": node["id"],
+                    "codigo": node["codigo"],
+                    "descricao": node["descricao"],
+                    "unidade": node["unidade"],
+                    "custo": custo_cent,
+                }
+            )
             markup = effective_markup(node)
             total = (custo * (_ONE + markup)).quantize(_CENT, ROUND_HALF_UP)
         subtotal[node["id"]] = total
@@ -119,6 +134,8 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
         else Decimal("0.0000")
     )
 
+    curva = curva_abc.classificar(leaves)
+
     if subtotal:
         session.execute(
             _BULK_UPDATE_SUBTOTAL,
@@ -126,7 +143,13 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
         )
     session.execute(
         _UPDATE_VERSAO,
-        {"cd": custo_direto, "pv": preco_venda, "mg": margem, "vid": versao_id},
+        {
+            "cd": custo_direto,
+            "pv": preco_venda,
+            "mg": margem,
+            "abc": curva.model_dump_json(),
+            "vid": versao_id,
+        },
     )
 
     return BudgetSnapshot(
