@@ -49,7 +49,11 @@ export const api = {
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, data: unknown) =>
     request<T>(path, { method: "POST", body: JSON.stringify(data) }),
+  put: <T>(path: string, data: unknown) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(data) }),
   patch: <T>(path: string, data: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(data) }),
-  delete: (path: string) => request<void>(path, { method: "DELETE" }),
+  // Genérico: alguns DELETEs (ex.: remover item da EAP) devolvem a árvore
+  // recalculada em vez de 204.
+  delete: <T = void>(path: string) => request<T>(path, { method: "DELETE" }),
 };

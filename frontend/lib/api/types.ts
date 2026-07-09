@@ -176,6 +176,134 @@ export interface Page<T> {
   next_cursor: string | null;
 }
 
+/* ------------------------------------------------------------------ *
+ * Módulo 2 — Orçamentos (EAP). Espelho de app/modules/orcamento.
+ * Todo valor financeiro é Decimal serializado como string (nunca float).
+ * ------------------------------------------------------------------ */
+export type OrcamentoStatus =
+  | "rascunho"
+  | "em_revisao"
+  | "aguardando_aprovacao"
+  | "aprovado"
+  | "rejeitado";
+
+/** Fase, Serviço, Insumo/MO — os 3 níveis da EAP. */
+export type ItemTipo = "F" | "S" | "I";
+
+export interface Orcamento {
+  id: string;
+  obra_id: string;
+  titulo: string;
+  status: OrcamentoStatus;
+  versao_atual: number;
+  created_at: string;
+}
+
+/** Agregados de uma versão (recalculados pelo BudgetCalculator). */
+export interface VersaoOut {
+  id: string;
+  numero: number;
+  is_locked: boolean;
+  custo_direto: string;
+  markup_global: string;
+  taxa_adm: string;
+  preco_venda: string;
+  margem: string;
+  created_at: string;
+}
+
+export interface OrcamentoDetail extends Orcamento {
+  versao: VersaoOut;
+}
+
+export interface OrcamentoCreateInput {
+  titulo: string;
+}
+
+export interface OrcamentoItem {
+  id: string;
+  versao_id: string;
+  parent_id: string | null;
+  tipo: ItemTipo;
+  depth: number;
+  path: string;
+  sort_order: number;
+  codigo: string | null;
+  descricao: string;
+  unidade: string | null;
+  quantidade: string;
+  preco_unitario: string;
+  markup_override: string | null;
+  custo_total: string;
+  subtotal: string;
+}
+
+/** Agregados enxutos da versão devolvidos junto da árvore. */
+export interface VersaoResumo {
+  id: string;
+  is_locked: boolean;
+  custo_direto: string;
+  markup_global: string;
+  taxa_adm: string;
+  preco_venda: string;
+  margem: string;
+}
+
+/** Corpo do GET da árvore e de toda mutação de itens. */
+export interface EapTree {
+  versao: VersaoResumo;
+  itens: OrcamentoItem[];
+}
+
+export interface ItemCreateInput {
+  tipo: ItemTipo;
+  parent_id?: string | null;
+  codigo?: string | null;
+  descricao: string;
+  unidade?: string | null;
+  quantidade?: string;
+  preco_unitario?: string;
+  markup_override?: string | null;
+}
+
+export interface ItemUpdateInput {
+  codigo?: string | null;
+  descricao?: string;
+  unidade?: string | null;
+  quantidade?: string;
+  preco_unitario?: string;
+  markup_override?: string | null;
+}
+
+export interface ReorderItemInput {
+  id: string;
+  parent_id: string | null;
+  sort_order: number;
+}
+
+export interface PrecificacaoInput {
+  markup_global: string;
+  taxa_adm: string;
+}
+
+/** Catálogo de insumos (SINAPI global + custom do tenant). */
+export interface Insumo {
+  id: string;
+  codigo: string;
+  descricao: string;
+  unidade: string | null;
+  categoria: string | null;
+  preco_unitario: string;
+  is_custom: boolean;
+}
+
+/** Erro de validação de importação XLSX, linha-a-linha. */
+export interface ImportErro {
+  linha: number;
+  campo: string;
+  mensagem: string;
+}
+
 /** RFC 7807 Problem Details — formato de erro da API. */
 export interface ProblemDetail {
   type?: string;

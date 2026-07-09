@@ -7,6 +7,7 @@ import type {
   DocumentoTipo,
   Obra,
   ObraStatus,
+  OrcamentoStatus,
   Ticket,
   TicketMensagem,
   TicketStatus,
@@ -24,8 +25,27 @@ import {
   usuarios,
   type MockMembro,
 } from "./db";
+import {
+  bulkCreate,
+  createOrcamento,
+  deleteItem,
+  detailOf,
+  duplicateItem,
+  ensureOrcamentoSeed,
+  importPlanilhaMock,
+  insumos,
+  MockError,
+  orcamentos,
+  reorder,
+  setPrecificacao,
+  softDeleteOrcamento,
+  treeOf,
+  updateItem,
+  updateStatus,
+} from "./orcamento-mock";
 
 ensureSeed();
+ensureOrcamentoSeed();
 
 /** Latência artificial para os skeletons/estados de loading aparecerem. */
 const LATENCY = 350;
@@ -49,6 +69,27 @@ function paginate<T extends { id: string }>(
   const items = after.slice(0, limit);
   const hasMore = after.length > limit;
   return { items, next_cursor: hasMore ? items[items.length - 1].id : null };
+}
+
+/** Converte um MockError (do orcamento-mock) numa resposta RFC 7807. `detail`
+ * pode ser objeto (ex.: erros de importação linha-a-linha). */
+function mockErrorResponse(e: unknown) {
+  if (e instanceof MockError) {
+    return HttpResponse.json(
+      { type: "about:blank", title: "erro", status: e.status, detail: e.detail },
+      { status: e.status },
+    );
+  }
+  throw e;
+}
+
+/** Executa uma operação do mock e serializa o resultado (ou o erro). */
+function runMock<T extends object>(fn: () => T, okStatus = 200) {
+  try {
+    return HttpResponse.json(fn() as Record<string, unknown>, { status: okStatus });
+  } catch (e) {
+    return mockErrorResponse(e);
+  }
 }
 
 export const handlers = [
@@ -414,5 +455,152 @@ export const handlers = [
     };
     mensagens.push(msg);
     return HttpResponse.json(msg, { status: 201 });
+  }),
+
+  /* -------------------- Módulo 2 — Orçamentos (EAP) -------------------- */
+  http.get("/api/v1/orcamentos", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    const obraId = url.searchParams.get("obra_id");
+    const cursor = url.searchParams.get("cursor");
+    const limit = Number(url.searchParams.get("limit") ?? "50");
+    const rows = orcamentos.filter(
+      (o) => !o.deleted && (!obraId || o.obra_id === obraId),
+    );
+    return HttpResponse.json(paginate(rows, cursor, limit));
+  }),
+
+  http.get("/api/v1/orcamentos/importar/modelo", async () => {
+    await delay(150);
+    return new HttpResponse(new Blob(["modelo-orcamento-mock"]), {
+      headers: {
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        "Content-Disposition": 'attachment; filename="modelo_orcamento.xlsx"',
+      },
+    });
+  }),
+
+  http.get("/api/v1/orcamentos/:id", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => detailOf(params.id as string));
+  }),
+
+  http.post("/api/v1/obras/:obraId/orcamentos", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { titulo?: string };
+    if (!body.titulo || !body.titulo.trim()) return problem(422, "título obrigatório");
+    if (!obras.some((o) => o.id === params.obraId)) return problem(422, "obra não encontrada");
+    return runMock(() => createOrcamento(params.obraId as string, body.titulo!.trim()), 201);
+  }),
+
+  http.patch("/api/v1/orcamentos/:id/status", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { status?: OrcamentoStatus };
+    if (!body.status) return problem(422, "status obrigatório");
+    return runMock(() => updateStatus(params.id as string, body.status!));
+  }),
+
+  http.delete("/api/v1/orcamentos/:id", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      softDeleteOrcamento(params.id as string);
+      return new HttpResponse(null, { status: 204 });
+    } catch (e) {
+      return mockErrorResponse(e);
+    }
+  }),
+
+  http.get("/api/v1/orcamentos/versoes/:vid/itens", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => treeOf(params.vid as string));
+  }),
+
+  http.post("/api/v1/orcamentos/versoes/:vid/itens/bulk", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { itens?: unknown[] };
+    return runMock(() => bulkCreate(params.vid as string, (body.itens ?? []) as never), 201);
+  }),
+
+  http.patch("/api/v1/orcamentos/itens/:itemId", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as Record<string, unknown>;
+    return runMock(() => updateItem(params.itemId as string, body as never));
+  }),
+
+  http.delete("/api/v1/orcamentos/itens/:itemId", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => deleteItem(params.itemId as string));
+  }),
+
+  http.post("/api/v1/orcamentos/itens/:itemId/duplicar", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => duplicateItem(params.itemId as string), 201);
+  }),
+
+  http.put("/api/v1/orcamentos/versoes/:vid/itens/ordem", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { itens?: unknown[] };
+    return runMock(() => reorder(params.vid as string, (body.itens ?? []) as never));
+  }),
+
+  http.put("/api/v1/orcamentos/versoes/:vid/precificacao", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { markup_global?: string; taxa_adm?: string };
+    return runMock(() =>
+      setPrecificacao(params.vid as string, body.markup_global ?? "0", body.taxa_adm ?? "0"),
+    );
+  }),
+
+  http.post("/api/v1/orcamentos/versoes/:vid/importar-planilha", async ({ params, request }) => {
+    await delay(700);
+    const form = await request.formData();
+    const file = form.get("arquivo");
+    const name = file instanceof File ? file.name : "planilha.xlsx";
+    return runMock(() => importPlanilhaMock(params.vid as string, name), 201);
+  }),
+
+  /* ---------------------- Catálogo de insumos ------------------------- */
+  http.get("/api/v1/insumos/categorias", async () => {
+    await delay(LATENCY);
+    const cats = Array.from(
+      new Set(insumos.map((i) => i.categoria).filter((c): c is string => !!c)),
+    ).sort();
+    return HttpResponse.json({ categorias: cats });
+  }),
+
+  http.get("/api/v1/insumos", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    const search = url.searchParams.get("search")?.trim().toLowerCase();
+    const categoria = url.searchParams.get("categoria");
+    const cursor = url.searchParams.get("cursor");
+    const limit = Number(url.searchParams.get("limit") ?? "20");
+    let rows = insumos.filter((i) => {
+      if (categoria && i.categoria !== categoria) return false;
+      if (search) {
+        return (
+          i.descricao.toLowerCase().includes(search) ||
+          i.codigo.toLowerCase().includes(search)
+        );
+      }
+      return true;
+    });
+    rows = rows.sort((a, b) =>
+      a.descricao < b.descricao
+        ? -1
+        : a.descricao > b.descricao
+          ? 1
+          : a.id < b.id
+            ? -1
+            : 1,
+    );
+    const start = cursor ? rows.findIndex((r) => r.id === cursor) + 1 : 0;
+    const page = rows.slice(start, start + limit);
+    const hasMore = start + limit < rows.length;
+    return HttpResponse.json({
+      items: page,
+      next_cursor: hasMore && page.length ? page[page.length - 1].id : null,
+    });
   }),
 ];
