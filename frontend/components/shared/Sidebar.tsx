@@ -26,7 +26,7 @@ const navGestao = [
   { label: "Obra", icon: Building2, href: "/obras" },
   { label: "Chamados", icon: MessageSquare, href: "/tickets" },
   { label: "Clientes", icon: Users, href: "#" },
-  { label: "Orçamentos", icon: FileText, href: "#", isOrcamento: true },
+  { label: "Orçamentos", icon: FileText, href: "/orcamentos" },
 ];
 
 const navV2 = [
@@ -44,7 +44,6 @@ const navIa = [
 export function Sidebar() {
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
-  const openBudgetModal = useUiStore((s) => s.openBudgetModal);
   const pathname = usePathname();
   const isActive = (href: string) => href !== "#" && pathname.startsWith(href);
 
@@ -90,7 +89,6 @@ export function Sidebar() {
             {...item}
             active={isActive(item.href)}
             collapsed={collapsed}
-            onClick={item.isOrcamento ? openBudgetModal : undefined}
           />
         ))}
         {navV2.map((item) => (
