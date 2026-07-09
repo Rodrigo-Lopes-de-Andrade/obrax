@@ -12,6 +12,7 @@ from app.models.consumed_token import ConsumedToken
 from app.models.documento import Documento
 from app.models.invitation import Invitation
 from app.models.obra import Obra
+from app.models.obra_membro import ObraMembro
 from app.models.user import User
 from app.models.user_company_role import UserCompanyRole
 
@@ -24,6 +25,7 @@ __all__ = [
     "Documento",
     "Invitation",
     "Obra",
+    "ObraMembro",
     "User",
     "UserCompanyRole",
 ]
