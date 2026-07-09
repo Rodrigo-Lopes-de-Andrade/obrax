@@ -9,6 +9,8 @@ import { ContasList } from "@/components/modules/obra/ContasList";
 import { CurvaAbcCard } from "@/components/modules/obra/CurvaAbcCard";
 import { BudgetModal } from "@/components/modules/orcamento/BudgetModal";
 import { ImportSpreadsheetModal } from "@/components/modules/orcamento/ImportSpreadsheetModal";
+import { DashboardKpis } from "@/components/modules/dashboard/DashboardKpis";
+import { ObrasVencidasAlert } from "@/components/modules/dashboard/ObrasVencidasAlert";
 import { useUiStore } from "@/state/ui";
 import { formatMoneyMillionsParts, formatMoneyRounded, formatPercent } from "@/lib/decimal";
 import {
@@ -34,6 +36,22 @@ export default function DashboardPage() {
 
   return (
     <>
+      {/* F4.1 — Indicadores da empresa (live via GET /dashboard/summary) + alertas. */}
+      <div className="mb-4">
+        <h1 className="mb-1 text-[27px] font-extrabold tracking-tight">Indicadores da Empresa</h1>
+        <p className="text-sm text-muted-foreground">
+          Visão consolidada de obras, chamados e orçamentos
+        </p>
+      </div>
+      <div className="mb-4">
+        <DashboardKpis />
+      </div>
+      <div className="mb-8">
+        <ObrasVencidasAlert />
+      </div>
+
+      <div className="mb-6 border-t border-white/5 pt-7" />
+
       <div className="mb-6 flex flex-wrap items-end justify-between gap-5">
         <div>
           <div className="mb-1.75 flex items-center gap-2.75">

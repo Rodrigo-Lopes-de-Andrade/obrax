@@ -8,6 +8,7 @@ import {
   Building2,
   Users,
   FileText,
+  MessageSquare,
   ShoppingCart,
   Wallet,
   BarChart3,
@@ -23,6 +24,7 @@ import { useUiStore } from "@/state/ui";
 const navGestao = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Obra", icon: Building2, href: "/obras" },
+  { label: "Chamados", icon: MessageSquare, href: "/tickets" },
   { label: "Clientes", icon: Users, href: "#" },
   { label: "Orçamentos", icon: FileText, href: "#", isOrcamento: true },
 ];
