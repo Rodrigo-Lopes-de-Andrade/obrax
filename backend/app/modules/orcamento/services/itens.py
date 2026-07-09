@@ -386,6 +386,71 @@ def set_precificacao(
     return _tree(session, versao_id)
 
 
+def importar_hierarquia(
+    session: Session, *, company_id: str, versao_id: uuid.UUID, linhas: list[Any]
+) -> dict[str, Any]:
+    """Insere as linhas já validadas de uma planilha (B5.5) na versão, mantendo
+    a ligação F→S→I pela ordem (a validação garante que o pai apareceu antes).
+    Anexa ao que já existe (não substitui)."""
+    _versao_editavel(session, versao_id)
+
+    # Próximo sort_order das fases (raiz): anexa depois das existentes.
+    proximo_root = session.execute(
+        text(
+            "SELECT COALESCE(MAX(sort_order), -1) + 1 FROM orcamento_item "
+            "WHERE versao_id = :v AND parent_id IS NULL"
+        ),
+        {"v": versao_id},
+    ).scalar_one()
+    ordem: dict[uuid.UUID | None, int] = defaultdict(int)
+    ordem[None] = proximo_root
+
+    last_fase: uuid.UUID | None = None
+    last_servico: uuid.UUID | None = None
+    inserts: list[dict[str, Any]] = []
+    for linha in linhas:
+        new_id = uuid.uuid4()
+        if linha.tipo == "F":
+            parent, last_fase, last_servico = None, new_id, None
+        elif linha.tipo == "S":
+            parent, last_servico = last_fase, new_id
+        else:
+            parent = last_servico
+        pos = ordem[parent]
+        ordem[parent] = pos + 1
+        inserts.append(
+            {
+                "id": new_id,
+                "cid": company_id,
+                "vid": versao_id,
+                "parent": parent,
+                "tipo": linha.tipo,
+                "codigo": linha.codigo,
+                "descricao": linha.descricao,
+                "unidade": linha.unidade,
+                "qtd": linha.quantidade,
+                "preco": linha.preco_unitario,
+                "markup": None,
+                "ordem": pos,
+            }
+        )
+
+    if inserts:
+        session.execute(
+            text(
+                "INSERT INTO orcamento_item "
+                "(id, company_id, versao_id, parent_id, tipo, codigo, descricao, unidade, "
+                " quantidade, preco_unitario, markup_override, sort_order, path, depth) "
+                "VALUES (:id, :cid, :vid, :parent, :tipo, :codigo, :descricao, :unidade, "
+                " :qtd, :preco, :markup, :ordem, '', 0)"
+            ),
+            inserts,
+        )
+        _reindex_paths(session, versao_id)
+    budget_calculator.recalcular(session, versao_id)
+    return _tree(session, versao_id)
+
+
 def _erro_parent(tipo: str, motivo: str) -> HTTPException:
     return HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

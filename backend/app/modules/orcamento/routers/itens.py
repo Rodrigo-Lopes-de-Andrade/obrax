@@ -10,11 +10,12 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.core.deps import get_current_user, get_db, get_tenant, require_roles
 from app.core.middleware import AuthContext
+from app.modules.orcamento.importers import xlsx_importer
 from app.modules.orcamento.schemas import (
     EapTree,
     ItensBulkCreate,
@@ -27,6 +28,9 @@ from app.modules.orcamento.services import itens as service
 router = APIRouter(tags=["orcamento-itens"])
 
 _WRITE_ROLES = require_roles("owner", "admin", "gestor", "orcamentista")
+
+_XLSX_MEDIA = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+_MAX_UPLOAD_BYTES = 30 * 1024 * 1024  # 30 MB (F5.5)
 
 
 @router.get("/orcamentos/versoes/{versao_id}/itens", response_model=EapTree)
@@ -110,5 +114,52 @@ def set_precificacao(
         versao_id=versao_id,
         markup_global=payload.markup_global,
         taxa_adm=payload.taxa_adm,
+    )
+    return service.tree_model(data)
+
+
+# Path de 3 segmentos: não colide com GET /orcamentos/{id} (2 segmentos).
+@router.get("/orcamentos/importar/modelo")
+def download_template(_: AuthContext = Depends(get_current_user)) -> Response:
+    """Modelo XLSX da EAP para preencher e importar (F5.5)."""
+    return Response(
+        content=xlsx_importer.build_template(),
+        media_type=_XLSX_MEDIA,
+        headers={"Content-Disposition": 'attachment; filename="modelo_orcamento.xlsx"'},
+    )
+
+
+@router.post(
+    "/orcamentos/versoes/{versao_id}/importar-planilha",
+    response_model=EapTree,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(_WRITE_ROLES)],
+)
+async def importar_planilha(
+    versao_id: UUID,
+    arquivo: UploadFile = File(...),
+    company_id: str = Depends(get_tenant),
+    session: Session = Depends(get_db),
+) -> EapTree:
+    content = await arquivo.read()
+    if len(content) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="arquivo excede 30MB",
+        )
+    try:
+        parsed = xlsx_importer.parse_xlsx(content)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    if parsed.erros:
+        # Erros linha-a-linha: {linha, campo, mensagem} — a UI mostra cada um.
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"erros": parsed.erros},
+        )
+    data = service.importar_hierarquia(
+        session, company_id=company_id, versao_id=versao_id, linhas=parsed.linhas
     )
     return service.tree_model(data)
