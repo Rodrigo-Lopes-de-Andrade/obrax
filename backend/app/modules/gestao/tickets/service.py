@@ -152,6 +152,21 @@ def soft_delete_ticket(session: Session, ticket_id: uuid.UUID) -> None:
         raise _NOT_FOUND
 
 
+def list_notify_emails(session: Session) -> list[str]:
+    """E-mails dos owners/admins do tenant, para avisar de um novo chamado
+    (B4.5). Escopado por RLS: `user_company_role` filtra pelo tenant e a policy
+    de SELECT de `users` só expõe usuários vinculados a ele."""
+    rows = session.execute(
+        text(
+            "SELECT u.email FROM users u "
+            "JOIN user_company_role ucr ON ucr.user_id = u.id "
+            "WHERE u.deleted_at IS NULL AND ucr.role IN ('owner', 'admin') "
+            "ORDER BY u.email"
+        )
+    ).scalars()
+    return list(rows)
+
+
 def _assert_ticket_do_tenant(session: Session, ticket_id: uuid.UUID) -> None:
     """Ticket inexistente/de outro tenant (escondido pela RLS) → 404, em vez de
     inserir/listar mensagem num ticket que o tenant não enxerga."""

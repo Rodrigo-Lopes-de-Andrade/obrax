@@ -1,4 +1,4 @@
-"""Router de tickets — chamados de obra (B4.2 CRUD, B4.3 chat; US-08).
+"""Router de tickets — chamados de obra (B4.2 CRUD, B4.3 chat, B4.5 e-mail; US-08).
 
 Montado sem prefixo (paths absolutos): create aninhado na obra
 (`/obras/{id}/tickets`) e os demais planos (`/tickets*`), conforme
@@ -7,9 +7,10 @@ tenant (o cliente também responde). Mudar status / excluir:
 `owner`/`admin`/`gestor`. Isolamento por empresa via RLS no `get_db`.
 
 Realtime (B4.3): ao gravar uma mensagem, transmitimos um evento no canal do
-ticket via `events.emit` — best-effort e desacoplado do INSERT (o publisher é
-no-op em dev/CI e faz broadcast no Supabase em staging/prod; ver
-app/integrations/events.py e a decisão de realtime em docs/PRD.md).
+ticket via `events.emit`. Notificação (B4.5): ao abrir um chamado, avisamos os
+owners/admins por e-mail via `notifications.notify_safe`. Ambos best-effort e
+desacoplados do INSERT — no-op em dev/CI, plugáveis em staging/prod (ver
+app/integrations/events.py e app/integrations/notifications.py).
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_current_user, get_db, get_tenant, require_roles
 from app.core.middleware import AuthContext
 from app.integrations.events import DomainEvent, EventPublisher, emit, get_event_publisher
+from app.integrations.notifications import EmailMessage, Notifier, get_notifier, notify_safe
 from app.modules.gestao.tickets import service
 from app.modules.gestao.tickets.schemas import (
     MensagemCreate,
@@ -42,6 +44,30 @@ _WRITE_ROLES = require_roles("owner", "admin", "gestor")
 EVENT_MENSAGEM_CREATED = "ticket.mensagem.created"
 
 
+def _notify_ticket_criado(session: Session, notifier: Notifier, ticket: TicketOut) -> None:
+    """Avisa owners/admins do tenant que um chamado foi aberto (B4.5). Resolve
+    os destinatários sob a mesma sessão RLS; sem destinatários, não faz nada."""
+    emails = service.list_notify_emails(session)
+    message = EmailMessage(
+        to=tuple(emails),
+        subject=f"Novo chamado: {ticket.titulo}",
+        body=(
+            "Um novo chamado foi aberto.\n\n"
+            f"Título: {ticket.titulo}\n"
+            f"Descrição: {ticket.descricao or '—'}\n"
+            f"Obra: {ticket.obra_id}\n"
+        ),
+        template="ticket_created",
+        context={
+            "ticket_id": str(ticket.id),
+            "obra_id": str(ticket.obra_id),
+            "titulo": ticket.titulo,
+            "descricao": ticket.descricao,
+        },
+    )
+    notify_safe(notifier, message)
+
+
 @router.post(
     "/obras/{obra_id}/tickets",
     response_model=TicketOut,
@@ -53,6 +79,7 @@ def create_ticket(
     company_id: str = Depends(get_tenant),
     auth: AuthContext = Depends(get_current_user),
     session: Session = Depends(get_db),
+    notifier: Notifier = Depends(get_notifier),
 ) -> TicketOut:
     row = service.create_ticket(
         session,
@@ -61,7 +88,9 @@ def create_ticket(
         created_by=auth.user_id,
         payload=payload,
     )
-    return TicketOut.model_validate(row)
+    out = TicketOut.model_validate(row)
+    _notify_ticket_criado(session, notifier, out)
+    return out
 
 
 @router.get("/tickets", response_model=TicketPage)
