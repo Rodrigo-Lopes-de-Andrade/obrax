@@ -143,6 +143,44 @@ def test_recalc_cascata_com_precedencia_de_markup(
         assert item_sub == Decimal("1200.00")
 
 
+def test_markup_por_fase_denormalizado(
+    versao_factory: Callable[..., dict[str, Any]],
+) -> None:
+    """B6.2 — markup por fase (override fase ?? global) + custo/subtotal agregados
+    persistidos em markup_por_fase_json, na mesma transação do recálculo."""
+    ctx = versao_factory(markup_global="0.20")
+    cid, vid = ctx["company_id"], ctx["versao_id"]
+
+    f1 = _add(cid, vid, "F")  # sem override → herda global 0.20
+    s1 = _add(cid, vid, "S", parent=f1)
+    _add(cid, vid, "I", parent=s1, qtd="10", preco="100.00")  # 1000
+    _add(cid, vid, "I", parent=s1, qtd="5", preco="50.00", markup="0.50")  # override item
+    f2 = _add(cid, vid, "F", markup="0.10")  # override na fase
+    s2 = _add(cid, vid, "S", parent=f2)
+    _add(cid, vid, "I", parent=s2, qtd="2", preco="200.00")  # 400
+
+    with SessionLocal() as session:
+        budget_calculator.recalcular(session, vid)
+        session.commit()
+
+    with SessionLocal() as session:
+        fases = session.execute(
+            text("SELECT markup_por_fase_json FROM orcamento_versao WHERE id = :v"),
+            {"v": vid},
+        ).scalar_one()
+
+    por_id = {f["id"]: f for f in fases}
+    # Fase 1: markup do nível da fase é o global (0.20); item override não muda
+    # o markup da FASE, mas o subtotal reflete a cascata (1200 + 375 = 1575).
+    assert por_id[str(f1)]["markup"] == "0.2000"
+    assert por_id[str(f1)]["custo"] == "1250.00"
+    assert por_id[str(f1)]["subtotal"] == "1575.00"
+    # Fase 2: override da própria fase (0.10) prevalece sobre o global.
+    assert por_id[str(f2)]["markup"] == "0.1000"
+    assert por_id[str(f2)]["custo"] == "400.00"
+    assert por_id[str(f2)]["subtotal"] == "440.00"
+
+
 def test_recalc_versao_vazia_zera_agregados(
     versao_factory: Callable[..., dict[str, Any]],
 ) -> None:

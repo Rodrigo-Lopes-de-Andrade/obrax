@@ -19,6 +19,7 @@ Regras:
 
 from __future__ import annotations
 
+import json
 import uuid
 from collections import defaultdict
 from decimal import ROUND_HALF_UP, Decimal
@@ -49,7 +50,7 @@ _LOCK_VERSAO = text(
     "SELECT markup_global, taxa_adm, is_locked FROM orcamento_versao WHERE id = :vid FOR UPDATE"
 )
 _LOAD_ITENS = text(
-    "SELECT id, parent_id, quantidade, preco_unitario, markup_override, "
+    "SELECT id, parent_id, tipo, quantidade, preco_unitario, markup_override, "
     "       codigo, descricao, unidade "
     "FROM orcamento_item WHERE versao_id = :vid"
 )
@@ -64,7 +65,8 @@ _BULK_UPDATE_SUBTOTAL = text(
 _UPDATE_VERSAO = text(
     "UPDATE orcamento_versao "
     "SET custo_direto = :cd, preco_venda = :pv, margem = :mg, "
-    "    curva_abc_json = CAST(:abc AS jsonb) WHERE id = :vid"
+    "    curva_abc_json = CAST(:abc AS jsonb), "
+    "    markup_por_fase_json = CAST(:mpf AS jsonb) WHERE id = :vid"
 )
 
 
@@ -87,6 +89,7 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
         children[r["parent_id"]].append(r)
 
     subtotal: dict[uuid.UUID, Decimal] = {}
+    custo_no: dict[uuid.UUID, Decimal] = {}  # custo direto do subtree de cada nó
     custo_direto = Decimal(0)
     # Folhas (insumos) com seu custo direto — insumo p/ a curva ABC (B6.1).
     leaves: list[dict[str, Any]] = []
@@ -105,6 +108,7 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
         kids = children.get(node["id"])
         if kids:
             total = sum((walk(k) for k in kids), Decimal(0))
+            custo_no[node["id"]] = sum((custo_no[k["id"]] for k in kids), Decimal("0.00"))
         else:
             # Folha (insumo/MO): custo direto em precisão plena; arredonda 1× ao
             # aplicar markup. custo_direto acumula o custo já em centavos (casa
@@ -112,6 +116,7 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
             custo = node["quantidade"] * node["preco_unitario"]
             custo_cent = custo.quantize(_CENT, ROUND_HALF_UP)
             custo_direto += custo_cent
+            custo_no[node["id"]] = custo_cent
             leaves.append(
                 {
                     "id": node["id"],
@@ -136,6 +141,22 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
 
     curva = curva_abc.classificar(leaves)
 
+    # B6.2 — markup por fase (denormalizado): markup efetivo do nível da fase
+    # (override da fase ?? global) + custo e subtotal agregados da fase. Alimenta
+    # a tabela de resumo/BDI e o template PDF (B6.4).
+    markup_por_fase = [
+        {
+            "id": str(root["id"]),
+            "codigo": root["codigo"],
+            "descricao": root["descricao"],
+            "markup": str(effective_markup(root)),
+            "custo": str(custo_no.get(root["id"], Decimal("0.00"))),
+            "subtotal": str(subtotal.get(root["id"], Decimal("0.00"))),
+        }
+        for root in children.get(None, [])
+        if root["tipo"] == "F"
+    ]
+
     if subtotal:
         session.execute(
             _BULK_UPDATE_SUBTOTAL,
@@ -148,6 +169,7 @@ def recalcular(session: Session, versao_id: uuid.UUID) -> BudgetSnapshot:
             "pv": preco_venda,
             "mg": margem,
             "abc": curva.model_dump_json(),
+            "mpf": json.dumps(markup_por_fase),
             "vid": versao_id,
         },
     )
