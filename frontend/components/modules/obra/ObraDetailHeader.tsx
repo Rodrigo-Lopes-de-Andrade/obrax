@@ -7,8 +7,10 @@ import { ArrowLeft } from "lucide-react";
 import { useObra } from "@/lib/hooks/use-obras";
 import { cn } from "@/lib/utils";
 
-/** Abas da obra. Equipes é adicionada em F3.4. */
-const TABS = [{ label: "Documentos", seg: "documentos" }];
+const TABS = [
+  { label: "Documentos", seg: "documentos" },
+  { label: "Equipe", seg: "equipes" },
+];
 
 export function ObraDetailHeader({ obraId }: { obraId: string }) {
   const pathname = usePathname();
