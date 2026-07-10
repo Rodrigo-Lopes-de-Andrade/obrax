@@ -64,6 +64,55 @@ def create_export(
     return out
 
 
+def create_delete(
+    session: Session, *, company_id: str, requested_by: uuid.UUID, cliente_id: uuid.UUID | None
+) -> dict[str, Any]:
+    """Right to be forgotten (B9.5): soft-delete do cliente + registro do pedido
+    `pendente`. A anonimização do PII acontece após 30 dias, pela rotina
+    `lgpd_anonimizar_expirados()` (retenção legal — a linha nunca é apagada)."""
+    if cliente_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="cliente_id é obrigatório para eliminação LGPD",
+        )
+    row = (
+        session.execute(
+            text("SELECT anonymized_at FROM clientes WHERE id = :id"),
+            {"id": cliente_id},
+        )
+        .mappings()
+        .first()
+    )
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="cliente não encontrado"
+        )
+    if row["anonymized_at"] is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="cliente já anonimizado"
+        )
+
+    # Soft-delete (marca a janela de 30 dias; preserva um deleted_at anterior).
+    session.execute(
+        text("UPDATE clientes SET deleted_at = COALESCE(deleted_at, now()) WHERE id = :id"),
+        {"id": cliente_id},
+    )
+    inserted = (
+        session.execute(
+            text(
+                "INSERT INTO lgpd_request "
+                "(company_id, request_type, status, requested_by, cliente_id) "
+                "VALUES (:c, 'delete', 'pendente', :rb, :cli) "
+                f"RETURNING {_COLUMNS}"
+            ),
+            {"c": company_id, "rb": requested_by, "cli": cliente_id},
+        )
+        .mappings()
+        .one()
+    )
+    return dict(inserted)
+
+
 def create_request(
     session: Session,
     storage: StorageClient,
@@ -72,13 +121,11 @@ def create_request(
     requested_by: uuid.UUID,
     payload: LgpdRequestCreate,
 ) -> dict[str, Any]:
-    """Dispatcher do POST /lgpd/requests. B9.4 cobre `export`; `delete` é
-    implementado em B9.5 (right to be forgotten)."""
+    """Dispatcher do POST /lgpd/requests: `export` (B9.4) ou `delete` (B9.5)."""
     if payload.request_type == "export":
         return create_export(session, storage, company_id=company_id, requested_by=requested_by)
-    raise HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        detail="tipo de pedido LGPD não suportado",
+    return create_delete(
+        session, company_id=company_id, requested_by=requested_by, cliente_id=payload.cliente_id
     )
 
 
