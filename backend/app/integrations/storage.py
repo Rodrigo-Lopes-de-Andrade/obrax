@@ -52,6 +52,12 @@ class StorageClient(Protocol):
         nasce no backend, então subimos server-side."""
         ...
 
+    def get_object(self, *, key: str) -> bytes:
+        """Baixa os bytes do objeto. Usado no confirm da foto para validar o
+        SHA-256 server-side (o cliente sobe direto no bucket, sem passar pela
+        API — então o hash informado precisa ser conferido contra o conteúdo)."""
+        ...
+
     def presigned_get_url(self, *, key: str, expires_in: int) -> str:
         """URL de download assinada (GET) com TTL. Nunca é persistida — é gerada
         sob demanda a cada leitura."""
@@ -92,6 +98,10 @@ class S3StorageClient:
     def put_object(self, *, key: str, body: bytes, content_type: str) -> None:
         self._client.put_object(Bucket=self._bucket, Key=key, Body=body, ContentType=content_type)
 
+    def get_object(self, *, key: str) -> bytes:
+        obj = self._client.get_object(Bucket=self._bucket, Key=key)
+        return obj["Body"].read()  # type: ignore[no-any-return]
+
     def presigned_get_url(self, *, key: str, expires_in: int) -> str:
         return self._client.generate_presigned_url(  # type: ignore[no-any-return]
             "get_object",
@@ -121,3 +131,15 @@ def get_storage_client() -> StorageClient:
     """Dependency FastAPI: cliente do bucket de documentos (singleton).
     Sobrescreva com `app.dependency_overrides` nos testes."""
     return _documents_client()
+
+
+def storage_healthy() -> bool:
+    """Conectividade com o object store (HEAD no bucket) — usado no /health
+    (B8.5). Best-effort: qualquer falha (rede, credencial, bucket ausente) vira
+    `False`, sem derrubar o endpoint."""
+    try:
+        client = _documents_client()
+        client._client.head_bucket(Bucket=client._bucket)
+    except Exception:  # noqa: BLE001 — health é um relatório, não um gate
+        return False
+    return True

@@ -10,6 +10,7 @@ from app.modules.gestao.clientes.router import router as clientes_router
 from app.modules.gestao.dashboard.router import router as dashboard_router
 from app.modules.gestao.documentos.router import router as documentos_router
 from app.modules.gestao.equipes.router import router as equipes_router
+from app.modules.gestao.fotos.router import router as fotos_router
 from app.modules.gestao.obras.router import router as obras_router
 from app.modules.gestao.relatorios.router import router as relatorios_router
 from app.modules.gestao.tickets.router import router as tickets_router
@@ -33,6 +34,8 @@ api_router.include_router(equipes_router)
 api_router.include_router(checklist_router)
 # Sem prefixo: paths absolutos (/obras/{id}/tickets e /tickets*).
 api_router.include_router(tickets_router)
+# Sem prefixo: paths absolutos (/photos/sync, /photos/{id}/confirm, /obras/{id}/photos).
+api_router.include_router(fotos_router)
 # Sem prefixo: paths absolutos (/obras/{id}/orcamentos e /orcamentos*).
 api_router.include_router(orcamentos_router)
 # Sem prefixo: paths absolutos (/orcamentos/versoes/{id}/itens* e /orcamentos/itens*).
