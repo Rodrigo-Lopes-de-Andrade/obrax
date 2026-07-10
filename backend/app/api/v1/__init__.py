@@ -18,6 +18,7 @@ from app.modules.gestao.tickets.router import router as tickets_router
 from app.modules.orcamento.routers.insumos import router as insumos_router
 from app.modules.orcamento.routers.itens import router as orcamento_itens_router
 from app.modules.orcamento.routers.orcamentos import router as orcamentos_router
+from app.modules.portal.router import router as portal_router
 from app.modules.users.router import router as users_router
 
 api_router = APIRouter()
@@ -45,3 +46,5 @@ api_router.include_router(orcamentos_router)
 api_router.include_router(orcamento_itens_router)
 # Sem prefixo: paths absolutos (/insumos e /insumos/categorias).
 api_router.include_router(insumos_router)
+# Sem prefixo: paths absolutos (/obras/{id}/portal-link e /portal/obras/{token}).
+api_router.include_router(portal_router)

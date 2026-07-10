@@ -6,6 +6,10 @@ distinguidos pela claim `type`, conforme docs/ESPEC.md § 4:
 - `access`  — 15 min, enviado no header `Authorization: Bearer`.
 - `refresh` — 30 dias, entregue via cookie httpOnly (nunca no corpo/JS).
 - `magic`   — 30 min, single-use (consumo registrado em `consumed_tokens`).
+- `portal`  — 30 min, credencial do link do portal do cliente (US-19): escopa
+  o acesso a UMA obra de UM tenant. Sem `sub` (o titular não é um `user`);
+  carrega `company_id`, `obra_id` e `cliente_id`. Não é single-use — é um
+  token de navegação read-only, revalidado a cada request do portal.
 
 Claims comuns: `sub` (user_id), `company_id`, `type`, `jti`, `iat`, `exp`.
 """
@@ -27,10 +31,13 @@ _pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 ACCESS_TOKEN_TTL = timedelta(minutes=15)
 REFRESH_TOKEN_TTL = timedelta(days=30)
 MAGIC_LINK_TTL = timedelta(minutes=30)
+# Link do portal do cliente (US-19). Curto por design (SPRINTS B9.2: "válido
+# <30min") — o admin emite sob demanda e o cliente usa na sequência.
+PORTAL_TOKEN_TTL = timedelta(minutes=30)
 
 _ALGORITHM = "HS256"
 
-TokenType = Literal["access", "refresh", "magic"]
+TokenType = Literal["access", "refresh", "magic", "portal"]
 
 
 def hash_password(password: str) -> str:
@@ -110,6 +117,29 @@ def create_magic_link_token(
             "company_id": str(company_id),
             "purpose": purpose,
             "type": "magic",
+            "iat": int(now.timestamp()),
+            "exp": int(exp.timestamp()),
+            "jti": jti,
+        }
+    )
+    return IssuedToken(token=token, jti=jti, expires_at=exp)
+
+
+def create_portal_token(
+    *, company_id: uuid.UUID, obra_id: uuid.UUID, cliente_id: uuid.UUID | None
+) -> IssuedToken:
+    """Credencial do link do portal do cliente (B9.2): escopa o acesso a uma
+    obra. Sem `sub` — o titular não é um usuário do sistema; a autorização é o
+    próprio token, validado a cada request read-only do portal."""
+    now = _now()
+    exp = now + PORTAL_TOKEN_TTL
+    jti = str(uuid.uuid4())
+    token = _encode(
+        {
+            "company_id": str(company_id),
+            "obra_id": str(obra_id),
+            "cliente_id": str(cliente_id) if cliente_id is not None else None,
+            "type": "portal",
             "iat": int(now.timestamp()),
             "exp": int(exp.timestamp()),
             "jti": jti,
