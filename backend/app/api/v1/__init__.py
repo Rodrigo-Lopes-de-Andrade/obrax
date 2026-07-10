@@ -15,6 +15,7 @@ from app.modules.gestao.obras.router import router as obras_router
 from app.modules.gestao.ocorrencias.router import router as ocorrencias_router
 from app.modules.gestao.relatorios.router import router as relatorios_router
 from app.modules.gestao.tickets.router import router as tickets_router
+from app.modules.lgpd.router import router as lgpd_router
 from app.modules.orcamento.routers.insumos import router as insumos_router
 from app.modules.orcamento.routers.itens import router as orcamento_itens_router
 from app.modules.orcamento.routers.orcamentos import router as orcamentos_router
@@ -48,3 +49,5 @@ api_router.include_router(orcamento_itens_router)
 api_router.include_router(insumos_router)
 # Sem prefixo: paths absolutos (/obras/{id}/portal-link e /portal/obras/{token}).
 api_router.include_router(portal_router)
+# Prefixo /lgpd: /lgpd/requests e /lgpd/requests/{id}/download.
+api_router.include_router(lgpd_router)
