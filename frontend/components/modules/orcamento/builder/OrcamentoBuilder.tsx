@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Lock, X } from "lucide-react";
+import { FileText, Lock, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +26,7 @@ import { ORCAMENTO_STATUS_OPTIONS, nextStatuses } from "../status";
 import { BdiTab } from "./BdiTab";
 import { EstruturaTab } from "./EstruturaTab";
 import { ImportDialog } from "./ImportDialog";
+import { PdfDialog } from "./PdfDialog";
 import { PrecificacaoTab } from "./PrecificacaoTab";
 import { ResumoTab } from "./ResumoTab";
 
@@ -42,6 +43,7 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
   const router = useRouter();
   const [tab, setTab] = React.useState<TabKey>("estrutura");
   const [importOpen, setImportOpen] = React.useState(false);
+  const [pdfOpen, setPdfOpen] = React.useState(false);
 
   const orcQuery = useOrcamento(orcamentoId);
   const orc = orcQuery.data;
@@ -99,6 +101,9 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
 
         {orc ? (
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => setPdfOpen(true)}>
+              <FileText /> Gerar PDF
+            </Button>
             <span className="text-xs text-muted-foreground">Status</span>
             <Select
               value={orc.status}
@@ -191,6 +196,14 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
 
       {versaoId ? (
         <ImportDialog open={importOpen} onOpenChange={setImportOpen} versaoId={versaoId} />
+      ) : null}
+      {orc ? (
+        <PdfDialog
+          open={pdfOpen}
+          onOpenChange={setPdfOpen}
+          orcamentoId={orcamentoId}
+          titulo={orc.titulo}
+        />
       ) : null}
     </div>
   );
