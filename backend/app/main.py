@@ -11,7 +11,9 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1 import api_router
+from app.core.config import settings
 from app.core.middleware import TenantMiddleware
+from app.integrations.storage import storage_healthy
 
 # RFC 7807 Problem Details — formato de erro obrigatório (docs/CLAUDE.md >
 # Contrato Front <-> Back > Convenções).
@@ -75,7 +77,19 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        # B8.5: reporta conectividade do storage e status do realtime. É um
+        # relatório (sempre 200), não um gate — `storage_healthy` é best-effort.
+        # Realtime é "ok" quando ligado e configurado; senão "disabled" (dev/CI).
+        realtime_ok = (
+            settings.realtime_enabled
+            and bool(settings.supabase_url)
+            and bool(settings.supabase_service_key)
+        )
+        return {
+            "status": "ok",
+            "storage": "ok" if storage_healthy() else "error",
+            "realtime": "ok" if realtime_ok else "disabled",
+        }
 
     return app
 
