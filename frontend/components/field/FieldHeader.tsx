@@ -1,7 +1,9 @@
 import { HardHat } from "lucide-react";
 
-/** Barra superior do app de campo. O slot à direita recebe o SyncStatusBadge
- * (F7.6). Sticky para o indicador de sync ficar sempre visível. */
+import { SyncStatusBadge } from "./SyncStatusBadge";
+
+/** Barra superior do app de campo. O SyncStatusBadge (F7.6) fica à direita,
+ * sempre visível (header sticky). */
 export function FieldHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
@@ -15,7 +17,7 @@ export function FieldHeader() {
             <span className="text-sm font-semibold text-muted-foreground">Campo</span>
           </span>
         </div>
-        <div id="field-header-slot" className="flex items-center gap-2" />
+        <SyncStatusBadge />
       </div>
     </header>
   );
