@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.modules.auth.router import router as auth_router
+from app.modules.gestao.checklist.router import router as checklist_router
 from app.modules.gestao.clientes.router import router as clientes_router
 from app.modules.gestao.dashboard.router import router as dashboard_router
 from app.modules.gestao.documentos.router import router as documentos_router
@@ -28,6 +29,8 @@ api_router.include_router(relatorios_router, prefix="/relatorios", tags=["relato
 api_router.include_router(documentos_router)
 # Sem prefixo: paths absolutos aninhados (/obras/{id}/membros).
 api_router.include_router(equipes_router)
+# Sem prefixo: paths absolutos (/obras/{id}/checklist e /checklist/{id}).
+api_router.include_router(checklist_router)
 # Sem prefixo: paths absolutos (/obras/{id}/tickets e /tickets*).
 api_router.include_router(tickets_router)
 # Sem prefixo: paths absolutos (/obras/{id}/orcamentos e /orcamentos*).
