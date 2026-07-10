@@ -28,14 +28,18 @@ import {
 import {
   bulkCreate,
   createOrcamento,
+  curvaAbcOf,
   deleteItem,
   detailOf,
   duplicateItem,
   ensureOrcamentoSeed,
+  gerarPdfMock,
   importPlanilhaMock,
   insumos,
   MockError,
   orcamentos,
+  pdfStatusMock,
+  renderPdfHtmlMock,
   reorder,
   setPrecificacao,
   softDeleteOrcamento,
@@ -509,6 +513,30 @@ export const handlers = [
     } catch (e) {
       return mockErrorResponse(e);
     }
+  }),
+
+  http.get("/api/v1/orcamentos/:id/curva-abc", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => curvaAbcOf(params.id as string));
+  }),
+
+  // Geração síncrona do PDF (B6.3): POST gera, GET devolve status + URL.
+  http.post("/api/v1/orcamentos/:id/pdf", async ({ params }) => {
+    await delay(900);
+    return runMock(() => gerarPdfMock(params.id as string), 201);
+  }),
+
+  http.get("/api/v1/orcamentos/:id/pdf", async ({ params }) => {
+    await delay(LATENCY);
+    return runMock(() => pdfStatusMock(params.id as string));
+  }),
+
+  // "Download" do PDF no mock: página HTML timbrada (espelha o template B6.4).
+  http.get("/_mock/pdf/:id", async ({ params }) => {
+    await delay(200);
+    return new HttpResponse(renderPdfHtmlMock(params.id as string), {
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
   }),
 
   http.get("/api/v1/orcamentos/versoes/:vid/itens", async ({ params }) => {

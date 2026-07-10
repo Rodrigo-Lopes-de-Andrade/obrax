@@ -11,6 +11,10 @@
 import Decimal from "decimal.js";
 
 import type {
+  AbcClasse,
+  AbcClasseNome,
+  AbcItem,
+  CurvaAbc,
   EapTree,
   Insumo,
   ItemCreateInput,
@@ -19,11 +23,13 @@ import type {
   Orcamento,
   OrcamentoDetail,
   OrcamentoItem,
+  OrcamentoPdfGerado,
+  OrcamentoPdfStatus,
   OrcamentoStatus,
   ReorderItemInput,
   VersaoOut,
 } from "@/lib/api/types";
-import { nextId, obras, usuarios } from "./db";
+import { clientes, nextId, obras, usuarios } from "./db";
 
 Decimal.set({ rounding: Decimal.ROUND_HALF_UP });
 
@@ -390,6 +396,208 @@ export function setPrecificacao(
   versao.taxa_adm = new Decimal(taxaAdm).toFixed(4);
   recalcVersao(versaoId);
   return treeOf(versaoId);
+}
+
+/* ------------------------------ curva ABC -------------------------------- */
+// Espelha app/modules/orcamento/services/curva_abc.py: classifica as folhas
+// (insumos) por custo direto acumulado (80/15/5). Proibido float — Decimal.js.
+const LIMIAR_A = new Decimal("0.80");
+const LIMIAR_B = new Decimal("0.95");
+
+function pctFrac(parte: Decimal, total: Decimal): string {
+  if (total.lte(0)) return "0.0000";
+  return parte.div(total).toDecimalPlaces(4).toFixed(4);
+}
+
+function versaoAtualDe(orcamentoId: string): MockVersao {
+  const orc = orcamentos.find((o) => o.id === orcamentoId && !o.deleted);
+  if (!orc) throw new MockError(404, "orçamento não encontrado");
+  const versao = versoes.find(
+    (v) => v.orcamento_id === orc.id && v.numero === orc.versao_atual,
+  );
+  if (!versao) throw new MockError(404, "versão não encontrada");
+  return versao;
+}
+
+export function curvaAbcOf(orcamentoId: string): CurvaAbc {
+  const versao = versaoAtualDe(orcamentoId);
+  const its = itens.filter((i) => i.versao_id === versao.id);
+  const comFilho = new Set(its.map((i) => i.parent_id).filter((p): p is string => !!p));
+  const leaves = its
+    .filter((i) => !comFilho.has(i.id))
+    .map((i) => ({
+      id: i.id,
+      codigo: i.codigo,
+      descricao: i.descricao,
+      unidade: i.unidade,
+      custo: new Decimal(i.quantidade).times(i.preco_unitario).toDecimalPlaces(2),
+    }));
+  // Versão sem itens → curva vazia (mesmo shape do endpoint quando nunca recalc).
+  if (leaves.length === 0) return { custo_total: "0", itens: [], classes: [] };
+
+  const total = leaves.reduce((a, l) => a.plus(l.custo), new Decimal(0));
+  const ordenados = [...leaves].sort((a, b) => {
+    const d = b.custo.comparedTo(a.custo);
+    return d !== 0 ? d : a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+
+  const itensOut: AbcItem[] = [];
+  let acumulado = new Decimal(0);
+  for (const leaf of ordenados) {
+    const antes = acumulado; // acumulado ANTES de incluir este item
+    acumulado = acumulado.plus(leaf.custo);
+    let classe: AbcClasseNome;
+    if (total.lte(0)) classe = "C";
+    else if (antes.lt(LIMIAR_A.times(total))) classe = "A";
+    else if (antes.lt(LIMIAR_B.times(total))) classe = "B";
+    else classe = "C";
+    itensOut.push({
+      id: leaf.id,
+      codigo: leaf.codigo,
+      descricao: leaf.descricao,
+      unidade: leaf.unidade,
+      custo: leaf.custo.toFixed(2),
+      pct: pctFrac(leaf.custo, total),
+      pct_acumulado: pctFrac(acumulado, total),
+      classe,
+    });
+  }
+
+  const classes: AbcClasse[] = (["A", "B", "C"] as const).map((nome) => {
+    const grupo = itensOut.filter((it) => it.classe === nome);
+    const custoClasse = grupo.reduce((a, it) => a.plus(it.custo), new Decimal(0));
+    return {
+      classe: nome,
+      count: grupo.length,
+      custo: custoClasse.toFixed(2),
+      pct: pctFrac(custoClasse, total),
+    };
+  });
+
+  return { custo_total: total.toFixed(2), itens: itensOut, classes };
+}
+
+/* -------------------------------- PDF ------------------------------------ */
+// Espelha o job síncrono do backend (B6.3): gerar grava um artefato e um
+// timestamp; o "download" no mock é uma página HTML servida em /_mock/pdf/:id.
+const pdfs = new Map<string, { gerado_em: string }>();
+
+export function gerarPdfMock(orcamentoId: string): OrcamentoPdfGerado {
+  versaoAtualDe(orcamentoId); // valida existência (404)
+  const gerado_em = new Date().toISOString();
+  pdfs.set(orcamentoId, { gerado_em });
+  return { gerado_em, content_type: "text/html; charset=utf-8" };
+}
+
+export function pdfStatusMock(orcamentoId: string): OrcamentoPdfStatus {
+  versaoAtualDe(orcamentoId);
+  const pdf = pdfs.get(orcamentoId);
+  if (!pdf) throw new MockError(404, "PDF ainda não foi gerado");
+  return {
+    gerado_em: pdf.gerado_em,
+    content_type: "text/html; charset=utf-8",
+    download_url: `/_mock/pdf/${orcamentoId}`,
+  };
+}
+
+const EMPRESA_NOME = "Sua Construtora Ltda";
+const STATUS_LABEL: Record<OrcamentoStatus, string> = {
+  rascunho: "Rascunho",
+  em_revisao: "Em revisão",
+  aguardando_aprovacao: "Aguardando aprovação",
+  aprovado: "Aprovado",
+  rejeitado: "Rejeitado",
+};
+
+const esc = (s: string | null | undefined) =>
+  (s ?? "").replace(
+    /[&<>"]/g,
+    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!,
+  );
+const brl = (v: Decimal.Value) =>
+  `R$ ${new Intl.NumberFormat("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(
+    new Decimal(v).toNumber(),
+  )}`;
+const pctBr = (frac: Decimal.Value) =>
+  `${new Decimal(frac).times(100).toFixed(2).replace(".", ",")}%`;
+
+/** HTML do "PDF" para o viewer do mock (espelha o template do backend, B6.4). */
+export function renderPdfHtmlMock(orcamentoId: string): string {
+  const orc = orcamentos.find((o) => o.id === orcamentoId && !o.deleted);
+  if (!orc) return "<!DOCTYPE html><title>404</title><p>Orçamento não encontrado.</p>";
+  const versao = versaoAtualDe(orcamentoId);
+  const obra = obras.find((o) => o.id === orc.obra_id);
+  const cliente = clientes.find((c) => c.id === obra?.cliente_id);
+  const its = treeOf(versao.id).itens;
+  const curva = curvaAbcOf(orcamentoId);
+  const iniciais =
+    EMPRESA_NOME.split(" ")
+      .slice(0, 2)
+      .map((p) => p[0])
+      .join("")
+      .toUpperCase() || "?";
+
+  const linhas = its
+    .map((i) => {
+      const cls = i.tipo === "F" ? "row-f" : i.tipo === "S" ? "row-s" : "row-i";
+      const folha = i.tipo === "I";
+      const cod = i.codigo ? `<span class="cod">${esc(i.codigo)}</span> ` : "";
+      return `<tr class="${cls}"><td style="padding-left:${8 + i.depth * 16}px">${cod}${esc(i.descricao)}</td>
+        <td class="c">${folha ? esc(i.unidade) : ""}</td>
+        <td class="n">${folha ? new Decimal(i.quantidade).toFixed(2).replace(".", ",") : ""}</td>
+        <td class="n">${folha ? brl(i.preco_unitario) : ""}</td>
+        <td class="n">${brl(i.subtotal)}</td></tr>`;
+    })
+    .join("");
+
+  const abc =
+    curva.itens.length === 0
+      ? '<p class="empty">Sem itens classificados.</p>'
+      : `<table><thead><tr><th>Classe</th><th class="n">Itens</th><th class="n">Custo</th><th class="n">% custo</th></tr></thead><tbody>${curva.classes
+          .map(
+            (c) =>
+              `<tr><td><span class="dot dot-${c.classe}"></span>Classe ${c.classe}</td><td class="n">${c.count}</td><td class="n">${brl(c.custo)}</td><td class="n">${pctBr(c.pct)}</td></tr>`,
+          )
+          .join("")}</tbody></table>`;
+
+  return `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${esc(orc.titulo)} — ${esc(obra?.codigo)}</title>
+<style>
+@page{size:A4;margin:18mm 16mm}*{box-sizing:border-box}
+body{font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1e293b;font-size:11px;line-height:1.45;margin:24px;background:#fff}
+.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #4f46e5;padding-bottom:12px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:52px;height:52px;border-radius:8px;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}
+.bname{font-size:15px;font-weight:700}.meta{text-align:right}.title{font-size:20px;font-weight:700;color:#4f46e5}.sub{font-weight:600}
+.tag{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:4px;padding:1px 6px;font-size:10px;font-weight:600;margin-left:4px}
+.date{color:#64748b;font-size:10px}.parties{display:flex;gap:16px;margin-bottom:18px}
+.party{flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px}
+.plabel{text-transform:uppercase;font-size:9px;letter-spacing:.6px;color:#64748b}.pname{font-weight:600;font-size:12px}.pdoc{color:#64748b}
+h2{font-size:12px;font-weight:700;color:#334155;margin:18px 0 8px;text-transform:uppercase;letter-spacing:.4px}
+table{width:100%;border-collapse:collapse}th{text-align:left;background:#f1f5f9;color:#475569;font-size:9px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid #cbd5e1}
+td{padding:5px 8px;border-bottom:1px solid #eef2f7}.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.c{text-align:center;color:#64748b}
+.row-f td{background:#eef2ff;font-weight:700}.row-s td{background:#f8fafc;font-weight:600}
+.cod{display:inline-block;background:#e2e8f0;color:#475569;border-radius:3px;padding:0 4px;font-size:9px}
+.grid{display:flex;gap:16px;margin-top:18px}.grid>div{flex:1}
+.kv td{padding:4px 2px}.kv .total td{border-top:2px solid #4f46e5;font-weight:700;font-size:13px;color:#4f46e5}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}.dot-A{background:#dc2626}.dot-B{background:#d97706}.dot-C{background:#059669}
+.empty{color:#94a3b8;padding:12px}
+</style></head><body>
+<div class="head"><div class="brand"><div class="logo">${esc(iniciais)}</div><div class="bname">${esc(EMPRESA_NOME)}</div></div>
+<div class="meta"><div class="title">Orçamento</div><div class="sub">${esc(orc.titulo)}</div>
+<div><span class="tag">Rev. ${orc.versao_atual}</span><span class="tag">${esc(STATUS_LABEL[orc.status])}</span></div>
+<div class="date">Emitido em ${new Date().toLocaleDateString("pt-BR")}</div></div></div>
+<div class="parties"><div class="party"><div class="plabel">Cliente</div><div class="pname">${esc(cliente?.nome)}</div><div class="pdoc">${esc(cliente?.documento)}</div></div>
+<div class="party"><div class="plabel">Obra</div><div class="pname">${esc(obra?.nome)}</div><div class="pdoc">${esc(obra?.codigo)}</div></div></div>
+<h2>Estrutura Analítica do Projeto</h2>
+<table><thead><tr><th>Descrição</th><th>Un.</th><th class="n">Qtd.</th><th class="n">Preço unit.</th><th class="n">Subtotal</th></tr></thead>
+<tbody>${linhas || '<tr><td colspan="5" class="empty">Sem itens.</td></tr>'}</tbody></table>
+<div class="grid"><div><h2>Resumo</h2><table class="kv">
+<tr><td>Custo direto</td><td class="n">${brl(versao.custo_direto)}</td></tr>
+<tr><td>Markup global</td><td class="n">${pctBr(versao.markup_global)}</td></tr>
+<tr><td>Taxa de administração</td><td class="n">${pctBr(versao.taxa_adm)}</td></tr>
+<tr><td>Margem</td><td class="n">${pctBr(versao.margem)}</td></tr>
+<tr class="total"><td>Preço de venda</td><td class="n">${brl(versao.preco_venda)}</td></tr></table></div>
+<div><h2>Curva ABC</h2>${abc}</div></div>
+</body></html>`;
 }
 
 /** Import simulado (o parser real está no backend). Nome com "erro" → 422. */

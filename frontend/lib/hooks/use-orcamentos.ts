@@ -15,8 +15,11 @@ import {
   deleteItemTree,
   deleteOrcamento,
   duplicateItem,
+  gerarPdf,
+  getCurvaAbc,
   getEapTree,
   getOrcamento,
+  getPdfStatus,
   importErros,
   importPlanilha,
   listOrcamentos,
@@ -40,6 +43,8 @@ export const orcamentoKeys = {
   list: (params: ListOrcamentosParams) => ["orcamentos", "list", params] as const,
   detail: (id: string) => ["orcamentos", "detail", id] as const,
   tree: (versaoId: string) => ["orcamentos", "tree", versaoId] as const,
+  curva: (id: string) => ["orcamentos", "curva-abc", id] as const,
+  pdf: (id: string) => ["orcamentos", "pdf", id] as const,
 };
 
 function errorMessage(error: unknown): string {
@@ -67,6 +72,37 @@ export function useEapTree(versaoId: string) {
     queryKey: orcamentoKeys.tree(versaoId),
     queryFn: () => getEapTree(versaoId),
     enabled: versaoId !== "",
+  });
+}
+
+export function useCurvaAbc(orcamentoId: string) {
+  return useQuery({
+    queryKey: orcamentoKeys.curva(orcamentoId),
+    queryFn: () => getCurvaAbc(orcamentoId),
+    enabled: orcamentoId !== "",
+  });
+}
+
+/** Status do PDF (URL de download). Desligado até o usuário abrir o painel;
+ * 404 (ainda não gerado) não deve insistir em retry. */
+export function usePdfStatus(orcamentoId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: orcamentoKeys.pdf(orcamentoId),
+    queryFn: () => getPdfStatus(orcamentoId),
+    enabled: enabled && orcamentoId !== "",
+    retry: false,
+  });
+}
+
+export function useGerarPdf(orcamentoId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => gerarPdf(orcamentoId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: orcamentoKeys.pdf(orcamentoId) });
+      toast.success("PDF gerado");
+    },
+    onError: (error) => toast.error(errorMessage(error)),
   });
 }
 

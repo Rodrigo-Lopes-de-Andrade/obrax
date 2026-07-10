@@ -286,6 +286,44 @@ export interface PrecificacaoInput {
   taxa_adm: string;
 }
 
+/* ---- Curva ABC (US-14) — espelho de schemas.py `CurvaAbc`.
+ * `pct`/`pct_acumulado` são frações (Decimal string, ex. "0.8000"). ---- */
+export type AbcClasseNome = "A" | "B" | "C";
+
+export interface AbcItem {
+  id: string;
+  codigo: string | null;
+  descricao: string;
+  unidade: string | null;
+  custo: string;
+  pct: string;
+  pct_acumulado: string;
+  classe: AbcClasseNome;
+}
+
+export interface AbcClasse {
+  classe: AbcClasseNome;
+  count: number;
+  custo: string;
+  pct: string;
+}
+
+export interface CurvaAbc {
+  custo_total: string;
+  itens: AbcItem[];
+  classes: AbcClasse[];
+}
+
+/* ---- PDF do orçamento (US-17) — espelho de schemas.py. ---- */
+export interface OrcamentoPdfGerado {
+  gerado_em: string;
+  content_type: string;
+}
+
+export interface OrcamentoPdfStatus extends OrcamentoPdfGerado {
+  download_url: string;
+}
+
 /** Catálogo de insumos (SINAPI global + custom do tenant). */
 export interface Insumo {
   id: string;

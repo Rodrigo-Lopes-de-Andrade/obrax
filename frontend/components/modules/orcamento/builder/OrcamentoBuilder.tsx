@@ -23,16 +23,18 @@ import {
   useUpdateOrcamentoStatus,
 } from "@/lib/hooks/use-orcamentos";
 import { ORCAMENTO_STATUS_OPTIONS, nextStatuses } from "../status";
+import { BdiTab } from "./BdiTab";
 import { EstruturaTab } from "./EstruturaTab";
 import { ImportDialog } from "./ImportDialog";
 import { PrecificacaoTab } from "./PrecificacaoTab";
 import { ResumoTab } from "./ResumoTab";
 
-type TabKey = "estrutura" | "precificacao" | "resumo";
+type TabKey = "estrutura" | "precificacao" | "bdi" | "resumo";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "estrutura", label: "Estrutura" },
   { key: "precificacao", label: "Precificação" },
+  { key: "bdi", label: "Curva ABC" },
   { key: "resumo", label: "Resumo" },
 ];
 
@@ -162,6 +164,8 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
           />
         ) : tab === "precificacao" ? (
           <PrecificacaoTab versaoId={versaoId} versao={versao} itens={itens} locked={locked} />
+        ) : tab === "bdi" ? (
+          <BdiTab orcamentoId={orcamentoId} />
         ) : (
           <ResumoTab
             orcamentoId={orcamentoId}

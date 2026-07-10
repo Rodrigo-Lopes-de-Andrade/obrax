@@ -1,5 +1,6 @@
 import { api, ApiError } from "./client";
 import type {
+  CurvaAbc,
   EapTree,
   ImportErro,
   ItemCreateInput,
@@ -7,6 +8,8 @@ import type {
   Orcamento,
   OrcamentoCreateInput,
   OrcamentoDetail,
+  OrcamentoPdfGerado,
+  OrcamentoPdfStatus,
   OrcamentoStatus,
   Page,
   PrecificacaoInput,
@@ -53,6 +56,21 @@ export function updateOrcamentoStatus(
 
 export function deleteOrcamento(id: string): Promise<void> {
   return api.delete(`/api/v1/orcamentos/${id}`);
+}
+
+/** Curva ABC (US-14) da versão atual — itens A/B/C + resumo por classe. */
+export function getCurvaAbc(id: string): Promise<CurvaAbc> {
+  return api.get(`/api/v1/orcamentos/${id}/curva-abc`);
+}
+
+/** Gera (síncrono no backend) o PDF timbrado da versão atual. */
+export function gerarPdf(id: string): Promise<OrcamentoPdfGerado> {
+  return api.post(`/api/v1/orcamentos/${id}/pdf`, {});
+}
+
+/** Metadados + URL de download assinada do PDF; 404 enquanto não gerado. */
+export function getPdfStatus(id: string): Promise<OrcamentoPdfStatus> {
+  return api.get(`/api/v1/orcamentos/${id}/pdf`);
 }
 
 /* ---- Itens da EAP (toda mutação devolve a árvore recalculada) ---- */
