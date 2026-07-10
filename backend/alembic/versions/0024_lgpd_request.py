@@ -99,9 +99,7 @@ def upgrade() -> None:
         ),
         sa.Column("processed_at", sa.TIMESTAMP(timezone=True), nullable=True),
     )
-    op.execute(
-        "CREATE INDEX ix_lgpd_request_company_id_desc ON lgpd_request (company_id, id DESC)"
-    )
+    op.execute("CREATE INDEX ix_lgpd_request_company_id_desc ON lgpd_request (company_id, id DESC)")
 
     op.execute("ALTER TABLE lgpd_request ENABLE ROW LEVEL SECURITY")
     op.execute("ALTER TABLE lgpd_request FORCE ROW LEVEL SECURITY")

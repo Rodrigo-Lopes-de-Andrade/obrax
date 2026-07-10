@@ -111,19 +111,29 @@ def test_aprovar_orcamento(
     assert body["decisao"] == "aprovado"
 
     with SessionLocal() as s:
-        assert s.execute(
-            text("SELECT status FROM orcamento WHERE id = :id"), {"id": orc_id}
-        ).scalar_one() == "aprovado"
-        assert s.execute(
-            text("SELECT is_locked FROM orcamento_versao WHERE id = :id"), {"id": versao_id}
-        ).scalar_one() is True
-        aprov = s.execute(
-            text(
-                "SELECT decisao, assinado_por, host(ip) AS ip, assinatura_path "
-                "FROM orcamento_aprovacao WHERE orcamento_id = :id"
-            ),
-            {"id": orc_id},
-        ).mappings().one()
+        assert (
+            s.execute(
+                text("SELECT status FROM orcamento WHERE id = :id"), {"id": orc_id}
+            ).scalar_one()
+            == "aprovado"
+        )
+        assert (
+            s.execute(
+                text("SELECT is_locked FROM orcamento_versao WHERE id = :id"), {"id": versao_id}
+            ).scalar_one()
+            is True
+        )
+        aprov = (
+            s.execute(
+                text(
+                    "SELECT decisao, assinado_por, host(ip) AS ip, assinatura_path "
+                    "FROM orcamento_aprovacao WHERE orcamento_id = :id"
+                ),
+                {"id": orc_id},
+            )
+            .mappings()
+            .one()
+        )
         assert aprov["decisao"] == "aprovado"
         assert aprov["assinado_por"] == "João Cliente"
         assert aprov["ip"] == "203.0.113.7"
@@ -156,13 +166,19 @@ def test_rejeitar_nao_trava_versao(
     assert resp.json()["status"] == "rejeitado"
 
     with SessionLocal() as s:
-        assert s.execute(
-            text("SELECT status FROM orcamento WHERE id = :id"), {"id": orc_id}
-        ).scalar_one() == "rejeitado"
+        assert (
+            s.execute(
+                text("SELECT status FROM orcamento WHERE id = :id"), {"id": orc_id}
+            ).scalar_one()
+            == "rejeitado"
+        )
         # Rejeitado pode voltar a revisão — a versão NÃO é travada.
-        assert s.execute(
-            text("SELECT is_locked FROM orcamento_versao WHERE id = :id"), {"id": versao_id}
-        ).scalar_one() is False
+        assert (
+            s.execute(
+                text("SELECT is_locked FROM orcamento_versao WHERE id = :id"), {"id": versao_id}
+            ).scalar_one()
+            is False
+        )
 
 
 def test_reaprovar_conflita_409(

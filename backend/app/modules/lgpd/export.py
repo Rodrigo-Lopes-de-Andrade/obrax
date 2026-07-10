@@ -48,7 +48,16 @@ def _documentos_csv(rows: list[dict[str, Any]]) -> str:
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(
-        ["id", "obra_id", "nome", "tipo", "categoria", "size_bytes", "visivel_cliente", "created_at"]
+        [
+            "id",
+            "obra_id",
+            "nome",
+            "tipo",
+            "categoria",
+            "size_bytes",
+            "visivel_cliente",
+            "created_at",
+        ]
     )
     for r in rows:
         writer.writerow(

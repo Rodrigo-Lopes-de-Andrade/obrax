@@ -84,13 +84,9 @@ def create_delete(
         .first()
     )
     if row is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="cliente não encontrado"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="cliente não encontrado")
     if row["anonymized_at"] is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="cliente já anonimizado"
-        )
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="cliente já anonimizado")
 
     # Soft-delete (marca a janela de 30 dias; preserva um deleted_at anterior).
     session.execute(
@@ -158,14 +154,14 @@ def list_requests(
     return page, next_cursor
 
 
-def get_download(session: Session, storage: StorageClient, *, request_id: uuid.UUID) -> dict[str, Any]:
+def get_download(
+    session: Session, storage: StorageClient, *, request_id: uuid.UUID
+) -> dict[str, Any]:
     """URL de download da exportação, se ainda válida. 404 inexistente, 409 se
     não concluída, 410 se o link já expirou (>7 dias)."""
     row = (
         session.execute(
-            text(
-                "SELECT status, payload_path, expires_at FROM lgpd_request WHERE id = :id"
-            ),
+            text("SELECT status, payload_path, expires_at FROM lgpd_request WHERE id = :id"),
             {"id": request_id},
         )
         .mappings()

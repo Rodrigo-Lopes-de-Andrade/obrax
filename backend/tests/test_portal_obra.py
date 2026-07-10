@@ -72,7 +72,13 @@ def _seed_documento(company_id: str, obra_id: str, *, nome: str, visivel: bool) 
                 "(company_id, obra_id, nome, tipo, storage_path, visivel_cliente) "
                 "VALUES (:c, :o, :n, 'projeto', :path, :v) RETURNING id"
             ),
-            {"c": company_id, "o": obra_id, "n": nome, "path": f"{company_id}/{obra_id}/x", "v": visivel},
+            {
+                "c": company_id,
+                "o": obra_id,
+                "n": nome,
+                "path": f"{company_id}/{obra_id}/x",
+                "v": visivel,
+            },
         ).scalar_one()
         s.commit()
     return str(doc_id)
@@ -133,9 +139,7 @@ def test_token_tipo_errado_401(
     assert resp.status_code == 401
 
 
-def test_link_exige_role_de_gestao(
-    client: TestClient, seed_tenant: SeedTenant
-) -> None:
+def test_link_exige_role_de_gestao(client: TestClient, seed_tenant: SeedTenant) -> None:
     campo = seed_tenant(role="campo")
     # 'campo' não pode emitir link — o role gate barra antes de tocar a obra.
     resp = client.post(f"/api/v1/obras/{uuid.uuid4()}/portal-link", headers=campo.auth_header)

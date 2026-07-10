@@ -216,7 +216,9 @@ def _decode_assinatura(data_url: str) -> bytes:
         ) from exc
 
 
-def _notify_gestores(session: Session, notifier: Notifier, *, company_id: str, assunto: str) -> None:
+def _notify_gestores(
+    session: Session, notifier: Notifier, *, company_id: str, assunto: str
+) -> None:
     """Best-effort: avisa owners/admins/gestores da decisão. Nunca derruba a
     aprovação — qualquer falha (RLS, envio) é logada e engolida."""
     try:

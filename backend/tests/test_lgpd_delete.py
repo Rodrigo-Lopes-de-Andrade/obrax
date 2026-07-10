@@ -86,10 +86,14 @@ def test_delete_soft_deleta_e_registra_pendente(
     assert body["cliente_id"] == cliente_id
 
     with SessionLocal() as s:
-        row = s.execute(
-            text("SELECT deleted_at, anonymized_at, nome FROM clientes WHERE id = :id"),
-            {"id": cliente_id},
-        ).mappings().one()
+        row = (
+            s.execute(
+                text("SELECT deleted_at, anonymized_at, nome FROM clientes WHERE id = :id"),
+                {"id": cliente_id},
+            )
+            .mappings()
+            .one()
+        )
         assert row["deleted_at"] is not None  # soft-deletado
         assert row["anonymized_at"] is None  # PII ainda íntegro (anonimiza após 30d)
         assert row["nome"] == "Fulano de Tal"
@@ -128,13 +132,17 @@ def test_anonimizar_cliente_remove_pii_e_audita(
         s.commit()
 
     with SessionLocal() as s:
-        row = s.execute(
-            text(
-                "SELECT documento, nome, email, telefone, anonymized_at "
-                "FROM clientes WHERE id = :id"
-            ),
-            {"id": cliente_id},
-        ).mappings().one()
+        row = (
+            s.execute(
+                text(
+                    "SELECT documento, nome, email, telefone, anonymized_at "
+                    "FROM clientes WHERE id = :id"
+                ),
+                {"id": cliente_id},
+            )
+            .mappings()
+            .one()
+        )
         assert row["documento"].startswith("ANON-")
         assert row["nome"] == "[titular removido - LGPD]"
         assert row["email"] is None

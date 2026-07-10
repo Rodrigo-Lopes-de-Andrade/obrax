@@ -156,22 +156,8 @@ def test_listar_pedidos(
 ) -> None:
     owner = seed_tenant(role="owner")
     _seed_dados(client, owner)
-    client.post(
-        "/api/v1/lgpd/requests", headers=owner.auth_header, json={"request_type": "export"}
-    )
+    client.post("/api/v1/lgpd/requests", headers=owner.auth_header, json={"request_type": "export"})
     resp = client.get("/api/v1/lgpd/requests", headers=owner.auth_header)
     assert resp.status_code == 200, resp.text
     assert len(resp.json()["items"]) == 1
     assert resp.json()["items"][0]["request_type"] == "export"
-
-
-def test_delete_ainda_nao_suportado_422(
-    client: TestClient, seed_tenant: SeedTenant, fake_storage: FakeStorage
-) -> None:
-    owner = seed_tenant(role="owner")
-    resp = client.post(
-        "/api/v1/lgpd/requests",
-        headers=owner.auth_header,
-        json={"request_type": "delete", "cliente_id": "00000000-0000-0000-0000-000000000000"},
-    )
-    assert resp.status_code == 422
