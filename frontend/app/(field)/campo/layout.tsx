@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { BottomNav } from "@/components/field/BottomNav";
 import { FieldHeader } from "@/components/field/FieldHeader";
+import { SyncProvider } from "@/components/field/SyncProvider";
 
 export const metadata: Metadata = {
   title: "Obrax Campo",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 export default function FieldLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <SyncProvider />
       <FieldHeader />
       {/* pb cobre a BottomNav fixa (56px) + safe-area. */}
       <main className="mx-auto w-full max-w-md flex-1 px-4 pt-4 pb-[calc(72px+env(safe-area-inset-bottom))]">
