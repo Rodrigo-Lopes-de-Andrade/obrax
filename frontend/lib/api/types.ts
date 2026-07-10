@@ -176,6 +176,34 @@ export interface Page<T> {
   next_cursor: string | null;
 }
 
+/* ---- Relatórios gerenciais (US-10) — espelho de gestao/relatorios/schemas.py.
+ * Valores financeiros são Decimal serializado como string. ---- */
+export interface ObrasStatusLinha {
+  status: ObraStatus;
+  count: number;
+  valor: string;
+}
+
+export interface RelatorioObrasAtivas {
+  ativas: number;
+  valor_ativas: string;
+  total: number;
+  por_status: ObrasStatusLinha[];
+}
+
+export interface OrcamentosStatusLinha {
+  status: OrcamentoStatus;
+  count: number;
+  preco_venda: string;
+}
+
+export interface RelatorioOrcamentos {
+  total: number;
+  preco_venda_total: string;
+  pendentes: number;
+  por_status: OrcamentosStatusLinha[];
+}
+
 /* ------------------------------------------------------------------ *
  * Módulo 2 — Orçamentos (EAP). Espelho de app/modules/orcamento.
  * Todo valor financeiro é Decimal serializado como string (nunca float).

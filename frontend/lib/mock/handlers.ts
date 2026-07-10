@@ -47,6 +47,7 @@ import {
   updateItem,
   updateStatus,
 } from "./orcamento-mock";
+import { relatorioObrasAtivas, relatorioOrcamentos } from "./relatorios-mock";
 
 ensureSeed();
 ensureOrcamentoSeed();
@@ -341,6 +342,23 @@ export const handlers = [
   http.get("/api/v1/me", async () => {
     await delay(80);
     return HttpResponse.json(currentUser());
+  }),
+
+  // ── Relatórios (US-10, B6.5) ────────────────────────────────────────
+  http.get("/api/v1/relatorios/obras-ativas", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    return HttpResponse.json(
+      relatorioObrasAtivas(url.searchParams.get("from"), url.searchParams.get("to")),
+    );
+  }),
+
+  http.get("/api/v1/relatorios/orcamentos", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    return HttpResponse.json(
+      relatorioOrcamentos(url.searchParams.get("from"), url.searchParams.get("to")),
+    );
   }),
 
   // ── Dashboard (KPIs, B4.4) ──────────────────────────────────────────

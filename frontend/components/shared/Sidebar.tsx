@@ -34,7 +34,7 @@ const navV2 = [
   { label: "Financeiro", icon: Wallet, href: "#", disabled: true },
 ];
 
-const navRelatorios = [{ label: "Relatórios", icon: BarChart3, href: "#" }];
+const navRelatorios = [{ label: "Relatórios", icon: BarChart3, href: "/relatorios" }];
 
 const navIa = [
   { label: "Assistente IA", icon: Bot, href: "#" },
