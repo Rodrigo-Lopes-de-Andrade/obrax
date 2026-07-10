@@ -11,12 +11,12 @@ import Dexie, { type Table } from "dexie";
 
 export type MutationStatus = "pending" | "uploading" | "failed";
 
-/** Tipos de mutação enfileiráveis. Novos tipos (fotos, ocorrências) entram aqui
- * nas próximas sprints — o worker despacha por `type`. */
+/** Tipos de mutação enfileiráveis. O worker despacha por `type`. */
 export type MutationType =
   | "checklist.toggle"
   | "checklist.create"
-  | "checklist.delete";
+  | "checklist.delete"
+  | "photo.upload";
 
 export interface QueuedMutation {
   id?: number;
@@ -34,14 +34,36 @@ export interface QueuedMutation {
   createdAt: number;
 }
 
+/**
+ * Blob da foto capturada, guardado no IndexedDB até o upload confirmar (F8.2).
+ * Fica separado da fila de mutações (blobs são grandes; a fila é leve) e é
+ * chaveado pelo `clientPhotoId` — a mesma chave de idempotência da mutação
+ * `photo.upload` (entityId) e do header Idempotency-Key no sync.
+ */
+export interface PhotoUpload {
+  clientPhotoId: string;
+  obraId: string;
+  blob: Blob;
+  sha256: string;
+  sizeBytes: number;
+  capturedAt: string;
+  createdAt: number;
+}
+
 class OfflineDB extends Dexie {
   mutations!: Table<QueuedMutation, number>;
+  photos!: Table<PhotoUpload, string>;
 
   constructor() {
     super("obrax-offline");
     // Índices: status (fila do worker/badge), entityId (dedup), nextAttemptAt.
     this.version(1).stores({
       mutations: "++id, status, entityId, type, nextAttemptAt",
+    });
+    // v2 (F8.2): tabela de blobs de foto, chaveada por clientPhotoId.
+    this.version(2).stores({
+      mutations: "++id, status, entityId, type, nextAttemptAt",
+      photos: "clientPhotoId, obraId",
     });
   }
 }
@@ -108,4 +130,51 @@ export async function retryAllFailed(): Promise<void> {
 /** Remove uma mutação da fila (descartar). */
 export async function discardMutation(id: number): Promise<void> {
   await offlineDB.mutations.delete(id);
+}
+
+/**
+ * Enfileira o upload de uma foto (F8.2): guarda o blob e cria a mutação
+ * `photo.upload` numa única transação. O `clientPhotoId` liga as duas e garante
+ * idempotência ponta a ponta (fila → Idempotency-Key → dedup no backend).
+ */
+export async function enqueuePhotoUpload(input: {
+  clientPhotoId: string;
+  obraId: string;
+  blob: Blob;
+  sha256: string;
+  sizeBytes: number;
+  capturedAt: string;
+  label: string;
+}): Promise<void> {
+  const now = Date.now();
+  await offlineDB.transaction("rw", offlineDB.mutations, offlineDB.photos, async () => {
+    await offlineDB.photos.put({
+      clientPhotoId: input.clientPhotoId,
+      obraId: input.obraId,
+      blob: input.blob,
+      sha256: input.sha256,
+      sizeBytes: input.sizeBytes,
+      capturedAt: input.capturedAt,
+      createdAt: now,
+    });
+    await offlineDB.mutations.add({
+      type: "photo.upload",
+      entityId: input.clientPhotoId,
+      label: input.label,
+      payload: { obraId: input.obraId },
+      status: "pending",
+      attempts: 0,
+      nextAttemptAt: now,
+      createdAt: now,
+    });
+  });
+}
+
+export function getPhotoUpload(clientPhotoId: string): Promise<PhotoUpload | undefined> {
+  return offlineDB.photos.get(clientPhotoId);
+}
+
+/** Descarta o blob após o upload confirmar (ou o servidor reportar duplicata). */
+export async function deletePhotoUpload(clientPhotoId: string): Promise<void> {
+  await offlineDB.photos.delete(clientPhotoId);
 }

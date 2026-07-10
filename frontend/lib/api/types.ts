@@ -198,6 +198,62 @@ export interface ChecklistItemUpdateInput {
   sort_order?: number;
 }
 
+/* ---- Fotos de campo (US-09/US-17) — espelho de gestao/fotos/schemas.py. ---- */
+export type PhotoSyncStatus = "pendente" | "sincronizado";
+
+export interface Photo {
+  id: string;
+  obra_id: string;
+  ocorrencia_id: string | null;
+  client_photo_id: string;
+  sha256: string;
+  size_bytes: number;
+  sync_status: PhotoSyncStatus;
+  captured_at: string;
+  synced_at: string | null;
+  created_at: string;
+  /** URL de download assinada; `null` enquanto pendente (sem objeto no bucket). */
+  download_url: string | null;
+}
+
+export interface PhotoSyncInput {
+  obra_id: string;
+  sha256: string;
+  size_bytes: number;
+  captured_at: string;
+}
+
+/** Resposta do /photos/sync: a URL assinada p/ o PUT direto no storage. */
+export interface PhotoSyncResult {
+  photo_id: string;
+  upload_url: string;
+  method: string;
+  expires_in: number;
+}
+
+/* ---- Ocorrências de campo (US-18) — espelho de gestao/ocorrencias/schemas.py. ---- */
+export type OcorrenciaStatus = "aberto" | "resolvido";
+
+export interface Ocorrencia {
+  id: string;
+  obra_id: string;
+  titulo: string;
+  descricao: string | null;
+  status: OcorrenciaStatus;
+  gps_lat: number | null;
+  gps_lng: number | null;
+  photo_ids: string[];
+  created_at: string;
+}
+
+export interface OcorrenciaCreateInput {
+  titulo: string;
+  descricao?: string | null;
+  gps_lat?: number | null;
+  gps_lng?: number | null;
+  photo_ids: string[];
+}
+
 /* ---- Relatórios gerenciais (US-10) — espelho de gestao/relatorios/schemas.py.
  * Valores financeiros são Decimal serializado como string. ---- */
 export interface ObrasStatusLinha {

@@ -6,6 +6,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, CloudOff, Loader2, Plus, RotateCw } from "lucide-react";
 
+import { ObraTabs } from "@/components/field/ObraTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,6 +95,8 @@ export function ChecklistView({ obraId }: { obraId: string }) {
           </p>
         </div>
       </div>
+
+      <ObraTabs obraId={obraId} />
 
       {!listQuery.isLoading && items.length > 0 ? (
         <div className="mb-3 flex items-center justify-between rounded-lg bg-muted px-3 py-2 text-sm">

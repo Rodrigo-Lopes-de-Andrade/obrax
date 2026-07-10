@@ -56,10 +56,25 @@ import {
   listChecklist,
   updateChecklistItem,
 } from "./checklist-mock";
+import {
+  confirmPhotoMock,
+  ensureFotosSeed,
+  FotosMockError,
+  listPhotosMock,
+  storageBlobs,
+  syncPhotoMock,
+} from "./fotos-mock";
+import {
+  createOcorrenciaMock,
+  listOcorrenciasMock,
+  OcorrenciasMockError,
+  updateOcorrenciaStatusMock,
+} from "./ocorrencias-mock";
 
 ensureSeed();
 ensureOrcamentoSeed();
 ensureChecklistSeed();
+ensureFotosSeed();
 
 /** Latência artificial para os skeletons/estados de loading aparecerem. */
 const LATENCY = 350;
@@ -100,6 +115,16 @@ function mockErrorResponse(e: unknown) {
 /** Converte um ChecklistMockError numa resposta RFC 7807. */
 function checklistError(e: unknown) {
   if (e instanceof ChecklistMockError) return problem(e.status, "erro", e.detail);
+  throw e;
+}
+
+/** Converte erros dos mocks de fotos/ocorrências em RFC 7807. */
+function fotosError(e: unknown) {
+  if (e instanceof FotosMockError) return problem(e.status, "erro", e.detail);
+  throw e;
+}
+function ocorrenciasError(e: unknown) {
+  if (e instanceof OcorrenciasMockError) return problem(e.status, "erro", e.detail);
   throw e;
 }
 
@@ -256,10 +281,21 @@ export const handlers = [
     );
   }),
 
-  // Mock do PUT direto no storage (URL assinada) — só confirma o recebimento.
-  http.put("/_mock/storage/:id", async () => {
+  // Mock do PUT direto no storage (URL assinada). Guarda os bytes p/ a galeria
+  // de fotos servir a miniatura real depois (documentos não fazem GET aqui).
+  http.put("/_mock/storage/:id", async ({ params, request }) => {
     await delay(150);
+    const bytes = await request.arrayBuffer();
+    const type = request.headers.get("content-type") ?? "application/octet-stream";
+    storageBlobs.set(params.id as string, { bytes, type });
     return new HttpResponse(null, { status: 200 });
+  }),
+
+  // GET do objeto no storage mock (download_url da foto sincronizada).
+  http.get("/_mock/storage/:id", async ({ params }) => {
+    const blob = storageBlobs.get(params.id as string);
+    if (!blob) return new HttpResponse(null, { status: 404 });
+    return new HttpResponse(blob.bytes, { headers: { "Content-Type": blob.type } });
   }),
 
   http.post("/api/v1/documentos/:id/confirm", async ({ params }) => {
@@ -416,6 +452,77 @@ export const handlers = [
       return new HttpResponse(null, { status: 204 });
     } catch (e) {
       return checklistError(e);
+    }
+  }),
+
+  // ── Fotos de campo (US-09/US-17, B8.2–B8.3) ─────────────────────────
+  http.post("/api/v1/photos/sync", async ({ request }) => {
+    await delay(LATENCY);
+    const clientPhotoId = request.headers.get("Idempotency-Key");
+    if (!clientPhotoId) return problem(422, "Idempotency-Key obrigatório");
+    const body = (await request.json()) as {
+      obra_id: string;
+      sha256: string;
+      size_bytes: number;
+      captured_at: string;
+    };
+    try {
+      return HttpResponse.json(
+        syncPhotoMock(body.obra_id, clientPhotoId, body.sha256, body.size_bytes, body.captured_at),
+        { status: 201 },
+      );
+    } catch (e) {
+      return fotosError(e);
+    }
+  }),
+
+  http.post("/api/v1/photos/:id/confirm", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(confirmPhotoMock(params.id as string));
+    } catch (e) {
+      return fotosError(e);
+    }
+  }),
+
+  http.get("/api/v1/obras/:obraId/photos", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(listPhotosMock(params.obraId as string));
+    } catch (e) {
+      return fotosError(e);
+    }
+  }),
+
+  // ── Ocorrências de campo (US-18, B8.4) ──────────────────────────────
+  http.get("/api/v1/obras/:obraId/ocorrencias", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(listOcorrenciasMock(params.obraId as string));
+    } catch (e) {
+      return ocorrenciasError(e);
+    }
+  }),
+
+  http.post("/api/v1/obras/:obraId/ocorrencias", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as Parameters<typeof createOcorrenciaMock>[1];
+    try {
+      return HttpResponse.json(createOcorrenciaMock(params.obraId as string, body), {
+        status: 201,
+      });
+    } catch (e) {
+      return ocorrenciasError(e);
+    }
+  }),
+
+  http.patch("/api/v1/ocorrencias/:id", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { status: "aberto" | "resolvido" };
+    try {
+      return HttpResponse.json(updateOcorrenciaStatusMock(params.id as string, body.status));
+    } catch (e) {
+      return ocorrenciasError(e);
     }
   }),
 

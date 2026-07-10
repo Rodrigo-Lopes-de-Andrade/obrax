@@ -47,8 +47,10 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, data: unknown) =>
-    request<T>(path, { method: "POST", body: JSON.stringify(data) }),
+  // `headers` opcional: alguns POSTs exigem cabeçalho extra (ex.: Idempotency-Key
+  // em /photos/sync).
+  post: <T>(path: string, data: unknown, headers?: Record<string, string>) =>
+    request<T>(path, { method: "POST", body: JSON.stringify(data), headers }),
   put: <T>(path: string, data: unknown) =>
     request<T>(path, { method: "PUT", body: JSON.stringify(data) }),
   patch: <T>(path: string, data: unknown) =>
