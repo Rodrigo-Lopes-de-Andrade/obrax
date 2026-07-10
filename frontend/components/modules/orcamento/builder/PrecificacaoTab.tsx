@@ -18,6 +18,8 @@ interface Props {
 
 const pctToFraction = (pct: number) => (pct / 100).toFixed(4);
 const fractionToPct = (f: string) => Math.round(Number(f) * 10000) / 100;
+/** Markup/taxa são validados em 0–100% (critério F6.2). */
+const clampPct = (pct: number) => Math.min(100, Math.max(0, pct));
 
 export function PrecificacaoTab({ versaoId, versao, itens, locked }: Props) {
   const setPrec = useSetPrecificacao(versaoId);
@@ -87,6 +89,7 @@ export function PrecificacaoTab({ versaoId, versao, itens, locked }: Props) {
                   descricao={f.descricao}
                   subtotal={f.subtotal}
                   override={f.markup_override}
+                  globalPct={markup}
                   disabled={locked}
                   onCommit={(pct) =>
                     updateItem.mutate({
@@ -159,12 +162,14 @@ function FaseOverrideRow({
   descricao,
   subtotal,
   override,
+  globalPct,
   disabled,
   onCommit,
 }: {
   descricao: string;
   subtotal: string;
   override: string | null;
+  globalPct: number;
   disabled: boolean;
   onCommit: (pct: number | null) => void;
 }) {
@@ -173,14 +178,24 @@ function FaseOverrideRow({
     setDraft(override != null ? String(fractionToPct(override)) : "");
   }, [override]);
 
+  const parsed = draft.trim() === "" ? null : Number(draft.trim().replace(",", "."));
+  const invalid = parsed !== null && (Number.isNaN(parsed) || parsed < 0 || parsed > 100);
+
   const commit = () => {
     const trimmed = draft.trim();
     if (trimmed === "") {
       if (override != null) onCommit(null);
       return;
     }
-    const pct = Number(trimmed.replace(",", "."));
-    if (!Number.isNaN(pct) && pctToFraction(pct) !== override) onCommit(pct);
+    const raw = Number(trimmed.replace(",", "."));
+    if (Number.isNaN(raw)) {
+      // Entrada inválida: reverte para o valor atual (herda global se null).
+      setDraft(override != null ? String(fractionToPct(override)) : "");
+      return;
+    }
+    const pct = clampPct(raw); // valida 0–100% (F6.2)
+    setDraft(String(pct));
+    if (pctToFraction(pct) !== override) onCommit(pct);
   };
 
   return (
@@ -194,11 +209,16 @@ function FaseOverrideRow({
           value={draft}
           disabled={disabled}
           inputMode="decimal"
-          placeholder="global"
+          placeholder={`${globalPct}`}
+          aria-invalid={invalid}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
           onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-          className="h-8 w-20 text-right tabular-nums"
+          className={cn(
+            "h-8 w-20 text-right tabular-nums",
+            invalid && "border-destructive focus-visible:ring-destructive/40",
+          )}
+          title={override == null ? `Herda o markup global (${globalPct}%)` : undefined}
         />
         <span className="text-sm text-muted-foreground">%</span>
       </div>
