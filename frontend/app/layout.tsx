@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -18,6 +18,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Obrax",
   description: "Mini-ERP para pequenas construtoras e reformadoras",
+  // PWA (F7.2): habilita "adicionar à tela inicial" no iOS com barra imersiva.
+  appleWebApp: { capable: true, title: "Obrax", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1a1c24",
 };
 
 export default function RootLayout({

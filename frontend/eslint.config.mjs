@@ -19,6 +19,9 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "public/mockServiceWorker.js",
+      "public/sw.js",
+      "public/sw.js.map",
+      "app/sw.ts",
     ],
   },
 ];
