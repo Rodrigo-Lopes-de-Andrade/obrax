@@ -448,6 +448,96 @@ export interface ImportErro {
   mensagem: string;
 }
 
+/* ------------------------------------------------------------------ *
+ * Portal do cliente (US-19/US-20) — espelho de app/modules/portal.
+ * Superfície read-only e enxuta: sem números financeiros internos.
+ * ------------------------------------------------------------------ */
+export interface PortalDocumento {
+  id: string;
+  nome: string;
+  tipo: string;
+  categoria: string | null;
+  created_at: string;
+  download_url: string | null;
+}
+
+export interface PortalFoto {
+  id: string;
+  captured_at: string;
+  download_url: string | null;
+}
+
+export interface PortalObra {
+  id: string;
+  codigo: string;
+  nome: string;
+  status: ObraStatus;
+  data_inicio: string | null;
+  data_prevista_fim: string | null;
+  /** Razão social da construtora (branding do portal). */
+  construtora: string;
+  documentos: PortalDocumento[];
+  fotos: PortalFoto[];
+}
+
+export type AprovacaoDecisao = "aprovado" | "rejeitado";
+
+/** Orçamento que o cliente vê para aprovar — só o preço final, sem custo/markup. */
+export interface PortalOrcamento {
+  id: string;
+  titulo: string;
+  status: OrcamentoStatus;
+  preco_venda: string;
+  pdf_url: string | null;
+  decisao: AprovacaoDecisao | null;
+  decidido_em: string | null;
+}
+
+export interface PortalAprovacaoInput {
+  comentario?: string | null;
+  assinado_por?: string | null;
+  /** Data URL (base64) da assinatura desenhada; opcional. */
+  assinatura?: string | null;
+}
+
+/** Resposta do POST /obras/{id}/portal-link (admin emite o link). */
+export interface PortalLink {
+  token: string;
+  url: string;
+  expires_at: string;
+}
+
+/* ---- Tickets no portal (US-19) — read-only + nova mensagem (mock). ---- */
+export interface PortalTicket {
+  id: string;
+  titulo: string;
+  status: TicketStatus;
+  created_at: string;
+  mensagens: TicketMensagem[];
+}
+
+/* ------------------------------------------------------------------ *
+ * LGPD (US-21) — espelho de app/modules/lgpd.
+ * ------------------------------------------------------------------ */
+export type LgpdRequestType = "export" | "delete";
+
+export interface LgpdRequest {
+  id: string;
+  request_type: LgpdRequestType;
+  status: string;
+  cliente_id: string | null;
+  created_at: string;
+  expires_at: string | null;
+  processed_at: string | null;
+  /** URL do ZIP, presente ao criar e no endpoint de download. */
+  download_url: string | null;
+}
+
+export interface LgpdRequestCreateInput {
+  request_type: LgpdRequestType;
+  cliente_id?: string | null;
+}
+
 /** RFC 7807 Problem Details — formato de erro da API. */
 export interface ProblemDetail {
   type?: string;

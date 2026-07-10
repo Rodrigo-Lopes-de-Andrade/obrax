@@ -5,6 +5,8 @@ import type {
   DashboardSummary,
   Documento,
   DocumentoTipo,
+  LgpdRequestCreateInput,
+  MensagemCreateInput,
   Obra,
   ObraStatus,
   OrcamentoStatus,
@@ -70,6 +72,15 @@ import {
   OcorrenciasMockError,
   updateOcorrenciaStatusMock,
 } from "./ocorrencias-mock";
+import {
+  addPortalMensagemMock,
+  decidirOrcamentoMock,
+  getPortalObraMock,
+  getPortalOrcamentoMock,
+  getPortalTicketsMock,
+  PortalMockError,
+} from "./portal-mock";
+import { criarPedidoLgpdMock, listarPedidosLgpdMock } from "./lgpd-mock";
 
 ensureSeed();
 ensureOrcamentoSeed();
@@ -125,6 +136,10 @@ function fotosError(e: unknown) {
 }
 function ocorrenciasError(e: unknown) {
   if (e instanceof OcorrenciasMockError) return problem(e.status, "erro", e.detail);
+  throw e;
+}
+function portalError(e: unknown) {
+  if (e instanceof PortalMockError) return problem(e.status, "erro", e.message);
   throw e;
 }
 
@@ -813,5 +828,94 @@ export const handlers = [
       items: page,
       next_cursor: hasMore && page.length ? page[page.length - 1].id : null,
     });
+  }),
+
+  // ---- Portal do cliente (US-19/US-20) ----
+  // Admin emite o link. No mock o token é o próprio obra.id.
+  http.post("/api/v1/obras/:obraId/portal-link", async ({ params }) => {
+    await delay(LATENCY);
+    const token = params.obraId as string;
+    return HttpResponse.json(
+      {
+        token,
+        url: `/obra/${token}`,
+        expires_at: new Date(Date.now() + 30 * 60_000).toISOString(),
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.get("/api/v1/portal/obras/:token", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(getPortalObraMock(params.token as string));
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  http.get("/api/v1/portal/orcamentos/:token", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(getPortalOrcamentoMock(params.token as string));
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  http.post("/api/v1/portal/orcamentos/:token/aprovar", async ({ params, request }) => {
+    await delay(LATENCY);
+    await request.json(); // corpo (comentário/assinatura) — ignorado no mock
+    try {
+      return HttpResponse.json(decidirOrcamentoMock(params.token as string, "aprovado"));
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  http.post("/api/v1/portal/orcamentos/:token/rejeitar", async ({ params, request }) => {
+    await delay(LATENCY);
+    await request.json();
+    try {
+      return HttpResponse.json(decidirOrcamentoMock(params.token as string, "rejeitado"));
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  http.get("/api/v1/portal/tickets/:token", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(getPortalTicketsMock(params.token as string));
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  http.post("/api/v1/portal/tickets/:token/:ticketId/mensagens", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as MensagemCreateInput;
+    try {
+      return HttpResponse.json(addPortalMensagemMock(params.ticketId as string, body), {
+        status: 201,
+      });
+    } catch (e) {
+      return portalError(e);
+    }
+  }),
+
+  // ---- LGPD (US-21) ----
+  http.post("/api/v1/lgpd/requests", async ({ request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as LgpdRequestCreateInput;
+    if (body.request_type === "delete" && !body.cliente_id) {
+      return problem(422, "cliente_id obrigatório", "cliente_id é obrigatório para eliminação");
+    }
+    return HttpResponse.json(criarPedidoLgpdMock(body), { status: 201 });
+  }),
+
+  http.get("/api/v1/lgpd/requests", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(listarPedidosLgpdMock());
   }),
 ];
