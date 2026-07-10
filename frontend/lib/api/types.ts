@@ -176,6 +176,28 @@ export interface Page<T> {
   next_cursor: string | null;
 }
 
+/* ---- Checklist de campo (US-16) — espelho de gestao/checklist/schemas.py. ---- */
+export interface ChecklistItem {
+  id: string;
+  obra_id: string;
+  titulo: string;
+  completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ChecklistItemCreateInput {
+  titulo: string;
+  sort_order?: number;
+}
+
+export interface ChecklistItemUpdateInput {
+  titulo?: string;
+  completed?: boolean;
+  sort_order?: number;
+}
+
 /* ---- Relatórios gerenciais (US-10) — espelho de gestao/relatorios/schemas.py.
  * Valores financeiros são Decimal serializado como string. ---- */
 export interface ObrasStatusLinha {

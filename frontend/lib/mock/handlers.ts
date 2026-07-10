@@ -48,9 +48,18 @@ import {
   updateStatus,
 } from "./orcamento-mock";
 import { relatorioObrasAtivas, relatorioOrcamentos } from "./relatorios-mock";
+import {
+  ChecklistMockError,
+  createChecklistItem,
+  deleteChecklistItem,
+  ensureChecklistSeed,
+  listChecklist,
+  updateChecklistItem,
+} from "./checklist-mock";
 
 ensureSeed();
 ensureOrcamentoSeed();
+ensureChecklistSeed();
 
 /** Latência artificial para os skeletons/estados de loading aparecerem. */
 const LATENCY = 350;
@@ -85,6 +94,12 @@ function mockErrorResponse(e: unknown) {
       { status: e.status },
     );
   }
+  throw e;
+}
+
+/** Converte um ChecklistMockError numa resposta RFC 7807. */
+function checklistError(e: unknown) {
+  if (e instanceof ChecklistMockError) return problem(e.status, "erro", e.detail);
   throw e;
 }
 
@@ -359,6 +374,49 @@ export const handlers = [
     return HttpResponse.json(
       relatorioOrcamentos(url.searchParams.get("from"), url.searchParams.get("to")),
     );
+  }),
+
+  // ── Checklist de campo (US-16, B7.2) ────────────────────────────────
+  http.get("/api/v1/obras/:obraId/checklist", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(listChecklist(params.obraId as string));
+    } catch (e) {
+      return checklistError(e);
+    }
+  }),
+
+  http.post("/api/v1/obras/:obraId/checklist", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { titulo?: string };
+    try {
+      return HttpResponse.json(
+        createChecklistItem(params.obraId as string, body.titulo ?? ""),
+        { status: 201 },
+      );
+    } catch (e) {
+      return checklistError(e);
+    }
+  }),
+
+  http.patch("/api/v1/checklist/:itemId", async ({ params, request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as Record<string, unknown>;
+    try {
+      return HttpResponse.json(updateChecklistItem(params.itemId as string, body));
+    } catch (e) {
+      return checklistError(e);
+    }
+  }),
+
+  http.delete("/api/v1/checklist/:itemId", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      deleteChecklistItem(params.itemId as string);
+      return new HttpResponse(null, { status: 204 });
+    } catch (e) {
+      return checklistError(e);
+    }
   }),
 
   // ── Dashboard (KPIs, B4.4) ──────────────────────────────────────────
