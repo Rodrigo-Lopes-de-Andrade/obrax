@@ -16,17 +16,23 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.deps import get_current_user, get_db, get_tenant, require_roles
 from app.core.middleware import AuthContext
+from app.integrations.pdf import PdfRenderer, get_pdf_renderer
+from app.integrations.storage import StorageClient, get_storage_client
 from app.modules.orcamento.schemas import (
     CurvaAbc,
     OrcamentoCreate,
     OrcamentoDetail,
     OrcamentoOut,
     OrcamentoPage,
+    OrcamentoPdfGerado,
+    OrcamentoPdfStatus,
     OrcamentoStatusUpdate,
 )
 from app.modules.orcamento.services import orcamentos as service
+from app.modules.orcamento.services import pdf_job
 
 router = APIRouter(tags=["orcamentos"])
 
@@ -83,6 +89,38 @@ def get_curva_abc(orcamento_id: UUID, session: Session = Depends(get_db)) -> Cur
     if data is None:  # versão sem itens ainda → curva vazia
         return CurvaAbc(custo_total=Decimal(0), itens=[], classes=[])
     return CurvaAbc.model_validate(data)
+
+
+@router.post(
+    "/orcamentos/{orcamento_id}/pdf",
+    response_model=OrcamentoPdfGerado,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(_WRITE_ROLES)],
+)
+def gerar_pdf(
+    orcamento_id: UUID,
+    session: Session = Depends(get_db),
+    storage: StorageClient = Depends(get_storage_client),
+    renderer: PdfRenderer = Depends(get_pdf_renderer),
+) -> OrcamentoPdfGerado:
+    """Gera (síncrono) o PDF timbrado da versão atual e persiste a chave no
+    storage (US-17). O download é obtido no GET (URL assinada)."""
+    out = pdf_job.gerar_pdf(session, storage=storage, renderer=renderer, orcamento_id=orcamento_id)
+    return OrcamentoPdfGerado.model_validate(out)
+
+
+@router.get("/orcamentos/{orcamento_id}/pdf", response_model=OrcamentoPdfStatus)
+def get_pdf(
+    orcamento_id: UUID,
+    session: Session = Depends(get_db),
+    storage: StorageClient = Depends(get_storage_client),
+) -> OrcamentoPdfStatus:
+    """Metadados do PDF da versão atual + URL de download assinada (TTL curto).
+    404 enquanto o PDF não foi gerado."""
+    out = pdf_job.get_pdf_status(
+        session, storage=storage, orcamento_id=orcamento_id, ttl=settings.pdf_download_ttl
+    )
+    return OrcamentoPdfStatus.model_validate(out)
 
 
 @router.patch(

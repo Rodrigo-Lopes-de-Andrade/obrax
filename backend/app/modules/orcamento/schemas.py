@@ -251,6 +251,27 @@ class CurvaAbc(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
+# PDF do orçamento (B6.3, US-17)
+# --------------------------------------------------------------------------- #
+class OrcamentoPdfGerado(BaseModel):
+    """Resposta do POST /pdf — o PDF da versão atual foi (re)gerado e persistido.
+    `content_type` distingue o artefato de dev (text/html) do de prod
+    (application/pdf); o download é obtido no GET (URL assinada, TTL curto)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    gerado_em: datetime
+    content_type: str
+
+
+class OrcamentoPdfStatus(OrcamentoPdfGerado):
+    """Resposta do GET /pdf — metadados + URL de download assinada sob demanda.
+    A URL nunca é persistida (regra: anexos são storage paths, nunca URLs)."""
+
+    download_url: str
+
+
+# --------------------------------------------------------------------------- #
 # Catálogo de insumos / SINAPI (B5.6, US-05)
 # --------------------------------------------------------------------------- #
 class InsumoOut(BaseModel):

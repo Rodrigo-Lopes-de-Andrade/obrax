@@ -37,13 +37,24 @@ class ObjectStat:
 
 
 class StorageClient(Protocol):
-    """Contrato mínimo usado pelo módulo de documentos. Tests injetam um fake
-    (ver conftest) para não depender de rede."""
+    """Contrato mínimo usado pelos módulos de documentos e PDF. Tests injetam um
+    fake (ver conftest) para não depender de rede."""
 
     def presigned_put_url(self, *, key: str) -> PresignedUpload: ...
 
     def stat(self, *, key: str) -> ObjectStat | None:
         """Metadados do objeto (HEAD) ou `None` se ele não existe."""
+        ...
+
+    def put_object(self, *, key: str, body: bytes, content_type: str) -> None:
+        """Sobe bytes gerados no servidor (ex.: PDF do orçamento). Diferente do
+        upload de documentos (presigned PUT direto do cliente), aqui o artefato
+        nasce no backend, então subimos server-side."""
+        ...
+
+    def presigned_get_url(self, *, key: str, expires_in: int) -> str:
+        """URL de download assinada (GET) com TTL. Nunca é persistida — é gerada
+        sob demanda a cada leitura."""
         ...
 
 
@@ -77,6 +88,17 @@ class S3StorageClient:
                 return None
             raise
         return ObjectStat(size_bytes=int(head["ContentLength"]))
+
+    def put_object(self, *, key: str, body: bytes, content_type: str) -> None:
+        self._client.put_object(Bucket=self._bucket, Key=key, Body=body, ContentType=content_type)
+
+    def presigned_get_url(self, *, key: str, expires_in: int) -> str:
+        return self._client.generate_presigned_url(  # type: ignore[no-any-return]
+            "get_object",
+            Params={"Bucket": self._bucket, "Key": key},
+            ExpiresIn=expires_in,
+            HttpMethod="GET",
+        )
 
     def ensure_bucket(self) -> None:
         """Cria o bucket se ainda não existe (idempotente). Em dev os buckets

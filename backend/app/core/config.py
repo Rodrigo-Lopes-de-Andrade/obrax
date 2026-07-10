@@ -69,6 +69,13 @@ class Settings:
     realtime_enabled: bool
     supabase_url: str
     supabase_service_key: str
+    # PDF do orçamento (B6.3). `pdf_renderer_url` vazio => renderer de dev
+    # (devolve o próprio HTML como bytes, sem headless); em staging/prod aponta
+    # pro sidecar Puppeteer/Chromium que converte HTML→PDF (ver
+    # app/integrations/pdf.py). `pdf_download_ttl`: TTL (s) da URL assinada de
+    # download do PDF — 1h, bem maior que o presign de upload por ser leitura.
+    pdf_renderer_url: str
+    pdf_download_ttl: int
 
 
 def _to_psycopg_dsn(url: str) -> str:
@@ -127,6 +134,8 @@ def get_settings() -> Settings:
         realtime_enabled=os.environ.get("REALTIME_ENABLED", "").lower() in ("1", "true", "yes"),
         supabase_url=os.environ.get("SUPABASE_URL", ""),
         supabase_service_key=os.environ.get("SUPABASE_SERVICE_KEY", ""),
+        pdf_renderer_url=os.environ.get("PDF_RENDERER_URL", ""),
+        pdf_download_ttl=int(os.environ.get("PDF_DOWNLOAD_TTL", "3600")),
     )
 
 
