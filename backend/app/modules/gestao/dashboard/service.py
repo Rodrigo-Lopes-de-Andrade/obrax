@@ -9,8 +9,8 @@ Definições:
 - obras ativas: `status NOT IN ('concluida','cancelada')` e não soft-deletadas.
   `valor_total` soma o `valor_contrato` dessas obras (NULL conta como 0).
 - tickets abertos: `status = 'aberto'` e não soft-deletados.
-- orçamentos pendentes: 0 por enquanto — a tabela `orcamento` só nasce em B5.1;
-  fica cravado como placeholder até lá.
+- orçamentos pendentes: `status = 'aguardando_aprovacao'` e não soft-deletados —
+  os que esperam decisão do gestor (B6.5 fecha o placeholder de B4.4).
 """
 
 from __future__ import annotations
@@ -30,7 +30,10 @@ _SUMMARY_SQL = text(
     "    AS obras_valor_total, "
     "  (SELECT count(*) FROM ticket "
     "     WHERE deleted_at IS NULL AND status = 'aberto') "
-    "    AS tickets_abertos"
+    "    AS tickets_abertos, "
+    "  (SELECT count(*) FROM orcamento "
+    "     WHERE deleted_at IS NULL AND status = 'aguardando_aprovacao') "
+    "    AS orcamentos_pendentes"
 )
 
 
@@ -40,5 +43,5 @@ def compute_summary(session: Session) -> DashboardSummary:
         obras_ativas=row["obras_ativas"],
         obras_valor_total=row["obras_valor_total"],
         tickets_abertos=row["tickets_abertos"],
-        orcamentos_pendentes=0,  # TODO(B5.x): agregar quando `orcamento` existir.
+        orcamentos_pendentes=row["orcamentos_pendentes"],
     )

@@ -63,6 +63,8 @@ class InProcessTTLCache:
 
 # docs/SPRINTS.md B4.4: janela de cache do dashboard.
 DASHBOARD_TTL_SECONDS = 60.0
+# docs/SPRINTS.md B6.5: relatórios toleram mais defasagem (agregações caras).
+RELATORIOS_TTL_SECONDS = 300.0
 
 
 @lru_cache
@@ -74,3 +76,14 @@ def get_dashboard_cache() -> Cache:
     """Dependency FastAPI: cache singleton do dashboard (por worker).
     Sobrescreva com `app.dependency_overrides` nos testes."""
     return _dashboard_cache()
+
+
+@lru_cache
+def _relatorios_cache() -> Cache:
+    return InProcessTTLCache(ttl_seconds=RELATORIOS_TTL_SECONDS)
+
+
+def get_relatorios_cache() -> Cache:
+    """Dependency FastAPI: cache singleton dos relatórios (por worker), TTL 5min.
+    Sobrescreva com `app.dependency_overrides` nos testes."""
+    return _relatorios_cache()

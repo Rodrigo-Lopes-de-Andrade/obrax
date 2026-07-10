@@ -19,5 +19,5 @@ class DashboardSummary(BaseModel):
     obras_ativas: int
     obras_valor_total: Decimal
     tickets_abertos: int
-    # Placeholder até a Sprint 5 (tabela `orcamento` só existe a partir de B5.1).
+    # Orçamentos aguardando aprovação (B6.5).
     orcamentos_pendentes: int
