@@ -129,6 +129,13 @@ export function Sidebar() {
       </nav>
 
       <div className="mt-auto flex flex-col gap-0.5">
+        <SidebarLink
+          label="Privacidade"
+          icon={ShieldCheck}
+          href="/privacidade"
+          active={isActive("/privacidade")}
+          collapsed={collapsed}
+        />
         <SidebarLink label="Configurações" icon={Settings} href="#" collapsed={collapsed} />
         <div className="mt-1.5 flex items-center gap-2.5 rounded-[10px] border border-white/5 bg-popover px-2.5 py-2.5">
           <div className="flex h-8.5 w-8.5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-[var(--chart-4)] text-[13px] font-bold">
