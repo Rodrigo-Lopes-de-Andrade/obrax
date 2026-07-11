@@ -538,6 +538,80 @@ export interface LgpdRequestCreateInput {
   cliente_id?: string | null;
 }
 
+/* ------------------------------------------------------------------ *
+ * Módulo 3 — Agentes IA (US-22, US-23, US-24). Espelha app/modules/agentes.
+ * ------------------------------------------------------------------ */
+
+/** Papel IA atribuído a um número de WhatsApp (US-23, B10.7). */
+export type AiRole = "consultor" | "solicitador" | "aprovador";
+
+export interface AiPermission {
+  id: string;
+  whatsapp_number: string;
+  role: AiRole;
+  /** Limites de gasto em centavos (nunca float em dinheiro — docs/CLAUDE.md). */
+  daily_limit_cents: number;
+  monthly_limit_cents: number;
+  created_at: string;
+}
+
+export interface AiPermissionCreateInput {
+  whatsapp_number: string;
+  role: AiRole;
+  daily_limit_cents: number;
+  monthly_limit_cents: number;
+}
+
+/** Mensagem do chat do Assistente IA (F10.1). */
+export interface AgentChatMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+}
+
+export type AgentInteractionStatus = "ok" | "erro" | "revertido";
+
+/** Interação auditável de um agente (US-22, F10.2). `agent` é o subagente
+ * acionado (orcamento/compras); `action` é write-only quando houve efeito. */
+export interface AgentInteraction {
+  id: string;
+  whatsapp_number: string;
+  command: string;
+  intent: string | null;
+  agent: string | null;
+  action: string | null;
+  result: string | null;
+  status: AgentInteractionStatus;
+  cost_cents: number;
+  obra_id: string | null;
+  obra_codigo: string | null;
+  reverted_at: string | null;
+  created_at: string;
+}
+
+/** Item sugerido pelo copilot no builder de orçamento (F10.4). */
+export interface CopilotSuggestion {
+  descricao: string;
+  unidade: string;
+  /** Quantidade como string Decimal (nunca number — precisão financeira). */
+  quantidade: string;
+}
+
+export interface CopilotSuggestInput {
+  descricao: string;
+}
+
+/** KPIs de IA no dashboard (F10.5, US-24). */
+export interface IaInsights {
+  acoes_ultima_semana: number;
+  /** Economia de tempo média por interação, em minutos. */
+  economia_tempo_min: number;
+  /** Taxa de sucesso das interações (0..1). */
+  taxa_sucesso: number;
+  ultimas_acoes: AgentInteraction[];
+}
+
 /** RFC 7807 Problem Details — formato de erro da API. */
 export interface ProblemDetail {
   type?: string;

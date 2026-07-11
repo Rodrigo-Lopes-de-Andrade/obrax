@@ -81,6 +81,19 @@ import {
   PortalMockError,
 } from "./portal-mock";
 import { criarPedidoLgpdMock, listarPedidosLgpdMock } from "./lgpd-mock";
+import {
+  IaMockError,
+  copilotSugerirMock,
+  criarPermissaoMock,
+  enviarAssistenteMensagemMock,
+  getAssistenteThreadMock,
+  getFeatureFlagsMock,
+  getIaInsightsMock,
+  listarInteracoesMock,
+  listarPermissoesMock,
+  removerPermissaoMock,
+  reverterInteracaoMock,
+} from "./ia-mock";
 
 ensureSeed();
 ensureOrcamentoSeed();
@@ -140,6 +153,10 @@ function ocorrenciasError(e: unknown) {
 }
 function portalError(e: unknown) {
   if (e instanceof PortalMockError) return problem(e.status, "erro", e.message);
+  throw e;
+}
+function iaError(e: unknown) {
+  if (e instanceof IaMockError) return problem(e.status, "erro", e.message);
   throw e;
 }
 
@@ -917,5 +934,85 @@ export const handlers = [
   http.get("/api/v1/lgpd/requests", async () => {
     await delay(LATENCY);
     return HttpResponse.json(listarPedidosLgpdMock());
+  }),
+
+  // ---- Módulo 3 — Agentes IA (US-22/23/24) ----
+  http.get("/api/v1/feature-flags", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(getFeatureFlagsMock());
+  }),
+
+  // Assistente IA (F10.1)
+  http.get("/api/v1/ia/assistente/mensagens", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(getAssistenteThreadMock());
+  }),
+  http.post("/api/v1/ia/assistente/mensagens", async ({ request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { content: string };
+    try {
+      return HttpResponse.json(enviarAssistenteMensagemMock(body.content), { status: 201 });
+    } catch (e) {
+      return iaError(e);
+    }
+  }),
+
+  // Auditoria (F10.2)
+  http.get("/api/v1/ia/interacoes", async ({ request }) => {
+    await delay(LATENCY);
+    const url = new URL(request.url);
+    return HttpResponse.json(
+      listarInteracoesMock({
+        obraId: url.searchParams.get("obra_id"),
+        agent: url.searchParams.get("agent"),
+        cursor: url.searchParams.get("cursor"),
+        limit: Number(url.searchParams.get("limit") ?? "50"),
+      }),
+    );
+  }),
+  http.post("/api/v1/ia/interacoes/:id/reverter", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      return HttpResponse.json(reverterInteracaoMock(params.id as string));
+    } catch (e) {
+      return iaError(e);
+    }
+  }),
+
+  // Permissões IA (F10.3)
+  http.get("/api/v1/ia/permissoes", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(listarPermissoesMock());
+  }),
+  http.post("/api/v1/ia/permissoes", async ({ request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as Parameters<typeof criarPermissaoMock>[0];
+    try {
+      return HttpResponse.json(criarPermissaoMock(body), { status: 201 });
+    } catch (e) {
+      return iaError(e);
+    }
+  }),
+  http.delete("/api/v1/ia/permissoes/:id", async ({ params }) => {
+    await delay(LATENCY);
+    try {
+      removerPermissaoMock(params.id as string);
+      return new HttpResponse(null, { status: 204 });
+    } catch (e) {
+      return iaError(e);
+    }
+  }),
+
+  // Copilot (F10.4)
+  http.post("/api/v1/ia/copilot/sugerir", async ({ request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as { descricao: string };
+    return HttpResponse.json(copilotSugerirMock(body));
+  }),
+
+  // Insights (F10.5)
+  http.get("/api/v1/ia/insights", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(getIaInsightsMock());
   }),
 ];

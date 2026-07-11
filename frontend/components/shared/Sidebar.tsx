@@ -14,6 +14,7 @@ import {
   BarChart3,
   Bot,
   ShieldCheck,
+  KeyRound,
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
@@ -37,8 +38,9 @@ const navV2 = [
 const navRelatorios = [{ label: "Relatórios", icon: BarChart3, href: "/relatorios" }];
 
 const navIa = [
-  { label: "Assistente IA", icon: Bot, href: "#" },
-  { label: "Auditoria IA", icon: ShieldCheck, href: "#" },
+  { label: "Assistente IA", icon: Bot, href: "/ia/assistente" },
+  { label: "Auditoria IA", icon: ShieldCheck, href: "/ia/auditoria" },
+  { label: "Permissões IA", icon: KeyRound, href: "/ia/permissoes" },
 ];
 
 export function Sidebar() {
