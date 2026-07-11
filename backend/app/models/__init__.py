@@ -4,6 +4,9 @@ schema já criado pelas migrations (colunas `server_default`, enums com
 `create_type=False`, etc).
 """
 
+from app.models.agent_interaction import AgentInteraction
+from app.models.agent_message import AgentMessage
+from app.models.ai_permission import AiPermission
 from app.models.audit_log import AuditLog
 from app.models.base import Base
 from app.models.cliente import Cliente
@@ -19,6 +22,9 @@ from app.models.user import User
 from app.models.user_company_role import UserCompanyRole
 
 __all__ = [
+    "AgentInteraction",
+    "AgentMessage",
+    "AiPermission",
     "AuditLog",
     "Base",
     "Cliente",
