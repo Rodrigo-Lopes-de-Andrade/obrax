@@ -152,7 +152,11 @@ def configure_log_export() -> bool:
     try:
         from opentelemetry._logs import set_logger_provider
         from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
-        from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+
+        # LoggingHandler saiu do `opentelemetry-sdk` (deprecado) para o pacote de
+        # instrumentação; LoggerProvider/BatchLogRecordProcessor seguem no SDK.
+        from opentelemetry.instrumentation.logging.handler import LoggingHandler
+        from opentelemetry.sdk._logs import LoggerProvider
         from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
     except ImportError:
         otel_log.warning(
