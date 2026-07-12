@@ -15,7 +15,7 @@ técnico).
 | Backend | FastAPI (async), SQLAlchemy + psycopg 3 | RFC 7807 para erros; RLS por tenant |
 | Banco | PostgreSQL (Supabase) | Multi-tenant via RLS + `SET LOCAL app.company_id` |
 | Storage | S3-compatível (Supabase Storage / MinIO em dev) | Presigned PUT/GET |
-| Fila de agentes | In-process (dev/CI) → externa em prod | Módulo 3 (WhatsApp/Uazap) |
+| Fila de agentes | In-process (dev/CI) → externa em prod | Módulo 3 (WhatsApp/Uazapi) |
 
 ### Multi-tenancy (crítico)
 Todo dado de tenant é isolado por **Row-Level Security**. A cada request:
@@ -46,8 +46,8 @@ API como `app_admin`.
 | `STORAGE_*` | prod | MinIO local | Endpoint/credenciais/bucket do object store |
 | `REALTIME_ENABLED` + `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | prod | off | Realtime do chat de tickets |
 | `PDF_RENDERER_URL` | prod | dev-renderer | Sidecar HTML→PDF do orçamento |
-| `UAZAP_WEBHOOK_SECRET` | Módulo 3 | vazio (fail-closed) | Valida o HMAC do webhook do WhatsApp |
-| `UAZAP_BASE_URL` / `UAZAP_TOKEN` | Módulo 3 | vazio (no-op) | Cliente de envio Uazap |
+| `UAZAPI_WEBHOOK_SECRET` | Módulo 3 | vazio (fail-closed) | Valida o HMAC do webhook do WhatsApp |
+| `UAZAPI_BASE_URL` / `UAZAPI_TOKEN` | Módulo 3 | vazio (no-op) | Cliente de envio Uazapi (API não-oficial do WhatsApp — https://uazapi.dev/) |
 
 ### Frontend (`NEXT_PUBLIC_*`, expostas ao browser — nunca secrets)
 | Variável | Default | Função |
@@ -117,7 +117,7 @@ use-o no readiness probe verificando `status == "ok"`.
   `assistente_mensagem_enviada`, `lgpd_pedido_criado`).
 
 ### Alertas a armar (B11.3)
-Fila de agentes > 1000 · LLM provider down · Uazap degradado · 5xx > 1% ·
+Fila de agentes > 1000 · LLM provider down · Uazapi degradado · 5xx > 1% ·
 CPU > 70% · Web Vitals acima do threshold. Webhook → Discord/Slack.
 
 ---
@@ -139,7 +139,7 @@ CPU > 70% · Web Vitals acima do threshold. Webhook → Discord/Slack.
 | 5xx em alta | Logs por `request_id`; `/health` (storage/realtime) | Rollback do último deploy; checar migrations pendentes |
 | "Sem company_id no contexto" (401 em massa) | JWT/`JWT_SECRET` rotacionado? relógio? | Reverter rotação; validar clock skew |
 | Vazamento cross-tenant suspeito | Rodar `pytest tests/test_rls_isolation.py tests/test_agentes_rls.py` no staging | Congelar deploy; auditar policy RLS da tabela |
-| Fila de agentes travada | Métrica de profundidade + dead-letter | Drenar dead-letter; checar Uazap/LLM |
+| Fila de agentes travada | Métrica de profundidade + dead-letter | Drenar dead-letter; checar Uazapi/LLM |
 | Storage error no `/health` | Credenciais/bucket/endpoint | Repor `STORAGE_*`; validar presign |
 
 ---
@@ -148,6 +148,6 @@ CPU > 70% · Web Vitals acima do threshold. Webhook → Discord/Slack.
 
 - RLS é a fronteira de tenant — coberta por `tests/test_rls_isolation.py` e
   `tests/test_agentes_rls.py` (Módulo 3). Rode-os no CI contra Postgres real.
-- Webhook do Uazap é **fail-closed**: sem `UAZAP_WEBHOOK_SECRET`, rejeita tudo.
+- Webhook do Uazapi é **fail-closed**: sem `UAZAPI_WEBHOOK_SECRET`, rejeita tudo.
 - Cookies de refresh: `Secure` + `HttpOnly` em produção (`ENVIRONMENT=production`).
 - Secrets nunca em `NEXT_PUBLIC_*` (essas vão para o browser).

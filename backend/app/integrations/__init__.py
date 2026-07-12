@@ -1,2 +1,2 @@
-"""Integrações externas (storage S3, LLM, Uazap, ...). Ver docs/CLAUDE.md >
+"""Integrações externas (storage S3, LLM, Uazapi, ...). Ver docs/CLAUDE.md >
 Mapa de Arquitetura."""

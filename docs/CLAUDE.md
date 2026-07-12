@@ -110,10 +110,10 @@ backend/
     modules/
       gestao/         — clientes, obras, fornecedores, GED, tickets, equipes, usuarios
       orcamento/      — EAP, markup (BudgetCalculator), ABC, versoes, PDF job
-      agentes/        — webhook uazap, LangGraph (StateGraph), subagentes, auditoria
+      agentes/        — webhook uazapi, LangGraph (StateGraph), subagentes, auditoria
       portal/         — cliente final, magic links, aprovação
     jobs/             — Arq workers: pdf.generate, export.generate, email.send, cleanup, agent.retry
-    integrations/     — uazap.py, llm.py (Claude+GPT4o), storage.py (StorageClient abstração)
+    integrations/     — uazapi.py, llm.py (Claude+GPT4o), storage.py (StorageClient abstração)
     api/v1/           — routers (montados por módulo)
   tests/
 
@@ -198,7 +198,7 @@ JWT_SECRET (rotação a cada 90 dias — janela sobreposição 7d)
 REDIS_URL
 ANTHROPIC_API_KEY (LLM primário)
 OPENAI_API_KEY (LLM fallback)
-UAZAP_WEBHOOK_SECRET (HMAC)
+UAZAPI_WEBHOOK_SECRET (HMAC)
 POSTHOG_API_KEY
 SENTRY_DSN
 DOPPLER_TOKEN (ou INFISICAL_TOKEN)

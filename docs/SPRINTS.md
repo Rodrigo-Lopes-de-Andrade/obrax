@@ -443,17 +443,17 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 
 ## Sprint 10: Módulo 3 — Agentes IA (US-22, US-23, US-24) (Dias 123-136)  ✅ **CONCLUÍDA**
 
-**Objetivo:** LangGraph orquestrador, webhook Uazap, subagentes (Orçamento, Compras), auditoria, permissões.
+**Objetivo:** LangGraph orquestrador, webhook Uazapi, subagentes (Orçamento, Compras), auditoria, permissões.
 
 ### Backend Tasks
 
 | Task | Descrição | Estimativa | Critério de Aceite |
 |------|-----------|-----------|-------------------|
-| **B10.1** Webhook Uazap | POST /webhook/uazap (HMAC validation, idempotência msg_id, rate limit 10/min) | 2d | Signature validada, 401 se inválido, 429 se rate limit, 200 ack <500ms |
+| **B10.1** Webhook Uazapi | POST /webhook/uazapi (HMAC validation, idempotência msg_id, rate limit 10/min) | 2d | Signature validada, 401 se inválido, 429 se rate limit, 200 ack <500ms |
 | **B10.2** Fila Redis Streams | agent.process queue com consumer group, XPENDING retry 3x (30s/60s/120s) | 2d | Enfileira msg na transação, worker lê batch, idempotência por message_id |
 | **B10.3** LangGraph orquestrador | Grafo (intake → auth → intent → router → subagent → responder → audit) | 4d | Nodes em Python, tools function_call schema Pydantic, routing by intent |
 | **B10.4** Subagente Orçamento | Tools: get_orcamento_resumo (obra), get_status_obra, responda em português natural | 2d | Consulta read-only (≥90% interpretação correta no MVP), LLM Claude Sonnet primary |
-| **B10.5** Subagente Compras | Tools: criar_solicitacao_compra (item, qtd, obra), validar_orcamento_disponível, user permission check | 2d | Write + permission check (role IA), limite diário/mensal por tier, fallback SMS se Uazap down |
+| **B10.5** Subagente Compras | Tools: criar_solicitacao_compra (item, qtd, obra), validar_orcamento_disponível, user permission check | 2d | Write + permission check (role IA), limite diário/mensal por tier, fallback SMS se Uazapi down |
 | **B10.6** Auditoria agentes (US-22) | agent_interaction table (timestamp, phone, command, agent, action, result, feedback), auditoria append-only | 2d | Cada interação registrada, reversão de ação possível (DELETE compra errada) |
 | **B10.7** Permissões IA (US-23) | Tabela ai_permissions (whatsapp → role IA: consultor/solicitador/aprovador, daily/monthly spend) | 2d | Validação role antes de ação, erro 403 se sem permissão, limite spend enforced |
 | **B10.8** Observability agentes | Métrica agent_response_duration_seconds (alvo <5s P95), agent_interpretation_correct_ratio (90%) | 1d | Prometheus gauge, Sentry on error, Grafana dashboard |
@@ -477,7 +477,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 
 ### Critérios de Saída Sprint 10
 
-- [x] Webhook Uazap funciona (HMAC, rate limit, ack <500ms)
+- [x] Webhook Uazapi funciona (HMAC, rate limit, ack <500ms)
 - [x] Fila Redis Streams funciona (enqueue, worker, retry 3x)
 - [x] LangGraph orquestrador funciona (routing, tool calls, streaming)
 - [x] Subagente Orçamento consulta corretamente (read-only)
@@ -511,7 +511,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 |------|-----------|-----------|-------------------|
 | **B11.1** Logs estruturados | structlog + JSON format, campos (request_id, company_id, user_id, route, status, duration) | 2d | Logs JSON, stdout, indexáveis em Loki |
 | **B11.2** Tracing OpenTelemetry | Spans em HTTP, DB queries lentas (>100ms), LLM calls, jobs | 2d | Traces enviados Grafana Tempo, flame graph funciona |
-| **B11.3** Alertas Grafana | Fila agente >1000, LLM provider down, Uazap degraded, erro 5xx >1%, CPU >70% | 1d | Alertas configurados, webhook para Discord/Slack teste |
+| **B11.3** Alertas Grafana | Fila agente >1000, LLM provider down, Uazapi degraded, erro 5xx >1%, CPU >70% | 1d | Alertas configurados, webhook para Discord/Slack teste |
 | **B11.4** Performance testes | Load test (200 usuários simultâneos), latência P95 <1.5s | 2d | Baseline documentado, CI gate opcional (warn if degrade) |
 | **B11.5** Security testes | Validação RLS (cross-tenant access = 403), CSRF, XSS, SQL injection | 2d | Testes no pytest, 100% coverage endpoints sensíveis |
 

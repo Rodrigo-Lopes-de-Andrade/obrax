@@ -200,14 +200,14 @@ Rotas `/ia/*` → redirect para `/upgrade` se flag desabilitada.
 
 **Backend (S10):**
 ```python
-@require_tier('pro', 'enterprise')  # decorator nos endpoints /agentes/* e /webhook/uazap
+@require_tier('pro', 'enterprise')  # decorator nos endpoints /agentes/* e /webhook/uazapi
 ```
 Resposta 403: `{"type": "tier_required", "required_tier": "pro", "upgrade_url": "/upgrade"}`
 
-**Pipeline Webhook Uazap:**
+**Pipeline Webhook Uazapi** (API não-oficial do WhatsApp — https://uazapi.dev/):
 ```
-POST /webhook/uazap
-  → Validar HMAC-SHA256 (X-Uazap-Signature); tolerância replay 5 min → 401 se falhar
+POST /webhook/uazapi
+  → Validar HMAC-SHA256 (X-Uazapi-Signature); tolerância replay 5 min → 401 se falhar
   → Idempotência: Redis SET "wa:msg:seen:{message_id}" TTL 24h → 200 ack se existe
   → Rate limit: 10 req/min/número (sliding window Redis) → 429 se exceder
   → Resolver tenant: whatsapp_number → user → company_id; não mapeado → resposta template
@@ -237,7 +237,7 @@ app/modules/agentes/
   routers/     — webhook.py, logs.py, permissoes.py
   graph/       — agente.py (StateGraph), nodes.py, tools.py
   services/    — intent.py, responder.py, audit.py
-  integrations/— uazap.py, llm.py
+  integrations/— uazapi.py, llm.py
 ```
 
 ---
@@ -301,7 +301,7 @@ POST   /api/v1/portal/orcamentos/{magic_jti}/decisao → {acao: 'aprovar'|'rejei
 
 ### Agentes IA
 ```
-POST   /webhook/uazap                          → 200 ack <500ms (sem /api/v1)
+POST   /webhook/uazapi                          → 200 ack <500ms (sem /api/v1)
 GET    /api/v1/agentes/logs?obra_id=&tipo=&from=&to=
 POST   /api/v1/agentes/logs/{id}/reverter
 POST   /api/v1/agentes/feedback/{interaction_id} → {correto: bool}
@@ -577,7 +577,7 @@ budget_recalc_duration_seconds  P95 < 300ms
 agent_response_duration_seconds P95 < 5s → alerta se degraded
 agent_interpretation_correct    >= 90% → métrica feedback loop
 agent_queue_depth               alerta se > 1000 por 5 min
-uazap_up / llm_up / storage_up  alerta se down > 5 min
+uazapi_up / llm_up / storage_up  alerta se down > 5 min
 db_pool_in_use                  alerta se > 80%
 erro_5xx_ratio                  alerta se > 1% por 5 min
 llm_custo_diario                alerta se > 80% do budget do tier

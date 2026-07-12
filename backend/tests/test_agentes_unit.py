@@ -15,7 +15,7 @@ import hmac
 
 from app.integrations.agent_queue import MAX_ATTEMPTS, AgentJob, InProcessAgentQueue
 from app.integrations.llm import DeterministicLLM
-from app.integrations.uazap import InProcessRateLimiter, verify_signature
+from app.integrations.uazapi import InProcessRateLimiter, verify_signature
 from app.modules.agentes.observability import AgentMetrics
 from app.modules.agentes.service import copilot_suggest
 

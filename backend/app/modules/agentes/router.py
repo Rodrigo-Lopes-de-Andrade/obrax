@@ -1,7 +1,7 @@
 """Rotas do Módulo 3 (Sprint 10).
 
 Dois grupos:
-- Webhook Uazap (`/webhook/uazap`): não autenticado (valida HMAC), pré-tenant
+- Webhook Uazapi (`/webhook/uazapi`): não autenticado (valida HMAC), pré-tenant
   (usa `app_admin`), rate-limited, idempotente, enfileira e devolve ack rápido.
 - Painel IA (`/ia/*` + `/feature-flags`): autenticado (JWT), sob RLS via `get_db`.
   Espelha o contrato consumido pelo frontend (lib/api/ia.ts).
@@ -21,7 +21,7 @@ from app.core.deps import get_admin_db, get_current_user, get_db, get_tenant, re
 from app.core.middleware import AuthContext
 from app.integrations.agent_queue import AgentJob, AgentQueue, get_agent_queue
 from app.integrations.llm import LLMClient, get_llm_client
-from app.integrations.uazap import InProcessRateLimiter, get_rate_limiter, verify_signature
+from app.integrations.uazapi import InProcessRateLimiter, get_rate_limiter, verify_signature
 from app.modules.agentes import orchestrator, service
 from app.modules.agentes.schemas import (
     ChatMessageIn,
@@ -34,7 +34,7 @@ from app.modules.agentes.schemas import (
     PermissionCreate,
     PermissionOut,
     PermissionPage,
-    UazapWebhookIn,
+    UazapiWebhookIn,
     WebhookAck,
 )
 
@@ -43,9 +43,9 @@ router = APIRouter(tags=["agentes"])
 _PERM_ROLES = require_roles("owner", "admin")
 
 
-# ── Webhook Uazap (B10.1) ─────────────────────────────────────────────────
-@router.post("/webhook/uazap", response_model=WebhookAck)
-async def uazap_webhook(
+# ── Webhook Uazapi (B10.1) ─────────────────────────────────────────────────
+@router.post("/webhook/uazapi", response_model=WebhookAck)
+async def uazapi_webhook(
     request: Request,
     session: Session = Depends(get_admin_db),
     queue: AgentQueue = Depends(get_agent_queue),
@@ -54,12 +54,12 @@ async def uazap_webhook(
     raw = await request.body()
     if not verify_signature(
         raw_body=raw,
-        signature=request.headers.get("x-uazap-signature"),
-        secret=settings.uazap_webhook_secret,
+        signature=request.headers.get("x-uazapi-signature"),
+        secret=settings.uazapi_webhook_secret,
     ):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="assinatura inválida")
     try:
-        payload = UazapWebhookIn.model_validate_json(raw)
+        payload = UazapiWebhookIn.model_validate_json(raw)
     except ValidationError as exc:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="payload inválido"

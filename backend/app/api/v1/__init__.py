@@ -52,5 +52,5 @@ api_router.include_router(insumos_router)
 api_router.include_router(portal_router)
 # Prefixo /lgpd: /lgpd/requests e /lgpd/requests/{id}/download.
 api_router.include_router(lgpd_router)
-# Sem prefixo: paths absolutos (/webhook/uazap, /ia/*, /feature-flags).
+# Sem prefixo: paths absolutos (/webhook/uazapi, /ia/*, /feature-flags).
 api_router.include_router(agentes_router)

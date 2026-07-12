@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from app.core.db import AppUserSessionLocal
 from app.integrations.agent_queue import AgentQueue
 from app.integrations.llm import LLMClient
-from app.integrations.uazap import UazapClient
+from app.integrations.uazapi import UazapiClient
 from app.modules.agentes import orchestrator, service
 
 logger = logging.getLogger("app.agent_worker")
@@ -29,13 +29,13 @@ logger = logging.getLogger("app.agent_worker")
 def _process_one(
     session: Session,
     llm: LLMClient,
-    uazap: UazapClient,
+    uazapi: UazapiClient,
     *,
     company_id: str,
     agent_message_id: UUID,
 ) -> None:
     """Processa uma mensagem já persistida, dentro de uma sessão com o tenant
-    setado. Responde ao usuário via Uazap (best-effort)."""
+    setado. Responde ao usuário via Uazapi (best-effort)."""
     row = (
         session.execute(
             text("SELECT whatsapp_number, content FROM agent_message WHERE id = :id"),
@@ -57,10 +57,10 @@ def _process_one(
         agent_message_id=agent_message_id,
     )
     service.mark_message(session, message_id=agent_message_id, new_status="concluido")
-    uazap.send_text(to=row["whatsapp_number"], text=result.reply)
+    uazapi.send_text(to=row["whatsapp_number"], text=result.reply)
 
 
-def run_once(llm: LLMClient, queue: AgentQueue, uazap: UazapClient, *, batch: int = 10) -> int:
+def run_once(llm: LLMClient, queue: AgentQueue, uazapi: UazapiClient, *, batch: int = 10) -> int:
     """Consome um lote da fila. Retorna quantos jobs foram processados com sucesso.
     Cada job roda em sua própria transação `app_user` com a GUC do tenant."""
     jobs = queue.poll(batch=batch)
@@ -75,7 +75,7 @@ def run_once(llm: LLMClient, queue: AgentQueue, uazap: UazapClient, *, batch: in
             _process_one(
                 session,
                 llm,
-                uazap,
+                uazapi,
                 company_id=job.company_id,
                 agent_message_id=UUID(job.agent_message_id),
             )

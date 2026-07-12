@@ -1,4 +1,4 @@
-"""Tabela `agent_message` — fila/backup das mensagens do Uazap (B10.2, D10.1).
+"""Tabela `agent_message` — fila/backup das mensagens do Uazapi (B10.2, D10.1).
 Ver `alembic/versions/0027_agentes.py`.
 
 RLS: `company_id`, isolamento por tenant. Idempotência do webhook via

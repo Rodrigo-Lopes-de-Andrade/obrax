@@ -1,15 +1,15 @@
-"""Integração com o Uazap (gateway WhatsApp) — B10.1.
+"""Integração com o Uazapi (gateway WhatsApp) — B10.1.
 
 Duas responsabilidades:
 
 1. **Verificação do webhook** (`verify_signature`): valida o HMAC-SHA256 do corpo
-   cru com o segredo compartilhado (`UAZAP_WEBHOOK_SECRET`). Comparação em tempo
+   cru com o segredo compartilhado (`UAZAPI_WEBHOOK_SECRET`). Comparação em tempo
    constante (`hmac.compare_digest`). Fail-closed: sem segredo configurado, ou
    assinatura ausente/errada → inválido.
 
-2. **Envio de mensagens** (`UazapClient`): mesma dobradiça de `events.py` —
-   `NoopUazapClient` em dev/CI (não faz rede; loga) e `HttpUazapClient` (httpx)
-   em staging/prod quando `UAZAP_BASE_URL`/`UAZAP_TOKEN` estão setados.
+2. **Envio de mensagens** (`UazapiClient`): mesma dobradiça de `events.py` —
+   `NoopUazapiClient` em dev/CI (não faz rede; loga) e `HttpUazapiClient` (httpx)
+   em staging/prod quando `UAZAPI_BASE_URL`/`UAZAPI_TOKEN` estão setados.
 
 O rate limit por número (B10.1: 10/min) é um token-bucket em processo
 (`InProcessRateLimiter`) — trocável por Redis em produção, como o resto das
@@ -29,7 +29,7 @@ import httpx
 
 from app.core.config import settings
 
-logger = logging.getLogger("app.uazap")
+logger = logging.getLogger("app.uazapi")
 
 
 def verify_signature(*, raw_body: bytes, signature: str | None, secret: str) -> bool:
@@ -42,19 +42,19 @@ def verify_signature(*, raw_body: bytes, signature: str | None, secret: str) -> 
     return hmac.compare_digest(expected, provided)
 
 
-class UazapClient(Protocol):
+class UazapiClient(Protocol):
     def send_text(self, *, to: str, text: str) -> None: ...
 
 
-class NoopUazapClient:
+class NoopUazapiClient:
     """Não envia nada (dev/testes/CI). Loga para rastreabilidade."""
 
     def send_text(self, *, to: str, text: str) -> None:
-        logger.debug("uazap send (noop) -> %s: %s", to, text)
+        logger.debug("uazapi send (noop) -> %s: %s", to, text)
 
 
-class HttpUazapClient:
-    """Envio real via REST do Uazap (staging/prod). Best-effort e timeout curto:
+class HttpUazapiClient:
+    """Envio real via REST do Uazapi (staging/prod). Best-effort e timeout curto:
     uma falha de envio não pode derrubar o processamento já auditado."""
 
     def __init__(self, *, base_url: str, token: str, timeout: float = 5.0) -> None:
@@ -71,18 +71,18 @@ class HttpUazapClient:
                 timeout=self._timeout,
             )
         except httpx.HTTPError:
-            logger.warning("falha ao enviar mensagem Uazap para %s", to, exc_info=True)
+            logger.warning("falha ao enviar mensagem Uazapi para %s", to, exc_info=True)
 
 
 @lru_cache
-def _client() -> UazapClient:
-    if settings.uazap_base_url and settings.uazap_token:
-        return HttpUazapClient(base_url=settings.uazap_base_url, token=settings.uazap_token)
-    return NoopUazapClient()
+def _client() -> UazapiClient:
+    if settings.uazapi_base_url and settings.uazapi_token:
+        return HttpUazapiClient(base_url=settings.uazapi_base_url, token=settings.uazapi_token)
+    return NoopUazapiClient()
 
 
-def get_uazap_client() -> UazapClient:
-    """Dependency FastAPI: cliente Uazap conforme ambiente."""
+def get_uazapi_client() -> UazapiClient:
+    """Dependency FastAPI: cliente Uazapi conforme ambiente."""
     return _client()
 
 

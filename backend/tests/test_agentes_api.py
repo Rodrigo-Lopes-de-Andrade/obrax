@@ -1,7 +1,7 @@
 """Testes de API do Módulo 3 (Sprint 10) — EXIGEM Postgres (make test).
 
 Cobrem o painel IA (permissões, assistente, auditoria/reverter, copilot,
-insights, feature-flags) e o webhook Uazap ponta a ponta (HMAC → idempotência →
+insights, feature-flags) e o webhook Uazapi ponta a ponta (HMAC → idempotência →
 fila), além do isolamento por tenant (RLS). Escritos no estilo de
 test_tickets_crud.py (TestClient + fixture seed_tenant).
 
@@ -181,7 +181,7 @@ class TestRlsIsolamento:
 def webhook_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[InProcessAgentQueue]:
     """Injeta um segredo de HMAC conhecido e uma fila limpa capturável."""
     queue = InProcessAgentQueue()
-    monkeypatch.setattr(agentes_router, "settings", replace(settings, uazap_webhook_secret=_SECRET))
+    monkeypatch.setattr(agentes_router, "settings", replace(settings, uazapi_webhook_secret=_SECRET))
     app.dependency_overrides[get_agent_queue] = lambda: queue
     yield queue
     app.dependency_overrides.pop(get_agent_queue, None)
@@ -192,18 +192,18 @@ class TestWebhook:
         raw = json.dumps(body).encode()
         sig = hmac.new(_SECRET.encode(), raw, hashlib.sha256).hexdigest()
         return client.post(
-            "/api/v1/webhook/uazap",
+            "/api/v1/webhook/uazapi",
             content=raw,
-            headers={"content-type": "application/json", "x-uazap-signature": sig},
+            headers={"content-type": "application/json", "x-uazapi-signature": sig},
         )
 
     def test_assinatura_invalida_401(
         self, client: TestClient, webhook_env: InProcessAgentQueue
     ) -> None:
         r = client.post(
-            "/api/v1/webhook/uazap",
+            "/api/v1/webhook/uazapi",
             content=b'{"message_id":"1","from_number":"+551199","text":"oi"}',
-            headers={"content-type": "application/json", "x-uazap-signature": "errado"},
+            headers={"content-type": "application/json", "x-uazapi-signature": "errado"},
         )
         assert r.status_code == 401
 

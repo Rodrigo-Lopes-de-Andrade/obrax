@@ -342,11 +342,11 @@ Construtoras e empreiteiras de pequeno porte (1 a 30 colaboradores), reformadore
   5. Limite de gastos: Admin define limite diário/mensal por role (ex: Solicitador pode criar pedidos até R$ 5000/dia).
 - **Prioridade:** MH | **Complexidade:** M
 
-#### US-24 — Webhook Uazap + Orquestração de Agentes via LangGraph
-**Como** sistema, **eu quero** receber mensagens do WhatsApp via API Uazap, processar via LangGraph (orquestrador) e acionar subagentes, **para que** interações sejam automáticas, em tempo real e resilientes.
+#### US-24 — Webhook Uazapi + Orquestração de Agentes via LangGraph
+**Como** sistema, **eu quero** receber mensagens do WhatsApp via API Uazapi (não-oficial — https://uazapi.dev/), processar via LangGraph (orquestrador) e acionar subagentes, **para que** interações sejam automáticas, em tempo real e resilientes.
 - **Critérios de aceite:**
-  1. **Webhook:** Endpoint POST `/webhook/uazap` recebe mensagem (texto, áudio com transcrição, imagem com OCR).
-  2. **Validação:** Signature HMAC do Uazap é verificada; mensagens inválidas são descartadas.
+  1. **Webhook:** Endpoint POST `/webhook/uazapi` recebe mensagem (texto, áudio com transcrição, imagem com OCR).
+  2. **Validação:** Signature HMAC do Uazapi é verificada; mensagens inválidas são descartadas.
   3. **Fila de Mensagens:** Mensagem entra em fila (Redis/PostgreSQL) com status "pending".
   4. **LangGraph Orchestration:** Grafo de agentes analisa intenção (ex: "preciso 10 sacos de cimento para a obra Academia").
      - Identifica: tipo de ação (consulta/solicitação/aprovação), obra vinculada, usuário.
@@ -356,12 +356,12 @@ Construtoras e empreiteiras de pequeno porte (1 a 30 colaboradores), reformadore
      - Valida orçamento disponível (não ultrapassar limite de gasto).
      - Cria "Solicitação de Compra" no banco (linqável a fornecedores futuros).
      - Retorna: "Pedido registrado! 10 sacos de cimento adicionados à obra Academia. Deseja enviar para cotação?".
-  6. **Resposta:** Via Uazap API, mensagem é enviada ao usuário em tempo real.
+  6. **Resposta:** Via Uazapi API, mensagem é enviada ao usuário em tempo real.
   7. **Resilência:**
      - Se LLM ou LangGraph falhar: mensagem fica em fila com retry automático (3x, backoff exponencial 30s/60s/120s).
-     - Se Uazap API cair: fallback automático para HTTP polling (usuário recebe resposta via SMS ou webhook callback quando API voltar). Alternativamente, pode salvar em banco e notificar admin pra contato manual.
+     - Se Uazapi API cair: fallback automático para HTTP polling (usuário recebe resposta via SMS ou webhook callback quando API voltar). Alternativamente, pode salvar em banco e notificar admin pra contato manual.
      - Timeout de processamento: 10s (fallback: "Processando sua solicitação, você receberá confirmação em breve").
-     - Monitorar health da API Uazap: se status degradado, alertar admin e oferecer modo read-only (apenas respostas de consulta, não criação de ações).
+     - Monitorar health da API Uazapi: se status degradado, alertar admin e oferecer modo read-only (apenas respostas de consulta, não criação de ações).
   8. **Logging:** Cada etapa (recebimento, processamento, resposta) é registrada para auditoria (timestamp, entrada, saída, LLM model, versão do prompt, erro se houver).
 - **Prioridade:** MH | **Complexidade:** G
 
@@ -486,7 +486,7 @@ Construtoras e empreiteiras de pequeno porte (1 a 30 colaboradores), reformadore
 - **Módulo 2 — Orçamentos e Engenharia de Custos** completo conforme US-11 a US-18.
 - **Módulo 3 — Agentes de IA (V1 Básico)** conforme US-22, US-23, US-24:
   - Subagentes: Orçamento (consulta) + Compras (solicitação simples)
-  - Webhook Uazap + LangGraph orchestration
+  - Webhook Uazapi + LangGraph orchestration
   - Dashboard de auditoria de agentes
   - Permissões por role para IA
   - Disponível em tiers Pro e Enterprise
@@ -498,7 +498,7 @@ Construtoras e empreiteiras de pequeno porte (1 a 30 colaboradores), reformadore
   - Sistema de tiers (Basic/Pro/Enterprise) com limites por plano
   - Templates de e-mail customizáveis (Pro+)
   - Fila de mensagens para agentes (Redis/PostgreSQL)
-  - Integração Uazap com webhook validation + retry automático
+  - Integração Uazapi com webhook validation + retry automático
 - **Compliance:**
   - LGPD: termos de uso, export de dados, exclusão de conta, trilha de auditoria
 - **UX:**
@@ -603,7 +603,7 @@ Para evitar inflar o MVP, está explicitamente **fora** desta fase:
 - **Agentes de IA:**
   - LLM Provider (OpenAI GPT-4, Anthropic Claude, equivalente) para processamento de linguagem.
   - LangChain + LangGraph para orchestração de agentes.
-  - API Uazap (ou equivalente: Evolution API, Z-API) para integração WhatsApp.
+  - API Uazapi (ou equivalente: Evolution API, Z-API) para integração WhatsApp.
   - Redis ou PostgreSQL para fila de mensagens (Celery/Bull pra async jobs).
   - Provedor de transcription (Whisper/assembly.ai) se aceitar áudio.
 
@@ -616,7 +616,7 @@ Para evitar inflar o MVP, está explicitamente **fora** desta fase:
 - **Permissões por role:** erro em validação permite campo ver financeiro ou cliente ver orçamento — breach grave. Exige testes de negação de acesso em 100% dos endpoints sensíveis.
 - **LLM Availability & Cost:** Se LLM provider (OpenAI, Claude API) cair, sistema deve fazer fallback para respostas template e retry. Custo de chamadas LLM precisa ser monitorado (budgets por tier).
 - **Interpretação correta da intenção:** LLM pode entender errado "10 sacos de cimento" como "10 obras de cimento". Exige prompt engineering cuidadoso + feedback loop + human-in-the-loop pra ações críticas (pedidos > R$ 5000).
-- **Segurança de Webhook Uazap:** Validação de HMAC signature é crítica. Ataque de replay pode criar pedidos duplicados. Rate limiting + idempotência de key obrigatória.
+- **Segurança de Webhook Uazapi:** Validação de HMAC signature é crítica. Ataque de replay pode criar pedidos duplicados. Rate limiting + idempotência de key obrigatória.
 - **Fila de Mensagens:** Se Redis/PostgreSQL fica down, mensagens são perdidas. Exige backup em DB + restore de fila ao ligar. Monitorar depth da fila (alertar se crescer > 1000).
 
 ### Riscos de negócio
@@ -670,10 +670,10 @@ app/
   modules/
     gestao/        (clientes, obras, fornecedores, GED, tickets, usuarios)
     orcamento/     (EAP, markup, ABC, versoes, PDF)
-    agentes/       (webhook uazap, langgraph, subagentes, auditoria)
+    agentes/       (webhook uazapi, langgraph, subagentes, auditoria)
     portal/        (cliente final, magic links)
   jobs/            (background workers - RQ/Arq)
-  integrations/    (uazap, llm, storage, email)
+  integrations/    (uazapi, llm, storage, email)
   api/v1/          (routers)
 tests/
 ```
@@ -743,7 +743,7 @@ Modulo Orcamento:
 - `GET /api/v1/orcamentos/versoes/comparar?a={v1}&b={v2}` (US-16)
 
 Modulo Agentes:
-- `POST /webhook/uazap` (US-24, ver secao C)
+- `POST /webhook/uazapi` (US-24, ver secao C)
 - `GET /api/v1/agentes/logs?obra_id=&tipo=&from=&to=` (US-22)
 - `POST /api/v1/agentes/logs/{id}/reverter` (US-22)
 - `POST /api/v1/agentes/feedback/{interaction_id}` body `{correto: bool}` (RNF-08)
@@ -751,24 +751,24 @@ Modulo Agentes:
 
 **Rate limiting:**
 - Global API: 600 req/min por usuario autenticado (token bucket via Redis).
-- Webhook Uazap: 10 req/min por numero de WhatsApp (US-24, RNF-08). Implementado com sliding window em Redis (key: `rl:wa:{phone}`).
+- Webhook Uazapi: 10 req/min por numero de WhatsApp (US-24, RNF-08). Implementado com sliding window em Redis (key: `rl:wa:{phone}`).
 - Endpoints publicos (login, magic): 20 req/min por IP.
 - 429 com header `Retry-After`.
 
 ---
 
-#### C. Webhook Uazap (US-24)
+#### C. Webhook Uazapi (US-24)
 
-**Endpoint:** `POST /webhook/uazap`
+**Endpoint:** `POST /webhook/uazapi`
 
 **Pipeline (sincrono ate enfileirar, depois async):**
 
-1. **Validacao HMAC:** header `X-Uazap-Signature` (HMAC-SHA256 com shared secret). Tolerancia: payload + timestamp <= 5 min para evitar replay. Falha = 401 e log.
-2. **Idempotencia:** Uazap envia `message_id`. Checar em Redis SET `wa:msg:seen` (TTL 24h). Se existe, retorna 200 imediato (no-op). Mitiga replay/retries do Uazap (risco listado).
+1. **Validacao HMAC:** header `X-Uazapi-Signature` (HMAC-SHA256 com shared secret). Tolerancia: payload + timestamp <= 5 min para evitar replay. Falha = 401 e log.
+2. **Idempotencia:** Uazapi envia `message_id`. Checar em Redis SET `wa:msg:seen` (TTL 24h). Se existe, retorna 200 imediato (no-op). Mitiga replay/retries do Uazapi (risco listado).
 3. **Rate limit:** 10 req/min por numero (RNF-08). Excesso: 429 + log de tentativa.
 4. **Resolucao de tenant:** `company_id` resolvido pelo mapeamento `whatsapp_number -> usuario -> company_id`. Numero nao mapeado: resposta template "Numero nao autorizado".
 5. **Persistencia + enfileiramento:** insert em `agent_messages(id, company_id, message_id, payload, status='pending', received_at)`. Enfileira job em fila `agent.process`.
-6. **Resposta ao Uazap:** 200 com ack rapido (alvo < 500ms). Processamento real e assincrono.
+6. **Resposta ao Uazapi:** 200 com ack rapido (alvo < 500ms). Processamento real e assincrono.
 
 **Fila de mensagens: Redis Streams (decisao)**
 
@@ -801,25 +801,25 @@ Grafo (nodes principais):
 4. `router` - condicional baseado em intent.
 5. `subagent_orcamento` - tools: `get_orcamento_resumo`, `get_status_obra`.
 6. `subagent_compras` - tools: `criar_solicitacao_compra`, `validar_limite_orcamento`.
-7. `responder` - formata resposta + envia via Uazap API.
+7. `responder` - formata resposta + envia via Uazapi API.
 8. `audit_log` - persiste interacao completa (US-22, RNF-08).
 
 LLM provider: Anthropic Claude (Sonnet) como primary, OpenAI GPT-4o como fallback automatico. Tools chamadas via function calling com schemas Pydantic gerados.
 
 **Retry logic:**
-- Job falha (timeout LLM, erro Uazap, erro DB): re-enfileira com backoff exponencial 30s / 60s / 120s (RNF-08, US-24).
+- Job falha (timeout LLM, erro Uazapi, erro DB): re-enfileira com backoff exponencial 30s / 60s / 120s (RNF-08, US-24).
 - Max 3 tentativas. Apos esgotar: `status='failed'`, alerta para admin, resposta template ao usuario ("Nao consegui processar, um humano vai te chamar").
 - Implementacao: Arq `retry()` + tabela `agent_messages.attempts`.
 
 **Timeout:** processamento total <= 10s. Se ultrapassar 8s sem resposta final, dispara resposta intermediaria ("Processando sua solicitacao, voce recebera confirmacao em breve") e continua em background.
 
-**Fallback se Uazap cair:**
-- Health check ativo a cada 30s (`GET /status` da Uazap). Se 3 falhas consecutivas: marca provider como `degraded`.
+**Fallback se Uazapi cair:**
+- Health check ativo a cada 30s (`GET /status` da Uazapi). Se 3 falhas consecutivas: marca provider como `degraded`.
 - Em `degraded`: respostas continuam sendo geradas mas sao armazenadas em `pending_outbound`. Cron tenta entregar a cada 60s ate sucesso ou 24h.
 - Modo read-only acionado: subagentes de criacao (compras) sao bloqueados; somente consultas respondidas. Alerta para admin no dashboard.
 - SMS como fallback: NAO no MVP V1 (custo + complexidade). Documentado para V2. No MVP, fallback e e-mail para o admin com resumo das interacoes pendentes.
 
-**Health da API Uazap:** metrica `uazap_up` (gauge) + alerta se `degraded` por > 5 min.
+**Health da API Uazapi:** metrica `uazapi_up` (gauge) + alerta se `degraded` por > 5 min.
 
 ---
 
@@ -964,7 +964,7 @@ CONs: limites de conexao no plano basico - mitigado por PgBouncer transaction mo
 **Runner: Arq** (mesmo da fila de agentes, simplifica ops).
 
 Filas:
-- `agent.process` - mensagens Uazap (alta prioridade).
+- `agent.process` - mensagens Uazapi (alta prioridade).
 - `pdf.generate` - geracao PDF (US-17).
 - `export.generate` - export LGPD ZIP (US-21).
 - `email.send` - notificacoes transacionais (US-08, US-18, US-20).
@@ -977,9 +977,9 @@ Filas:
 - Max 5 jobs simultaneos por empresa (semaforo via Redis).
 
 **Cron jobs:**
-- A cada 30s: retry de fila Uazap.
-- A cada 60s: entrega de outbound pendente (Uazap degradado).
-- A cada 5 min: health check Uazap, LLM provider, storage.
+- A cada 30s: retry de fila Uazapi.
+- A cada 60s: entrega de outbound pendente (Uazapi degradado).
+- A cada 5 min: health check Uazapi, LLM provider, storage.
 - Diario 03:00 UTC: limpeza tokens expirados, exports antigos.
 - Diario 04:00 UTC: snapshot de metricas de uso (KPIs).
 
@@ -1002,13 +1002,13 @@ Filas:
 - `agent_interpretation_correct_ratio` (alvo >= 90%).
 - `agent_error_ratio` (alvo < 2%).
 - `agent_queue_depth` (alerta > 1000).
-- `uazap_up`, `llm_up`, `storage_up`.
+- `uazapi_up`, `llm_up`, `storage_up`.
 - `db_pool_in_use`, `db_query_p95`.
 
 **Alertas (PagerDuty ou Discord/Slack webhook no MVP):**
 - Fila agente > 1000 por 5 min.
 - LLM provider down (3 falhas em 1 min).
-- Uazap degraded > 5 min.
+- Uazapi degraded > 5 min.
 - Erro 5xx > 1% por 5 min.
 - DB connection saturation > 80%.
 - Custo LLM diario > budget configurado (US-23).
@@ -1024,7 +1024,7 @@ Filas:
 - **Rate limiting:** ja descrito secao B.
 - **Secrets:** nunca em codigo. Provider: AWS Secrets Manager (ou Doppler/Infisical para MVP). Carregados via env no boot.
 - **CSP, X-Frame-Options, X-Content-Type-Options:** headers seguros padrao via middleware.
-- **Webhook signature:** HMAC obrigatorio Uazap (secao C), tambem em provider de e-mail e LLM se aplicavel.
+- **Webhook signature:** HMAC obrigatorio Uazapi (secao C), tambem em provider de e-mail e LLM se aplicavel.
 - **PII em logs:** redacao automatica de CPF, CNPJ, e-mail, telefone via processor structlog.
 - **Senhas:** politica configuravel, min 8 chars, bloqueio temporario apos 5 tentativas (RNF-02).
 - **CSRF:** SameSite=Strict + double-submit cookie para endpoints state-changing chamados via cookie.

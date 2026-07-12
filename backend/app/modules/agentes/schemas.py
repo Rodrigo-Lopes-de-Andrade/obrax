@@ -24,9 +24,9 @@ class _OrmBase(BaseModel):
     model_config = ConfigDict(extra="forbid", from_attributes=True)
 
 
-# ── Webhook Uazap (B10.1) ─────────────────────────────────────────────────
-class UazapWebhookIn(_Base):
-    """Corpo mínimo do webhook do Uazap. `message_id` é a chave de idempotência;
+# ── Webhook Uazapi (B10.1) ─────────────────────────────────────────────────
+class UazapiWebhookIn(_Base):
+    """Corpo mínimo do webhook do Uazapi. `message_id` é a chave de idempotência;
     `from_number` o remetente; `text` o conteúdo. Campos extras do provedor são
     ignorados na borda (o router lê o corpo cru para o HMAC antes de validar)."""
 

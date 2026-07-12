@@ -20,9 +20,15 @@ from app.main import app
 def _dsn_with_role(role: str, password: str) -> str:
     """Reconstrói a DSN de `DATABASE_URL` trocando usuário/senha pelo role
     de aplicação informado, mantendo host/porta/database originais.
+
+    Preserva o sufixo `.<project_ref>` do pooler do Supabase (Supavisor autentica
+    como `<role>.<project_ref>`); numa conexão direta/local usa o role puro.
     """
     parts = urlsplit(settings.database_url_raw)
-    netloc = f"{role}:{password}@{parts.hostname}"
+    original_user = parts.username or ""
+    tenant = original_user.split(".", 1)[1] if "." in original_user else None
+    user = f"{role}.{tenant}" if tenant else role
+    netloc = f"{user}:{password}@{parts.hostname}"
     if parts.port:
         netloc += f":{parts.port}"
     return urlunsplit((parts.scheme, netloc, parts.path, parts.query, parts.fragment))

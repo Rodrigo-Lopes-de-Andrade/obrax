@@ -10,7 +10,7 @@ para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md).
 - [ ] Object store (Supabase Storage) com bucket de documentos + credenciais; presign PUT/GET testado.
 - [ ] `JWT_SECRET` forte e único de produção; `ENVIRONMENT=production`.
 - [ ] Sidecar de PDF (`PDF_RENDERER_URL`) online; smoke de um orçamento → PDF.
-- [ ] Módulo 3 (se ativo): `UAZAP_WEBHOOK_SECRET`, `UAZAP_BASE_URL`, `UAZAP_TOKEN`; webhook validando HMAC.
+- [ ] Módulo 3 (se ativo): `UAZAPI_WEBHOOK_SECRET`, `UAZAPI_BASE_URL`, `UAZAPI_TOKEN`; webhook validando HMAC.
 
 ## Qualidade / testes (verde no CI)
 - [ ] Backend: `ruff`, `mypy`, `pytest` (unit + integração DB + RLS) passando contra Postgres real.
@@ -23,7 +23,7 @@ para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md).
 - [ ] `LOG_FORMAT=json`; logs chegando ao agregador (Loki/Datadog) com `request_id`/`company_id`.
 - [ ] Tracing OTel ligado (`OTEL_EXPORTER_OTLP_ENDPOINT` + pacotes) → Tempo, se aplicável.
 - [ ] Web Vitals + erros chegando ao PostHog/Sentry (`NEXT_PUBLIC_*` setadas).
-- [ ] Alertas armados e **testados** (webhook dispara): 5xx > 1%, fila > 1000, Uazap/LLM down, CPU > 70%, Web Vitals.
+- [ ] Alertas armados e **testados** (webhook dispara): 5xx > 1%, fila > 1000, Uazapi/LLM down, CPU > 70%, Web Vitals.
 - [ ] Dashboards Grafana publicados (latência, DB connections, fila de agentes, custo LLM).
 
 ## Dados & resiliência
