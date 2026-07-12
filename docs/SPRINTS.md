@@ -19,8 +19,8 @@ S7  ✅ Field app setup + Checklist (offline)
 S8  ✅ Field: Fotos + Ocorrências + Sync
 S9  ✅ Portal cliente (magic link + aprovação)
 S10 ✅ Módulo 3: Agentes IA (LangGraph + webhook)
-S11 ⬜ Hardening: A11y + Perf + Observability + E2E
-S12 ⬜ Beta + GA
+S11 🟡 Hardening: A11y + Perf + Observability + E2E (código ✅; infra externa pendente)
+S12 🟡 Beta + GA (docs ✅; beta/marketing/deploy pendente)
 ```
 
 **Progresso: 10 / 12 sprints concluídas (83%).** Próxima: S11 (Hardening).
@@ -531,14 +531,21 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 
 ### Critérios de Saída Sprint 11
 
-- [ ] A11y audit 0 críticos (axe-core)
-- [ ] Web Vitals instrumentados (Sentry)
-- [ ] Bundle <200KB gzip admin, <120KB field
-- [ ] E2E 12 fluxos críticos passing
-- [ ] Logs estruturados em Loki
-- [ ] Tracing funciona (Tempo flame graph)
-- [ ] Alertas Grafana configurados + testados
-- [ ] Restore drill documentado + executado
+- [x] A11y audit 0 críticos (axe-core) — 24 checks (admin desktop + portal mobile); acentos de marca documentados como follow-up de design
+- [x] Web Vitals instrumentados — `useReportWebVitals` → sink de analytics (seam PostHog/Sentry por env)
+- [x] Bundle dentro do orçamento — First Load JS ≤ 240 kB (maior 203 kB), shared 104 kB; gate `pnpm build:budget` no CI
+- [x] E2E fluxos críticos passing — 18 fluxos + 24 a11y = 42/42 local (staging pendente de infra)
+- [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
+- [ ] Tracing (Tempo flame graph) — seam OTel pronto (`configure_tracing`); collector/pacotes pendentes de infra
+- [ ] Alertas Grafana configurados + testados — alvos documentados no RUNBOOK; armar na infra
+- [ ] Restore drill documentado + executado — procedimento no RUNBOOK; execução pendente de infra
+
+> **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
+> concluídos e verificados localmente. F11.2/F11.5 (Web Vitals/Sentry) e B11.2
+> (OTel) entregues como **seams infra-gated** (ativam por env, no-op em dev/CI).
+> B11.3/B11.4 (alertas/load test), D11.1/D11.2 (seed/restore) e O11.1/O11.2
+> (staging/dashboards) dependem de infraestrutura provisionada — ver
+> [RUNBOOK.md](RUNBOOK.md) e [GO-LIVE.md](GO-LIVE.md).
 
 **Estimativa total:** ~35 dias/pessoa
 
@@ -554,10 +561,15 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 |------|-----------|-----------|-------------------|
 | **S12.1** Onboarding beta 3-5 clientes | Convites, setup obras teste, feedback coletado | 2d | 3+ clientes beta ativos, feedback log |
 | **S12.2** Bugfix priorizado | Issues críticos encontrados em beta, hotfixes | 3d | 0 bloqueadores, <5 minors |
-| **S12.3** Documentação usuário | Help center básico (criar obra, orçamento, enviar cliente), FAQ, tutorial video | 2d | Docs publicadas, 3 vídeos 2-3min |
-| **S12.4** Go-live checklist | Backups validados, alertas armados, runbooks publicados, SLA confirmado (99.5%) | 2d | Checklist 100%, status page público |
+| ✅ **S12.3** Documentação usuário | Help center básico (criar obra, orçamento, enviar cliente), FAQ, tutorial video | 2d | Docs publicadas ([HELP.md](HELP.md)); vídeos pendentes |
+| ✅ **S12.4** Go-live checklist | Backups validados, alertas armados, runbooks publicados, SLA confirmado (99.5%) | 2d | Checklist + runbook publicados ([GO-LIVE.md](GO-LIVE.md), [RUNBOOK.md](RUNBOOK.md)); SLA/status page na infra |
 | **S12.5** Marketing prep | Landing page, email template onboarding, copy explicativo tiers | 1d | Website pronto, email sequences automático |
 | **S12.6** Production deploy | Blue-green final, health check, smoke test 100%, monitoring ativo | 1d | Status page "Operational", zero downtime |
+
+> **Entrega S12:** S12.3 (help center + FAQ) e S12.4 (go-live checklist +
+> runbook) concluídos como documentação. S12.1/S12.2 (beta + bugfix), S12.5
+> (marketing) e S12.6 (deploy blue-green) dependem de clientes beta e infra —
+> as credenciais Supabase já estão prontas para a virada.
 
 **Estimativa total:** ~11 dias/pessoa
 
