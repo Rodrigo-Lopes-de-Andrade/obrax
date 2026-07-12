@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { Building2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,8 @@ import type { Obra, ObraStatus } from "@/lib/api/types";
 import { useClientes } from "@/lib/hooks/use-clientes";
 import { useDeleteObra, useObras } from "@/lib/hooks/use-obras";
 import { cn } from "@/lib/utils";
-import { ObraFormDrawer } from "./ObraFormDrawer";
+// Code-split (F11.3): o drawer só é necessário ao criar/editar — sai do bundle inicial.
+const ObraFormDrawer = dynamic(() => import("./ObraFormDrawer").then((m) => m.ObraFormDrawer));
 import { ObrasTable } from "./ObrasTable";
 import { OBRA_STATUS_OPTIONS } from "./status";
 

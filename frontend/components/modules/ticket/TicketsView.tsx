@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MessageSquarePlus, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,10 @@ import type { Ticket, TicketStatus } from "@/lib/api/types";
 import { useObras } from "@/lib/hooks/use-obras";
 import { useDeleteTicket, useTickets } from "@/lib/hooks/use-tickets";
 import { cn } from "@/lib/utils";
-import { CreateTicketDrawer } from "./CreateTicketDrawer";
+// Code-split (F11.3): drawer de criação carrega sob demanda, fora do bundle inicial.
+const CreateTicketDrawer = dynamic(() =>
+  import("./CreateTicketDrawer").then((m) => m.CreateTicketDrawer),
+);
 import { TicketsTable } from "./TicketsTable";
 import { TICKET_STATUS_OPTIONS } from "./status";
 

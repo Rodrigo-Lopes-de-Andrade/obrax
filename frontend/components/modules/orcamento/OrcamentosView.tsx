@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { FilePlus2, Loader2, Trash2 } from "lucide-react";
 
 import {
@@ -36,7 +37,10 @@ import type { Orcamento, OrcamentoStatus } from "@/lib/api/types";
 import { formatDate } from "@/lib/format";
 import { useObras } from "@/lib/hooks/use-obras";
 import { useDeleteOrcamento, useOrcamentos } from "@/lib/hooks/use-orcamentos";
-import { CreateOrcamentoDrawer } from "./CreateOrcamentoDrawer";
+// Code-split (F11.3): drawer de criação carrega sob demanda, fora do bundle inicial.
+const CreateOrcamentoDrawer = dynamic(() =>
+  import("./CreateOrcamentoDrawer").then((m) => m.CreateOrcamentoDrawer),
+);
 import { ORCAMENTO_STATUS_OPTIONS, OrcamentoStatusBadge } from "./status";
 
 export function OrcamentosView() {
