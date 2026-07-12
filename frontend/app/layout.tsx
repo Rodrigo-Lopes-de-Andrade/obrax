@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { WebVitals } from "@/lib/observability/WebVitals";
 
 const manrope = Manrope({
   variable: "--font-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <WebVitals />
         <Providers>{children}</Providers>
       </body>
     </html>

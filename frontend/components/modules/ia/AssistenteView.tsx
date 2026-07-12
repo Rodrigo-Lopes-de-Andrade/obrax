@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import type { AgentChatMessage } from "@/lib/api/types";
 import { useAssistenteThread, useEnviarAssistenteMensagem } from "@/lib/hooks/use-ia";
+import { capture } from "@/lib/observability/analytics";
 import { cn } from "@/lib/utils";
 
 const SUGESTOES = [
@@ -36,6 +37,7 @@ export function AssistenteView() {
     const c = content.trim();
     if (!c || enviar.isPending) return;
     enviar.mutate(c);
+    capture("assistente_mensagem_enviada", { chars: c.length });
     setText("");
   }
 

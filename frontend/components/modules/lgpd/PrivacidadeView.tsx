@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import type { LgpdRequest, LgpdRequestType } from "@/lib/api/types";
 import { useCriarPedidoLgpd, useLgpdRequests } from "@/lib/hooks/use-lgpd";
+import { capture } from "@/lib/observability/analytics";
 
 function fmtDataHora(iso: string | null): string {
   if (!iso) return "—";
@@ -53,6 +54,7 @@ export function PrivacidadeView() {
         onSuccess: (req) => {
           if (tipo === "export") setUltimoExport(req);
           setConfirmarDelete(false);
+          capture("lgpd_pedido_criado", { request_type: tipo });
         },
       },
     );

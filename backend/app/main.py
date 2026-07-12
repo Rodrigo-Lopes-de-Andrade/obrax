@@ -12,7 +12,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1 import api_router
 from app.core.config import settings
+from app.core.logging import configure_logging
 from app.core.middleware import TenantMiddleware
+from app.core.observability import RequestContextMiddleware, configure_tracing
 from app.integrations.storage import storage_healthy
 
 # RFC 7807 Problem Details — formato de erro obrigatório (docs/CLAUDE.md >
@@ -66,14 +68,23 @@ async def _validation_exception_handler(request: Request, exc: Exception) -> JSO
 
 
 def create_app() -> FastAPI:
+    configure_logging()
+
     app = FastAPI(title="Obrax API", version="0.1.0")
 
+    # Ordem importa: o Starlette executa o último middleware adicionado por fora.
+    # Adiciono RequestContext primeiro (interno) e Tenant depois (externo), para
+    # que `request.state.auth` já esteja populado quando o access-log rodar.
+    app.add_middleware(RequestContextMiddleware)
     app.add_middleware(TenantMiddleware)
 
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)
 
     app.include_router(api_router, prefix="/api/v1")
+
+    # Tracing distribuído (B11.2): no-op sem OTEL_EXPORTER_OTLP_ENDPOINT + pacotes.
+    configure_tracing(app)
 
     @app.get("/health")
     def health() -> dict[str, str]:
