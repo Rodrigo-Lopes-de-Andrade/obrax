@@ -536,14 +536,15 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 - [x] Bundle dentro do orçamento — First Load JS ≤ 240 kB (maior 203 kB), shared 104 kB; gate `pnpm build:budget` no CI
 - [x] E2E fluxos críticos passing — 18 fluxos + 24 a11y = 42/42 local (staging pendente de infra)
 - [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
-- [ ] Tracing (Tempo flame graph) — seam OTel pronto (`configure_tracing`); collector/pacotes pendentes de infra
+- [x] Tracing + logs distribuídos — export OTLP (traces via FastAPI/SQLAlchemy + logs correlacionados) validado end-to-end contra New Relic (`POST /v1/traces` e `/v1/logs` → 200); ativa por `OTEL_EXPORTER_OTLP_ENDPOINT` + extra `observability`
 - [ ] Alertas Grafana configurados + testados — alvos documentados no RUNBOOK; armar na infra
 - [ ] Restore drill documentado + executado — procedimento no RUNBOOK; execução pendente de infra
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
-> concluídos e verificados localmente. F11.2/F11.5 (Web Vitals/Sentry) e B11.2
-> (OTel) entregues como **seams infra-gated** (ativam por env, no-op em dev/CI).
-> B11.3/B11.4 (alertas/load test), D11.1/D11.2 (seed/restore) e O11.1/O11.2
+> concluídos e verificados localmente. B11.2 (OTel) **ligado a backend real**
+> (New Relic, traces + logs validados 200). F11.2/F11.5 (Web Vitals/Sentry)
+> seguem como **seams infra-gated** (ativam por env, no-op em dev/CI).
+> B11.3/B11.4 (alertas/load test), D11.2 (restore) e O11.1/O11.2
 > (staging/dashboards) dependem de infraestrutura provisionada — ver
 > [RUNBOOK.md](RUNBOOK.md) e [GO-LIVE.md](GO-LIVE.md).
 

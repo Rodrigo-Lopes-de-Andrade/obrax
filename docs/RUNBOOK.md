@@ -42,7 +42,9 @@ API como `app_admin`.
 | `ENVIRONMENT` | ✅ | `development` | `production` liga `Secure` no cookie de refresh |
 | `LOG_FORMAT` | — | texto | `json` → linhas JSON para Loki/Datadog |
 | `LOG_LEVEL` | — | `INFO` | Nível do root logger |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | — | Liga o tracing OTel (requer pacotes `opentelemetry-*`) |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | — | — | Liga traces+logs OTLP (requer extra `observability`). Ex.: `https://otlp.nr-data.net` (New Relic US) |
+| `OTEL_EXPORTER_OTLP_HEADERS` | — | — | Auth do coletor. New Relic: `api-key=<license key NRAL>` |
+| `OTEL_SERVICE_NAME` | — | `obrax-api` | Nome do serviço nos traces/logs |
 | `STORAGE_*` | prod | MinIO local | Endpoint/credenciais/bucket do object store |
 | `REALTIME_ENABLED` + `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | prod | off | Realtime do chat de tickets |
 | `PDF_RENDERER_URL` | prod | dev-renderer | Sidecar HTML→PDF do orçamento |
@@ -106,8 +108,14 @@ use-o no readiness probe verificando `status == "ok"`.
 - **Logs** (B11.1): JSON em stdout com `LOG_FORMAT=json`. Cada linha carrega
   `request_id` (também devolvido no header `X-Request-Id`) e `company_id`. Uma
   linha de acesso por request com método, rota, status e `duration_ms`.
-- **Tracing** (B11.2): setar `OTEL_EXPORTER_OTLP_ENDPOINT` + instalar
-  `opentelemetry-instrumentation-fastapi` → spans para Tempo. Sem isso, no-op.
+- **Tracing + logs distribuídos** (B11.2): instalar o extra
+  (`pip install '.[observability]'`) e setar `OTEL_EXPORTER_OTLP_ENDPOINT` +
+  `OTEL_EXPORTER_OTLP_HEADERS`. `configure_tracing` instrumenta FastAPI e
+  SQLAlchemy (spans de HTTP + queries); `configure_log_export` encaminha os logs
+  estruturados via OTLP, correlacionados ao trace. Sem a env é no-op (dev/CI).
+  **Backend validado: New Relic** (US `https://otlp.nr-data.net`, header
+  `api-key=<license key NRAL>`) — `POST /v1/traces` e `/v1/logs` → 200. Qualquer
+  coletor OTLP serve (Tempo/Loki, Grafana Cloud, etc.).
 - **Web Vitals** (F11.5): reportados via `useReportWebVitals` para o sink de
   analytics (`$web_vitals`). Thresholds de alerta: LCP > 2.5s, INP > 200ms, CLS > 0.1.
 - **Erros** (F11.5): handlers globais (`window.onerror`/`unhandledrejection`) →
