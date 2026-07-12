@@ -20,8 +20,14 @@ from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from app.core.config import settings
+
+
+def _is_pooler(url: str) -> bool:
+    """Verdadeiro se a DSN aponta para um pooler externo (Supabase/pgbouncer)."""
+    return ":6543" in url or "pgbouncer=true" in url or "pooler." in url
 
 
 def _connect_args(url: str) -> dict[str, Any]:
@@ -39,29 +45,34 @@ def _connect_args(url: str) -> dict[str, Any]:
     return {}
 
 
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
-    future=True,
-    connect_args=_connect_args(settings.database_url),
-)
+def _engine_kwargs(url: str) -> dict[str, Any]:
+    """kwargs de pool/conexão do engine por DSN.
+
+    Atrás de um pooler externo (Supabase/pgbouncer) NÃO empilhamos um pool do
+    SQLAlchemy por cima: `NullPool` abre/fecha a conexão por uso e deixa o pooler
+    gerenciar — mantém o número de conexões concorrentes mínimo (evita esgotar o
+    limite de clientes do pooler, que causava hangs sob carga de testes) e evita
+    conexões ociosas que ficam stale no pooler. Em conexão direta/local, um
+    QueuePool com `pool_pre_ping` é melhor (reaproveita conexões).
+    """
+    connect_args = _connect_args(url)
+    if _is_pooler(url):
+        return {"poolclass": NullPool, "connect_args": connect_args}
+    return {"pool_pre_ping": True, "connect_args": connect_args}
+
+
+engine = create_engine(settings.database_url, future=True, **_engine_kwargs(settings.database_url))
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 app_user_engine = create_engine(
-    settings.app_user_database_url,
-    pool_pre_ping=True,
-    future=True,
-    connect_args=_connect_args(settings.app_user_database_url),
+    settings.app_user_database_url, future=True, **_engine_kwargs(settings.app_user_database_url)
 )
 AppUserSessionLocal = sessionmaker(
     bind=app_user_engine, autoflush=False, autocommit=False, future=True
 )
 
 app_admin_engine = create_engine(
-    settings.app_admin_database_url,
-    pool_pre_ping=True,
-    future=True,
-    connect_args=_connect_args(settings.app_admin_database_url),
+    settings.app_admin_database_url, future=True, **_engine_kwargs(settings.app_admin_database_url)
 )
 AppAdminSessionLocal = sessionmaker(
     bind=app_admin_engine, autoflush=False, autocommit=False, future=True

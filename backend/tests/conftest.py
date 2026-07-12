@@ -42,12 +42,22 @@ def two_tenants() -> Iterator[dict[str, dict[str, str]]]:
     """Cria 2 empresas + 1 usuário (owner) cada, via role `obrax` (bypassa
     RLS), e remove tudo ao final do teste.
     """
+    fixtures = [
+        ("A", "33333333000191", "isolamento-a@example.com"),
+        ("B", "44444444000191", "isolamento-b@example.com"),
+    ]
+    cnpjs = [c for _, c, _ in fixtures]
+    emails = [e for _, _, e in fixtures]
     with SessionLocal() as session:
+        # Auto-cura: remove órfãos destes CNPJs/emails fixos deixados por uma run
+        # anterior que abortou antes do teardown (ex.: timeout). Torna a fixture
+        # repetível mesmo após crash, sem depender de limpeza externa.
+        session.execute(text("DELETE FROM companies WHERE cnpj = ANY(:c)"), {"c": cnpjs})
+        session.execute(text("DELETE FROM users WHERE email = ANY(:e)"), {"e": emails})
+        session.commit()
+
         tenants: dict[str, dict[str, str]] = {}
-        for label, cnpj, email in [
-            ("A", "33333333000191", "isolamento-a@example.com"),
-            ("B", "44444444000191", "isolamento-b@example.com"),
-        ]:
+        for label, cnpj, email in fixtures:
             company_id = session.execute(
                 text(
                     "INSERT INTO companies (cnpj, razao_social) VALUES (:cnpj, :razao) RETURNING id"
