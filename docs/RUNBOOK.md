@@ -57,9 +57,15 @@ API como `app_admin`.
 | `NEXT_PUBLIC_SENTRY_DSN` | — | Rota de erros dedicada (F11.5); ver `lib/observability/errors.ts` |
 
 > ⚠️ **Gotcha de DSN Supabase**: se a senha do banco contém caracteres especiais
-> (`[ ] @ / : # ?`), ela **precisa** ser percent-encoded na URL (ex.: `[`→`%5B`),
+> (`[ ] @ / : # ?`), ela **precisa** ser percent-encoded na URL (ex.: `@`→`%40`),
 > senão o `urllib`/psycopg falha no parse do host. Sintoma:
-> `ValueError: '<host>' does not appear to be an IPv4 or IPv6 address`.
+> `ValueError: '<host>' does not appear to be an IPv4 or IPv6 address`. O Alembic
+> (`env.py`) já escapa `%`→`%%` para o ConfigParser não interpretar a senha.
+
+> ℹ️ **Pooler & prepared statements**: no *transaction pooler* (`:6543` /
+> `?pgbouncer=true`) o `db.py` desliga automaticamente os prepared statements do
+> psycopg3 (`prepare_threshold=None`) — obrigatório com pgbouncer. Migrations usam
+> o *session pooler* (`:5432`), que mantém o default.
 
 ---
 
