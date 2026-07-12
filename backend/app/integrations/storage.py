@@ -73,7 +73,16 @@ class S3StorageClient:
             aws_access_key_id=settings.storage_access_key,
             aws_secret_access_key=settings.storage_secret_key,
             region_name=settings.storage_region,
-            config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+            # Timeouts explícitos: sem eles o boto3 usa ~60s de connect timeout +
+            # retries, o que faz o `/health` (head_bucket) pendurar por vários
+            # segundos quando o storage está fora — ruim para readiness probe.
+            config=Config(
+                signature_version="s3v4",
+                s3={"addressing_style": "path"},
+                connect_timeout=3,
+                read_timeout=10,
+                retries={"max_attempts": 2, "mode": "standard"},
+            ),
         )
 
     def presigned_put_url(self, *, key: str) -> PresignedUpload:
