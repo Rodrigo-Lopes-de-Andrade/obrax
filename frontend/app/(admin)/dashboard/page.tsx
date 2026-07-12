@@ -10,6 +10,7 @@ import { CurvaAbcCard } from "@/components/modules/obra/CurvaAbcCard";
 import { BudgetModal } from "@/components/modules/orcamento/BudgetModal";
 import { ImportSpreadsheetModal } from "@/components/modules/orcamento/ImportSpreadsheetModal";
 import { DashboardKpis } from "@/components/modules/dashboard/DashboardKpis";
+import { IaInsightsCard } from "@/components/modules/ia/IaInsightsCard";
 import { ObrasVencidasAlert } from "@/components/modules/dashboard/ObrasVencidasAlert";
 import { useUiStore } from "@/state/ui";
 import { formatMoneyMillionsParts, formatMoneyRounded, formatPercent } from "@/lib/decimal";
@@ -48,6 +49,11 @@ export default function DashboardPage() {
       </div>
       <div className="mb-8">
         <ObrasVencidasAlert />
+      </div>
+
+      {/* F10.5 — Insights dos Agentes IA (gated pela flag ia-module-enabled). */}
+      <div className="mb-8">
+        <IaInsightsCard />
       </div>
 
       <div className="mb-6 border-t border-white/5 pt-7" />

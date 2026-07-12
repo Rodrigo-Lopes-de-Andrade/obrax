@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { ItemCreateInput, OrcamentoItem } from "@/lib/api/types";
+import type { CopilotSuggestion, ItemCreateInput, OrcamentoItem } from "@/lib/api/types";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
@@ -108,6 +108,22 @@ export function EstruturaTab({ versaoId, itens, locked, onImport }: EstruturaTab
     setPickerParent(null);
   };
 
+  // F10.4 — insere no serviço-alvo os insumos sugeridos pela IA (preço a definir).
+  const addInsumosFromCopilot = (itens: CopilotSuggestion[]) => {
+    if (!pickerParent || itens.length === 0) return;
+    bulk.mutate(
+      itens.map((s) => ({
+        tipo: "I" as const,
+        parent_id: pickerParent,
+        descricao: s.descricao,
+        unidade: s.unidade,
+        quantidade: s.quantidade,
+        preco_unitario: "0",
+      })),
+    );
+    setPickerParent(null);
+  };
+
   const patch = (id: string, field: string, value: string) =>
     update.mutate({ id, patch: { [field]: value } });
 
@@ -181,6 +197,7 @@ export function EstruturaTab({ versaoId, itens, locked, onImport }: EstruturaTab
         onOpenChange={(o) => !o && setPickerParent(null)}
         onPick={addInsumoFromCatalog}
         onAddBlank={addInsumoBlank}
+        onInsertMany={addInsumosFromCopilot}
       />
     </div>
   );

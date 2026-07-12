@@ -1,12 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { Loader2, PackageSearch, Plus, Search } from "lucide-react";
+import { Loader2, PackageSearch, Plus, Search, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { Insumo } from "@/lib/api/types";
+import type { CopilotSuggestion, Insumo } from "@/lib/api/types";
 import { formatMoney } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { useCopilotSugerir } from "@/lib/hooks/use-ia";
 import { useInsumos } from "@/lib/hooks/use-insumos";
 
 interface Props {
@@ -14,17 +15,21 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   onPick: (insumo: Insumo) => void;
   onAddBlank: () => void;
+  /** F10.4 — insere em lote os insumos sugeridos pelo copilot no serviço-alvo. */
+  onInsertMany: (itens: CopilotSuggestion[]) => void;
 }
 
 /** ComboBox de insumos com busca servidor-side (debounce 500ms) e navegação
  * por teclado. Escala é resolvida no servidor (cursor pagination) — só o topo
  * dos resultados é renderizado, sem travar com 10k itens. */
-export function InsumoPicker({ open, onOpenChange, onPick, onAddBlank }: Props) {
+export function InsumoPicker({ open, onOpenChange, onPick, onAddBlank, onInsertMany }: Props) {
   const [term, setTerm] = React.useState("");
   const [debounced, setDebounced] = React.useState("");
   const [active, setActive] = React.useState(0);
+  const [sugestoes, setSugestoes] = React.useState<CopilotSuggestion[] | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
+  const copilot = useCopilotSugerir();
 
   React.useEffect(() => {
     const id = setTimeout(() => setDebounced(term), 500);
@@ -36,10 +41,23 @@ export function InsumoPicker({ open, onOpenChange, onPick, onAddBlank }: Props) 
       setTerm("");
       setDebounced("");
       setActive(0);
+      setSugestoes(null);
       // foco no próximo tick (após montar)
       requestAnimationFrame(() => inputRef.current?.focus());
     }
   }, [open]);
+
+  const sugerirIa = () => {
+    copilot.mutate(
+      { descricao: term.trim() || "serviço" },
+      { onSuccess: (itens) => setSugestoes(itens) },
+    );
+  };
+
+  const inserirSugestoes = () => {
+    if (sugestoes) onInsertMany(sugestoes);
+    onOpenChange(false);
+  };
 
   const { data, isFetching } = useInsumos({ search: debounced, limit: 40 }, open);
   const items = data?.items ?? [];
@@ -92,7 +110,26 @@ export function InsumoPicker({ open, onOpenChange, onPick, onAddBlank }: Props) 
         </div>
 
         <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto py-1">
-          {items.length === 0 ? (
+          {sugestoes ? (
+            <div className="px-2 py-1">
+              <div className="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-primary">
+                <Sparkles className="size-3.5" />
+                Sugestão da IA — revise antes de inserir
+              </div>
+              {sugestoes.map((s, i) => (
+                <div
+                  key={`${s.descricao}-${i}`}
+                  className="flex items-center gap-3 px-4 py-2 text-sm"
+                >
+                  <span className="min-w-0 flex-1 truncate">{s.descricao}</span>
+                  <span className="flex-shrink-0 text-xs text-muted-foreground">{s.unidade}</span>
+                  <span className="flex-shrink-0 tabular-nums text-muted-foreground">
+                    {s.quantidade}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center text-sm text-muted-foreground">
               <PackageSearch className="size-7 opacity-40" />
               {debounced ? "Nenhum insumo encontrado." : "Digite para buscar no catálogo SINAPI."}
@@ -127,13 +164,42 @@ export function InsumoPicker({ open, onOpenChange, onPick, onAddBlank }: Props) 
         </div>
 
         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5">
-          <span className="text-xs text-muted-foreground">
-            ↑↓ navegar · Enter selecionar · Esc fechar
-          </span>
-          <Button variant="outline" size="sm" onClick={onAddBlank}>
-            <Plus />
-            Adicionar em branco
-          </Button>
+          {sugestoes ? (
+            <>
+              <Button variant="ghost" size="sm" onClick={() => setSugestoes(null)}>
+                Voltar à busca
+              </Button>
+              <Button size="sm" onClick={inserirSugestoes} disabled={sugestoes.length === 0}>
+                <Plus />
+                Inserir {sugestoes.length} {sugestoes.length === 1 ? "insumo" : "insumos"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <span className="text-xs text-muted-foreground">
+                ↑↓ navegar · Enter selecionar · Esc fechar
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={sugerirIa}
+                  disabled={copilot.isPending}
+                >
+                  {copilot.isPending ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <Sparkles className="text-primary" />
+                  )}
+                  Sugerir com IA
+                </Button>
+                <Button variant="outline" size="sm" onClick={onAddBlank}>
+                  <Plus />
+                  Adicionar em branco
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
