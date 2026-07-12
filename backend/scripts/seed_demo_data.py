@@ -62,14 +62,16 @@ def cnpj(base12: str) -> str:
 
 
 # --- Dados fixos ---------------------------------------------------------------
+# tipo_pessoa é 'PF'/'PJ' (bpchar) — bate com ck_clientes_tipo_pessoa e com
+# fn_validate_documento no Postgres (que roteia CPF vs CNPJ por esse valor).
 CLIENTES = [
-    ("F", cpf("111444777"), "João Pereira", "(11) 98888-1010", "joao.pereira@example.com"),
-    ("F", cpf("222555888"), "Ana Souza", "(11) 97777-2020", "ana.souza@example.com"),
-    ("F", cpf("333666999"), "Carlos Menezes", "(21) 96666-3030", "carlos.menezes@example.com"),
-    ("F", cpf("529982247"), "Beatriz Lima", "(31) 95555-4040", "beatriz.lima@example.com"),
-    ("J", cnpj("112223330001"), "Incorporadora Aurora S.A.", "(11) 3030-5050", "contato@aurora.example.com"),
-    ("J", cnpj("445556660001"), "Shopping Vale Empreendimentos", "(11) 3040-6060", "obras@vale.example.com"),
-    ("J", cnpj("778889990001"), "Condomínio Parque Verde", "(41) 3050-7070", "sindico@parqueverde.example.com"),
+    ("PF", cpf("111444777"), "João Pereira", "(11) 98888-1010", "joao.pereira@example.com"),
+    ("PF", cpf("222555888"), "Ana Souza", "(11) 97777-2020", "ana.souza@example.com"),
+    ("PF", cpf("333666999"), "Carlos Menezes", "(21) 96666-3030", "carlos.menezes@example.com"),
+    ("PF", cpf("529982247"), "Beatriz Lima", "(31) 95555-4040", "beatriz.lima@example.com"),
+    ("PJ", cnpj("112223330001"), "Incorporadora Aurora S.A.", "(11) 3030-5050", "contato@aurora.example.com"),
+    ("PJ", cnpj("445556660001"), "Shopping Vale Empreendimentos", "(11) 3040-6060", "obras@vale.example.com"),
+    ("PJ", cnpj("778889990001"), "Condomínio Parque Verde", "(41) 3050-7070", "sindico@parqueverde.example.com"),
 ]
 
 OBRA_STATUS = ["execucao", "execucao", "execucao", "planejamento", "pausada",
@@ -206,11 +208,13 @@ def seed() -> dict[str, object]:
             ).scalar_one()
             custo = 200000 + i * 90000
             preco = int(custo * 1.28)
+            # markup_global/taxa_adm/margem são NUMERIC(5,4) — frações/multiplicador
+            # (< 10). markup 1.28 (28%), taxa adm 0.05, margem 0.18.
             ver_id = s.execute(
                 text(
                     "INSERT INTO orcamento_versao (company_id, orcamento_id, numero, custo_direto, "
                     "markup_global, taxa_adm, preco_venda, margem) VALUES "
-                    "(:c, :orc, 1, :cd, 28, 5, :pv, 18) RETURNING id"
+                    "(:c, :orc, 1, :cd, 1.28, 0.05, :pv, 0.18) RETURNING id"
                 ),
                 {"c": company_id, "orc": orc_id, "cd": str(custo), "pv": str(preco)},
             ).scalar_one()
