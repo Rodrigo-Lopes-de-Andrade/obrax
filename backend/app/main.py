@@ -14,7 +14,11 @@ from app.api.v1 import api_router
 from app.core.config import settings
 from app.core.logging import configure_logging
 from app.core.middleware import TenantMiddleware
-from app.core.observability import RequestContextMiddleware, configure_tracing
+from app.core.observability import (
+    RequestContextMiddleware,
+    configure_log_export,
+    configure_tracing,
+)
 from app.integrations.storage import storage_healthy
 
 # RFC 7807 Problem Details — formato de erro obrigatório (docs/CLAUDE.md >
@@ -83,8 +87,10 @@ def create_app() -> FastAPI:
 
     app.include_router(api_router, prefix="/api/v1")
 
-    # Tracing distribuído (B11.2): no-op sem OTEL_EXPORTER_OTLP_ENDPOINT + pacotes.
+    # Tracing + export de logs distribuídos (B11.2): no-op sem
+    # OTEL_EXPORTER_OTLP_ENDPOINT + pacotes opentelemetry-* instalados.
     configure_tracing(app)
+    configure_log_export()
 
     @app.get("/health")
     def health() -> dict[str, str]:
