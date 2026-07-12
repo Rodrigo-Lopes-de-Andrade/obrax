@@ -118,7 +118,7 @@ export function DocumentosView({ obraId }: { obraId: string }) {
           />
         </div>
         <Select value={categoria} onValueChange={setCategoria}>
-          <SelectTrigger size="sm" className="w-48">
+          <SelectTrigger size="sm" className="w-48" aria-label="Filtrar por categoria">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

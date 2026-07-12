@@ -76,7 +76,7 @@ export function OrcamentosView() {
           value={statusFilter}
           onValueChange={(v) => setStatusFilter(v as OrcamentoStatus | "todos")}
         >
-          <SelectTrigger size="sm" className="w-52">
+          <SelectTrigger size="sm" className="w-52" aria-label="Filtrar por status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

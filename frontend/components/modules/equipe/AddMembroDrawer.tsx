@@ -140,7 +140,7 @@ export function AddMembroDrawer({
           <div className="space-y-1.5">
             <span className="text-sm font-medium">Papel</span>
             <Select value={papel} onValueChange={setPapel}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-label="Papel">
                 <SelectValue placeholder="Selecione o papel" />
               </SelectTrigger>
               <SelectContent>

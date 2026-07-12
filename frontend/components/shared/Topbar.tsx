@@ -39,6 +39,7 @@ export function Topbar() {
       <div className="ml-auto flex items-center gap-2">
         <button
           type="button"
+          aria-label="Notificações"
           className="relative flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
         >
           <Bell className="h-4.5 w-4.5" />
@@ -46,6 +47,7 @@ export function Topbar() {
         </button>
         <button
           type="button"
+          aria-label="Mensagens"
           className="flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
         >
           <MessagesSquare className="h-4.5 w-4.5" />
@@ -57,6 +59,8 @@ export function Topbar() {
           <button
             type="button"
             onClick={toggleAvatarMenu}
+            aria-label="Menu do usuário"
+            aria-expanded={avatarOpen}
             className="flex items-center gap-2 rounded-full border-none bg-transparent p-0.75"
           >
             <Avatar name={USUARIO.nome} variant="gradient" className="size-9 text-[13px]" />

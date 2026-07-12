@@ -72,7 +72,7 @@ export function Sidebar() {
         onClick={toggleSidebar}
         title="Recolher menu"
         className={cn(
-          "mb-2 flex items-center px-2 py-1 text-muted-foreground/70 hover:text-foreground",
+          "mb-2 flex items-center px-2 py-1 text-muted-foreground hover:text-foreground",
           collapsed ? "justify-center" : "justify-end",
         )}
       >
@@ -80,7 +80,7 @@ export function Sidebar() {
       </button>
 
       {!collapsed && (
-        <div className="px-2 pt-2 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground/70 uppercase">
+        <div className="px-2 pt-2 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground uppercase">
           Gestão
         </div>
       )}
@@ -99,7 +99,7 @@ export function Sidebar() {
       </nav>
 
       {!collapsed && (
-        <div className="px-2 pt-4 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground/70 uppercase">
+        <div className="px-2 pt-4 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground uppercase">
           Análise
         </div>
       )}
@@ -115,7 +115,7 @@ export function Sidebar() {
       </nav>
 
       {!collapsed && (
-        <div className="px-2 pt-4 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground/70 uppercase">
+        <div className="px-2 pt-4 pb-2 text-[10px] font-bold tracking-[0.09em] text-muted-foreground uppercase">
           Inteligência
         </div>
       )}
@@ -194,7 +194,12 @@ function SidebarLink({
 
   if (disabled) {
     return (
-      <div className={cn(className, "group")} title="Em breve">
+      <div
+        className={cn(className, "group")}
+        title="Em breve"
+        role="link"
+        aria-disabled="true"
+      >
         {content}
       </div>
     );

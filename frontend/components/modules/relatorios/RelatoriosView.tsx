@@ -203,7 +203,7 @@ function DateField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium tracking-wide text-muted-foreground/70 uppercase">
+      <span className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
         {label}
       </span>
       <Input

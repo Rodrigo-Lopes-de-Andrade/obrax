@@ -180,7 +180,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                       disabled={isEdit || clientesLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" aria-label="Cliente">
                           <SelectValue
                             placeholder={
                               clientesLoading ? "Carregando…" : "Selecione um cliente"
@@ -223,7 +223,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                       <FormLabel>Status</FormLabel>
                       <Select value={field.value} onValueChange={field.onChange}>
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" aria-label="Status">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>

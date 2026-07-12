@@ -93,7 +93,7 @@ export function PermissoesView() {
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Papel</label>
             <Select value={role} onValueChange={(v) => setRole(v as AiRole)}>
-              <SelectTrigger className="w-full">
+              <SelectTrigger className="w-full" aria-label="Papel">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

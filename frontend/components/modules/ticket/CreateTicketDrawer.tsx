@@ -119,7 +119,7 @@ export function CreateTicketDrawer({
                       disabled={Boolean(obraId) || obrasLoading}
                     >
                       <FormControl>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full" aria-label="Obra">
                           <SelectValue
                             placeholder={obrasLoading ? "Carregando…" : "Selecione uma obra"}
                           />

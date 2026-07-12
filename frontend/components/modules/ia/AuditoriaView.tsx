@@ -72,7 +72,7 @@ export function AuditoriaView() {
           value={obraId ?? TODOS}
           onValueChange={(v) => setObraId(v === TODOS ? null : v)}
         >
-          <SelectTrigger size="sm" className="w-56">
+          <SelectTrigger size="sm" className="w-56" aria-label="Filtrar por obra">
             <SelectValue placeholder="Todas as obras" />
           </SelectTrigger>
           <SelectContent>
@@ -86,7 +86,7 @@ export function AuditoriaView() {
         </Select>
 
         <Select value={agent ?? TODOS} onValueChange={(v) => setAgent(v === TODOS ? null : v)}>
-          <SelectTrigger size="sm" className="w-44">
+          <SelectTrigger size="sm" className="w-44" aria-label="Filtrar por agente">
             <SelectValue placeholder="Todos os agentes" />
           </SelectTrigger>
           <SelectContent>

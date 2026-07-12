@@ -29,7 +29,7 @@ export function UploadArea({ obraId }: { obraId: string }) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Tipo</span>
           <Select value={tipo} onValueChange={(v) => setTipo(v as DocumentoTipo)}>
-            <SelectTrigger size="sm" className="w-40">
+            <SelectTrigger size="sm" className="w-40" aria-label="Tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -44,7 +44,7 @@ export function UploadArea({ obraId }: { obraId: string }) {
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Categoria</span>
           <Select value={categoria} onValueChange={setCategoria}>
-            <SelectTrigger size="sm" className="w-48">
+            <SelectTrigger size="sm" className="w-48" aria-label="Categoria">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

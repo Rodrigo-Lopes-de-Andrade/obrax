@@ -69,18 +69,18 @@ function IaInsightsInner() {
 
           {data.ultimas_acoes.length > 0 ? (
             <div className="mt-4 space-y-1.5">
-              <p className="text-[11px] font-bold tracking-wide text-muted-foreground/70 uppercase">
+              <p className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
                 Últimas ações
               </p>
               {data.ultimas_acoes.slice(0, 3).map((a) => (
                 <div key={a.id} className="flex items-center gap-2 text-sm">
-                  <span className="flex-shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  <span className="flex-shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold text-foreground">
                     {a.agent ?? "ia"}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-muted-foreground" title={a.command}>
                     {a.command}
                   </span>
-                  <span className="flex-shrink-0 text-xs text-muted-foreground/70">
+                  <span className="flex-shrink-0 text-xs text-muted-foreground">
                     {fmtHora(a.created_at)}
                   </span>
                 </div>

@@ -90,7 +90,7 @@ export function TicketChat({ ticketId }: { ticketId: string }) {
             }
             disabled={updateStatus.isPending}
           >
-            <SelectTrigger size="sm" className="w-40">
+            <SelectTrigger size="sm" className="w-40" aria-label="Status do chamado">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

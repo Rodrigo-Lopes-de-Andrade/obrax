@@ -112,7 +112,7 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
               }
               disabled={updateStatus.isPending}
             >
-              <SelectTrigger size="sm" className="w-52">
+              <SelectTrigger size="sm" className="w-52" aria-label="Status do orçamento">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

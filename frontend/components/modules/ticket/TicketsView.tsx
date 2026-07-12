@@ -91,7 +91,7 @@ export function TicketsView() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Select value={statusFilter} onValueChange={changeStatus}>
-          <SelectTrigger size="sm" className="w-44">
+          <SelectTrigger size="sm" className="w-44" aria-label="Filtrar por status">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
