@@ -1,20 +1,37 @@
 from __future__ import annotations
 
-import secrets
-import uuid
-from collections.abc import Callable, Iterator
-from dataclasses import dataclass
-from urllib.parse import urlsplit, urlunsplit
+import os
 
-import psycopg
 import pytest
-from sqlalchemy import text
-from starlette.testclient import TestClient
 
-from app.core.config import settings
-from app.core.db import SessionLocal
-from app.core.security import create_access_token, hash_password
-from app.main import app
+# Guarda anti-prod — DEVE rodar antes de importar `app.core.config`, que faz
+# `load_dotenv(REPO_ROOT/.env)` no import e populava `os.environ["DATABASE_URL"]`
+# a partir do `.env` (que aponta para PROD). Os testes mutam o banco (fixtures
+# inserem/limpam), então exigimos um `DATABASE_URL` setado explicitamente no
+# ambiente (banco local/staging); sem ele, aborta a sessão inteira em vez de cair
+# no fallback de produção. Prevê o engano de rodar `pytest` "solto".
+if not os.environ.get("DATABASE_URL"):
+    raise pytest.UsageError(
+        "DATABASE_URL não está setado no ambiente. Os testes mutam o banco e o "
+        "fallback do .env aponta para PROD — recuso rodar. Rode com um DATABASE_URL "
+        "explícito de local/staging, ex.:\n"
+        '  DATABASE_URL="postgresql://.../postgres" pytest'
+    )
+
+import secrets  # noqa: E402
+import uuid  # noqa: E402
+from collections.abc import Callable, Iterator  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from urllib.parse import urlsplit, urlunsplit  # noqa: E402
+
+import psycopg  # noqa: E402
+from sqlalchemy import text  # noqa: E402
+from starlette.testclient import TestClient  # noqa: E402
+
+from app.core.config import settings  # noqa: E402
+from app.core.db import SessionLocal  # noqa: E402
+from app.core.security import create_access_token, hash_password  # noqa: E402
+from app.main import app  # noqa: E402
 
 
 def _dsn_with_role(role: str, password: str) -> str:
