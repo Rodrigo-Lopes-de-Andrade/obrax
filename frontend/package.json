@@ -9,7 +9,7 @@
     "lint": "eslint",
     "test:e2e": "playwright test",
     "budget": "node scripts/check-bundle-budget.mjs",
-    "build:budget": "next build 2>&1 | tee .next/build-report.txt && node scripts/check-bundle-budget.mjs"
+    "build:budget": "next build 2>&1 | tee build-report.txt && node scripts/check-bundle-budget.mjs build-report.txt"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

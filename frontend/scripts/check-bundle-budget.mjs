@@ -7,7 +7,7 @@
  *
  * Fonte de verdade = a própria coluna "First Load JS" impressa pelo Next (métrica
  * canônica, já com dedupe de chunks). Uso:
- *   pnpm build:budget            # next build | tee .next/build-report.txt && este script
+ *   pnpm build:budget            # next build | tee build-report.txt && este script
  *   node scripts/check-bundle-budget.mjs [caminho-do-relatorio]
  */
 import { readFileSync } from "node:fs";
@@ -15,7 +15,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const REPORT = process.argv[2] ?? join(ROOT, ".next", "build-report.txt");
+const REPORT = process.argv[2] ?? join(ROOT, "build-report.txt");
 
 // Tetos em kB de First Load JS, com folga sobre os números atuais (maior ~203 kB)
 // mas apertados o bastante p/ pegar a entrada de uma lib pesada num route.
