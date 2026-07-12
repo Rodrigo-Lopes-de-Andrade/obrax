@@ -20,7 +20,9 @@ if config.config_file_name is not None:
 # A URL de conexão vem sempre de `app.core.config.settings` (que por sua vez
 # lê o `.env` da raiz do monorepo) — nunca do `alembic.ini`, para termos uma
 # única fonte da verdade e não commitar credenciais.
-config.set_main_option("sqlalchemy.url", settings.database_url)
+# `%` é escapado para `%%` porque o ConfigParser do Alembic faz interpolação
+# nesta string (uma senha percent-encoded, ex.: `%40`, quebraria sem isso).
+config.set_main_option("sqlalchemy.url", settings.database_url.replace("%", "%%"))
 
 # Metadata dos modelos SQLAlchemy — usado apenas como referência para
 # `autogenerate`; as migrations deste projeto são escritas à mão (DDL
