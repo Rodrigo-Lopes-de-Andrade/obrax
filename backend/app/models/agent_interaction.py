@@ -29,6 +29,9 @@ class AgentInteraction(Base):
     agent_message_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("agent_message.id", ondelete="SET NULL"), nullable=True
     )
+    obra_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("obras.id", ondelete="SET NULL"), nullable=True
+    )
     whatsapp_number: Mapped[str] = mapped_column(Text, nullable=False)
     command: Mapped[str] = mapped_column(Text, nullable=False)
     intent: Mapped[str | None] = mapped_column(Text, nullable=True)

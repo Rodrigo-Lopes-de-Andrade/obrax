@@ -76,6 +76,13 @@ class Settings:
     # download do PDF — 1h, bem maior que o presign de upload por ser leitura.
     pdf_renderer_url: str
     pdf_download_ttl: int
+    # Agentes IA (Módulo 3, Sprint 10). `uazap_webhook_secret` valida o HMAC do
+    # webhook do Uazap (B10.1); vazio => o webhook rejeita toda requisição (fail
+    # closed) exceto em testes que sobrescrevem a dependency. `uazap_base_url`
+    # vazio => cliente Uazap no-op (dev/CI, não envia nada — ver integrations).
+    uazap_webhook_secret: str
+    uazap_base_url: str
+    uazap_token: str
 
 
 def _to_psycopg_dsn(url: str) -> str:
@@ -136,6 +143,9 @@ def get_settings() -> Settings:
         supabase_service_key=os.environ.get("SUPABASE_SERVICE_KEY", ""),
         pdf_renderer_url=os.environ.get("PDF_RENDERER_URL", ""),
         pdf_download_ttl=int(os.environ.get("PDF_DOWNLOAD_TTL", "3600")),
+        uazap_webhook_secret=os.environ.get("UAZAP_WEBHOOK_SECRET", ""),
+        uazap_base_url=os.environ.get("UAZAP_BASE_URL", ""),
+        uazap_token=os.environ.get("UAZAP_TOKEN", ""),
     )
 
 

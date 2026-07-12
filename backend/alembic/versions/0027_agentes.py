@@ -172,6 +172,14 @@ def upgrade() -> None:
             sa.ForeignKey("agent_message.id", ondelete="SET NULL"),
             nullable=True,
         ),
+        # Obra alvo da interação (para filtro na auditoria, F10.2). SET NULL: a
+        # trilha sobrevive à remoção da obra.
+        sa.Column(
+            "obra_id",
+            postgresql.UUID(as_uuid=True),
+            sa.ForeignKey("obras.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
         sa.Column("whatsapp_number", sa.Text(), nullable=False),
         sa.Column("command", sa.Text(), nullable=False),
         sa.Column("intent", sa.Text(), nullable=True),

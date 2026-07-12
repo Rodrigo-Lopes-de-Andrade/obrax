@@ -28,7 +28,9 @@ class AiPermission(Base):
     )
     whatsapp_number: Mapped[str] = mapped_column(Text, nullable=False)
     role: Mapped[str] = mapped_column(ENUM(name="ai_role", create_type=False), nullable=False)
-    daily_limit_cents: Mapped[int] = mapped_column(Integer, nullable=False, server_default=text("0"))
+    daily_limit_cents: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
     monthly_limit_cents: Mapped[int] = mapped_column(
         Integer, nullable=False, server_default=text("0")
     )

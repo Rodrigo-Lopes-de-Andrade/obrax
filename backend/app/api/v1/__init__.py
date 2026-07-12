@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from app.modules.agentes.router import router as agentes_router
 from app.modules.auth.router import router as auth_router
 from app.modules.gestao.checklist.router import router as checklist_router
 from app.modules.gestao.clientes.router import router as clientes_router
@@ -51,3 +52,5 @@ api_router.include_router(insumos_router)
 api_router.include_router(portal_router)
 # Prefixo /lgpd: /lgpd/requests e /lgpd/requests/{id}/download.
 api_router.include_router(lgpd_router)
+# Sem prefixo: paths absolutos (/webhook/uazap, /ia/*, /feature-flags).
+api_router.include_router(agentes_router)
