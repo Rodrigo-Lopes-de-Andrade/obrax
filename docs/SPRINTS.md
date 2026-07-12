@@ -9,19 +9,24 @@
 ## 📋 Visão Geral do Roadmap
 
 ```
-S1  ██ Setup + Auth (Backend/Frontend base)
-S2  ██ Módulo 1: Obras (CRUD + DataTable)
-S3  ██ Módulo 1: Documentos + Equipes (GED + upload)
-S4  ██ Módulo 1: Tickets + Dashboard (realtime)
-S5  ██ Módulo 2: Orçamentos (estrutura EAP)
-S6  ██ Módulo 2: BDI + PDF + Relatórios
-S7  ██ Field app setup + Checklist (offline)
-S8  ██ Field: Fotos + Ocorrências + Sync
-S9  ██ Portal cliente (magic link + aprovação)
-S10 ██ Módulo 3: Agentes IA (LangGraph + webhook)
-S11 ██ Hardening: A11y + Perf + Observability + E2E
-S12 ██ Beta + GA
+S1  ✅ Setup + Auth (Backend/Frontend base)
+S2  ✅ Módulo 1: Obras (CRUD + DataTable)
+S3  ✅ Módulo 1: Documentos + Equipes (GED + upload)
+S4  ✅ Módulo 1: Tickets + Dashboard (realtime)
+S5  ✅ Módulo 2: Orçamentos (estrutura EAP)
+S6  ✅ Módulo 2: BDI + PDF + Relatórios
+S7  ✅ Field app setup + Checklist (offline)
+S8  ✅ Field: Fotos + Ocorrências + Sync
+S9  ✅ Portal cliente (magic link + aprovação)
+S10 ✅ Módulo 3: Agentes IA (LangGraph + webhook)
+S11 ⬜ Hardening: A11y + Perf + Observability + E2E
+S12 ⬜ Beta + GA
 ```
+
+**Progresso: 10 / 12 sprints concluídas (83%).** Próxima: S11 (Hardening).
+Nota S10: frontend (F10.1–F10.5) construído e verificado com MSW/Playwright; backend
+(B10.1–B10.8) escrito e verificado com ruff + mypy + testes unitários das integrações —
+a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Postgres.
 
 **Skills por camada:**
 
@@ -34,7 +39,7 @@ S12 ██ Beta + GA
 
 ---
 
-## Sprint 1: Setup Inicial + Auth + Design Tokens (Dias 1-10)
+## Sprint 1: Setup Inicial + Auth + Design Tokens (Dias 1-10)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Fundação técnica pronta — repo, CI/CD, design tokens, auth admin/magic links.
 
@@ -77,19 +82,19 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 1
 
-- [ ] Login admin funciona (email + senha)
-- [ ] Magic link funciona (consumível 1x, 30min TTL)
-- [ ] Convite de usuário funciona (envia email, set password)
-- [ ] Multi-tenant isolado (RLS ativo, middleware filtra company_id)
-- [ ] CI/CD green (lint + test + deploy automático)
-- [ ] Dashboard admin carrega (sem dados ainda, skeleton)
-- [ ] Staging + prod deployáveis
+- [x] Login admin funciona (email + senha)
+- [x] Magic link funciona (consumível 1x, 30min TTL)
+- [x] Convite de usuário funciona (envia email, set password)
+- [x] Multi-tenant isolado (RLS ativo, middleware filtra company_id)
+- [x] CI/CD green (lint + test + deploy automático)
+- [x] Dashboard admin carrega (sem dados ainda, skeleton)
+- [x] Staging + prod deployáveis
 
 **Estimativa total:** ~35 dias/pessoa (~2 pessoas backend + frontend = 18d cada)
 
 ---
 
-## Sprint 2: Módulo 1 — Obras (US-02, US-03) (Dias 11-24)
+## Sprint 2: Módulo 1 — Obras (US-02, US-03) (Dias 11-24)  ✅ **CONCLUÍDA**
 
 **Objetivo:** CRUD completo de obras vinculadas a clientes. DataTable com filtros e paginação.
 
@@ -121,18 +126,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 2
 
-- [ ] Listar obras funciona (50+ linhas teste)
-- [ ] Criar obra funciona (forma completa, validação)
-- [ ] Editar obra funciona (campos corretos, validação datas)
-- [ ] DataTable ordenável + filtrável
-- [ ] Soft delete + audit log completo
-- [ ] TanStack Query integrado (cache, refetch)
+- [x] Listar obras funciona (50+ linhas teste)
+- [x] Criar obra funciona (forma completa, validação)
+- [x] Editar obra funciona (campos corretos, validação datas)
+- [x] DataTable ordenável + filtrável
+- [x] Soft delete + audit log completo
+- [x] TanStack Query integrado (cache, refetch)
 
 **Estimativa total:** ~30 dias/pessoa
 
 ---
 
-## Sprint 3: Módulo 1 — Documentos + Equipes (US-04, US-05, US-06, US-07) (Dias 25-38)
+## Sprint 3: Módulo 1 — Documentos + Equipes (US-04, US-05, US-06, US-07) (Dias 25-38)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Upload de documentos (GED), categorização, filtro de visibilidade. Gestão de equipe.
 
@@ -166,18 +171,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 3
 
-- [ ] Upload de documentos funciona (drag-drop, presigned URL, dedup SHA256)
-- [ ] Categorização + filtro funciona
-- [ ] Visibilidade ao cliente funciona (toggle + bulk, auditoria)
-- [ ] Full-text search <1s
-- [ ] Gestão de equipe funciona (add/remove membros)
-- [ ] GED aparece em 50 documentos sem lag
+- [x] Upload de documentos funciona (drag-drop, presigned URL, dedup SHA256)
+- [x] Categorização + filtro funciona
+- [x] Visibilidade ao cliente funciona (toggle + bulk, auditoria)
+- [x] Full-text search <1s
+- [x] Gestão de equipe funciona (add/remove membros)
+- [x] GED aparece em 50 documentos sem lag
 
 **Estimativa total:** ~32 dias/pessoa
 
 ---
 
-## Sprint 4: Módulo 1 — Tickets + Dashboard (US-01, US-08, US-09 prep) (Dias 39-52)
+## Sprint 4: Módulo 1 — Tickets + Dashboard (US-01, US-08, US-09 prep) (Dias 39-52)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Sistema de tickets/chamados com realtime. Dashboard admin com KPIs.
 
@@ -209,17 +214,17 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 4
 
-- [ ] Dashboard admin funciona (KPIs, layout responsivo)
-- [ ] Sistema de tickets funciona (CRUD completo)
-- [ ] Chat realtime funciona (<500ms, Supabase channels)
-- [ ] Notificação e-mail ao criar ticket
-- [ ] 10+ tickets teste renderizam sem lag
+- [x] Dashboard admin funciona (KPIs, layout responsivo)
+- [x] Sistema de tickets funciona (CRUD completo)
+- [x] Chat realtime funciona (<500ms, Supabase channels)
+- [x] Notificação e-mail ao criar ticket
+- [x] 10+ tickets teste renderizam sem lag
 
 **Estimativa total:** ~30 dias/pessoa
 
 ---
 
-## Sprint 5: Módulo 2 — Orçamentos (US-11, US-12, US-13) (Dias 53-66)
+## Sprint 5: Módulo 2 — Orçamentos (US-11, US-12, US-13) (Dias 53-66)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Estrutura EAP (Fases → Serviços → Insumos), importação de composições, hierarquia.
 
@@ -254,18 +259,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 5
 
-- [ ] Builder orçamento funciona (3 abas, sem reload)
-- [ ] Hierarquia EAP completa (drag-drop, +/-)
-- [ ] Recalc cascata <300ms (1000 items)
-- [ ] Importação XLSX funciona (template, validação)
-- [ ] Autocomplete insumos virtualized (sem lag 10k items)
-- [ ] Versioning linkado (rev 1, rev 2, etc)
+- [x] Builder orçamento funciona (3 abas, sem reload)
+- [x] Hierarquia EAP completa (drag-drop, +/-)
+- [x] Recalc cascata <300ms (1000 items)
+- [x] Importação XLSX funciona (template, validação)
+- [x] Autocomplete insumos virtualized (sem lag 10k items)
+- [x] Versioning linkado (rev 1, rev 2, etc)
 
 **Estimativa total:** ~38 dias/pessoa
 
 ---
 
-## Sprint 6: Módulo 2 — BDI + PDF + Relatórios (US-14, US-15, US-17, US-10) (Dias 67-80)
+## Sprint 6: Módulo 2 — BDI + PDF + Relatórios (US-14, US-15, US-17, US-10) (Dias 67-80)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Curva ABC, markup flexível, geração PDF timbrada, relatórios básicos.
 
@@ -297,17 +302,17 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 6
 
-- [ ] Curva ABC funciona (recalc real-time, classificação correta)
-- [ ] Markup cascata funciona (3 níveis, sem erro float)
-- [ ] PDF gerado corretamente (<5s, 500 items, profissional)
-- [ ] Relatórios funcionam (KPIs, filtro, export)
-- [ ] Job queue Arq completo (enfileira, retry, logging)
+- [x] Curva ABC funciona (recalc real-time, classificação correta)
+- [x] Markup cascata funciona (3 níveis, sem erro float)
+- [x] PDF gerado corretamente (<5s, 500 items, profissional)
+- [x] Relatórios funcionam (KPIs, filtro, export)
+- [x] Job queue Arq completo (enfileira, retry, logging)
 
 **Estimativa total:** ~32 dias/pessoa
 
 ---
 
-## Sprint 7: Field App Setup + Offline + Checklist (US-16 prep) (Dias 81-94)
+## Sprint 7: Field App Setup + Offline + Checklist (US-16 prep) (Dias 81-94)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Layout mobile-web, PWA, Dexie offline queue, checklist diária.
 
@@ -337,18 +342,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 7
 
-- [ ] Layout mobile funciona (<360px, bottom nav)
-- [ ] PWA instalável (manifest, SW, add to home screen)
-- [ ] Dexie funciona (create/read/update/delete local)
-- [ ] Worker de sync funciona (30s, retry, batch)
-- [ ] Checklist toggle funciona (local + async sync)
-- [ ] Offline indicator funciona (visual clara)
+- [x] Layout mobile funciona (<360px, bottom nav)
+- [x] PWA instalável (manifest, SW, add to home screen)
+- [x] Dexie funciona (create/read/update/delete local)
+- [x] Worker de sync funciona (30s, retry, batch)
+- [x] Checklist toggle funciona (local + async sync)
+- [x] Offline indicator funciona (visual clara)
 
 **Estimativa total:** ~28 dias/pessoa
 
 ---
 
-## Sprint 8: Field — Fotos + Ocorrências + Sync (US-17, US-18, US-09 realtime) (Dias 95-108)
+## Sprint 8: Field — Fotos + Ocorrências + Sync (US-17, US-18, US-09 realtime) (Dias 95-108)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Captura de fotos, compressão, dedup SHA256, ocorrências, sync realtime.
 
@@ -381,18 +386,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 8
 
-- [ ] Captura de fotos funciona (compressão <400KB, preview)
-- [ ] Upload com presigned URL funciona (PUT direto Supabase)
-- [ ] Dedup funciona (client_photo_id + SHA256)
-- [ ] Sync realtime funciona (<1s, Supabase channel)
-- [ ] Ocorrências funcionam (foto obrigatória, GPS opcional)
-- [ ] Retry 30s backoff funciona (offline simulation teste)
+- [x] Captura de fotos funciona (compressão <400KB, preview)
+- [x] Upload com presigned URL funciona (PUT direto Supabase)
+- [x] Dedup funciona (client_photo_id + SHA256)
+- [x] Sync realtime funciona (<1s, Supabase channel)
+- [x] Ocorrências funcionam (foto obrigatória, GPS opcional)
+- [x] Retry 30s backoff funciona (offline simulation teste)
 
 **Estimativa total:** ~32 dias/pessoa
 
 ---
 
-## Sprint 9: Portal Cliente (US-19, US-20, US-21 LGPD) (Dias 109-122)
+## Sprint 9: Portal Cliente (US-19, US-20, US-21 LGPD) (Dias 109-122)  ✅ **CONCLUÍDA**
 
 **Objetivo:** Portal cliente com magic link, aprovação de orçamento, export LGPD.
 
@@ -425,18 +430,18 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 9
 
-- [ ] Portal cliente funciona (magic link, acesso apenas obras)
-- [ ] Aprovação orçamento funciona (botões, auditoria)
-- [ ] Export LGPD funciona (ZIP, link 7d single-use)
-- [ ] Soft delete + hard delete funciona (30d window)
-- [ ] Assinatura digital opcional funciona
-- [ ] Tickets cliente funciona (read-only comentários)
+- [x] Portal cliente funciona (magic link, acesso apenas obras)
+- [x] Aprovação orçamento funciona (botões, auditoria)
+- [x] Export LGPD funciona (ZIP, link 7d single-use)
+- [x] Soft delete + hard delete funciona (30d window)
+- [x] Assinatura digital opcional funciona
+- [x] Tickets cliente funciona (read-only comentários)
 
 **Estimativa total:** ~30 dias/pessoa
 
 ---
 
-## Sprint 10: Módulo 3 — Agentes IA (US-22, US-23, US-24) (Dias 123-136)
+## Sprint 10: Módulo 3 — Agentes IA (US-22, US-23, US-24) (Dias 123-136)  ✅ **CONCLUÍDA**
 
 **Objetivo:** LangGraph orquestrador, webhook Uazap, subagentes (Orçamento, Compras), auditoria, permissões.
 
@@ -472,14 +477,14 @@ S12 ██ Beta + GA
 
 ### Critérios de Saída Sprint 10
 
-- [ ] Webhook Uazap funciona (HMAC, rate limit, ack <500ms)
-- [ ] Fila Redis Streams funciona (enqueue, worker, retry 3x)
-- [ ] LangGraph orquestrador funciona (routing, tool calls, streaming)
-- [ ] Subagente Orçamento consulta corretamente (read-only)
-- [ ] Subagente Compras cria solicitações (permission check, limits)
-- [ ] Auditoria funciona (register, reverter ação)
-- [ ] Permissões IA funcionam (403 if denied, limits enforced)
-- [ ] Mock LLM funciona (MSW, respostas <2s)
+- [x] Webhook Uazap funciona (HMAC, rate limit, ack <500ms)
+- [x] Fila Redis Streams funciona (enqueue, worker, retry 3x)
+- [x] LangGraph orquestrador funciona (routing, tool calls, streaming)
+- [x] Subagente Orçamento consulta corretamente (read-only)
+- [x] Subagente Compras cria solicitações (permission check, limits)
+- [x] Auditoria funciona (register, reverter ação)
+- [x] Permissões IA funcionam (403 if denied, limits enforced)
+- [x] Mock LLM funciona (MSW, respostas <2s)
 
 **Estimativa total:** ~40 dias/pessoa
 
