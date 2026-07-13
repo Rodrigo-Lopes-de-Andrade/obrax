@@ -1,22 +1,26 @@
 /**
- * Monitoramento de erros (F11.5) — seam sem dependência.
+ * Monitoramento de erros (F11.5) — seam sem dependência no caminho default.
  *
- * `captureError` é o ponto único por onde erros não tratados passam. Hoje a rota
- * sempre-disponível é o sink de analytics (`captureException` → PostHog, que
- * também aceita exceções). Para monitoramento dedicado em produção, o caminho é
- * instalar `@sentry/nextjs` e chamar `Sentry.captureException` aqui dentro,
- * guardado por `NEXT_PUBLIC_SENTRY_DSN` — sem quebrar quem roda sem Sentry.
+ * `captureError` é o ponto único por onde erros não tratados passam. Com
+ * `NEXT_PUBLIC_SENTRY_DSN` definido, roteia para o Sentry (`captureException`);
+ * sem a DSN, o import é dead-code (tree-shaken, ver F11.3) e cai no sink de
+ * analytics (PostHog, que também aceita exceções). O SDK é iniciado em
+ * `instrumentation-client.ts` (client) e `instrumentation.ts` (server).
  *
  * `installGlobalErrorHandlers` liga os handlers globais do browser uma única vez
- * (idempotente). Chamado por um componente client no layout.
+ * (idempotente). Chamado pelo componente `WebVitals` no layout.
  */
 import { captureException } from "./analytics";
 
-export const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
-
 export function captureError(error: unknown, context?: Record<string, unknown>): void {
-  // Rota de produção (quando @sentry/nextjs estiver instalado + DSN definido):
-  //   if (sentryDsn) { Sentry.captureException(error, { extra: context }); return; }
+  // Check inlined (não via const) p/ o webpack fazer DCE do import quando a DSN
+  // não está setada no build — senão o @sentry/nextjs vira chunk lazy morto.
+  if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+    void import("@sentry/nextjs").then((Sentry) =>
+      Sentry.captureException(error, { extra: context }),
+    );
+    return;
+  }
   captureException(error, context);
 }
 

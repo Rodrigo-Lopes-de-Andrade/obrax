@@ -1,7 +1,10 @@
+# Build scripts de deps (pnpm 11 lê isto daqui, não do campo "pnpm" do
+# package.json). true = postinstall roda; false = ignorado de propósito
+# (silencia ERR_PNPM_IGNORED_BUILDS sem prompt interativo).
 allowBuilds:
-  msw: false
   sharp: true
   unrs-resolver: true
-onlyBuiltDependencies:
-  - sharp
-  - unrs-resolver
+  # sentry-cli só baixa o binário p/ upload de sourcemaps — etapa de release
+  # separada (via npx no CI), desnecessária no install do build/budget.
+  '@sentry/cli': false
+  msw: false

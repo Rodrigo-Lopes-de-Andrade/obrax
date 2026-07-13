@@ -533,7 +533,8 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 
 - [x] A11y audit 0 críticos (axe-core) — 24 checks (admin desktop + portal mobile); acentos de marca documentados como follow-up de design
 - [x] Web Vitals instrumentados — `useReportWebVitals` → sink de analytics (seam PostHog/Sentry por env)
-- [x] Bundle dentro do orçamento — First Load JS ≤ 240 kB (maior 203 kB), shared 104 kB; gate `pnpm build:budget` no CI
+- [x] Sentry integrado — `@sentry/nextjs` real ligado no client (`instrumentation-client.ts`) e server (`instrumentation.ts` + `onRequestError`), com replay-on-error mascarado (PII redigida, `sendDefaultPii:false`), release atada ao SHA por env e `captureError` roteando erros globais; gate por `NEXT_PUBLIC_SENTRY_DSN`/`SENTRY_DSN`, com DCE verificado (SDK sai do bundle quando a DSN não está setada — budget F11.3 intacto)
+- [x] Bundle dentro do orçamento — First Load JS ≤ 240 kB (maior 204 kB), shared 105 kB; gate `pnpm build:budget` no CI
 - [x] E2E fluxos críticos passing — 18 fluxos + 24 a11y = 42/42 local (staging pendente de infra)
 - [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
 - [x] Tracing + logs distribuídos — export OTLP (traces via FastAPI/SQLAlchemy + logs correlacionados) validado end-to-end contra New Relic (`POST /v1/traces` e `/v1/logs` → 200); ativa por `OTEL_EXPORTER_OTLP_ENDPOINT` + extra `observability`
@@ -542,8 +543,10 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
 > concluídos e verificados localmente. B11.2 (OTel) **ligado a backend real**
-> (New Relic, traces + logs validados 200). F11.2/F11.5 (Web Vitals/Sentry)
-> seguem como **seams infra-gated** (ativam por env, no-op em dev/CI).
+> (New Relic, traces + logs validados 200). F11.5 (Sentry) **integrado de fato**
+> — SDK `@sentry/nextjs` ligado no client/server, gated por env, com DCE
+> verificado (some do bundle sem DSN). F11.2 (Web Vitals) segue como **seam
+> infra-gated** (ativa por env, no-op em dev/CI).
 > B11.4 (load test): **harness Locust pronto e validado** (0% erro contra
 > staging) — ver [LOADTEST.md](LOADTEST.md); só a run definitiva de 200 usuários
 > pede infra co-localizada. B11.3 (alertas), D11.2 (restore) e O11.1/O11.2
