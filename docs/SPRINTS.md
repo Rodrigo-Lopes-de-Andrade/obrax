@@ -544,7 +544,9 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 > concluídos e verificados localmente. B11.2 (OTel) **ligado a backend real**
 > (New Relic, traces + logs validados 200). F11.2/F11.5 (Web Vitals/Sentry)
 > seguem como **seams infra-gated** (ativam por env, no-op em dev/CI).
-> B11.3/B11.4 (alertas/load test), D11.2 (restore) e O11.1/O11.2
+> B11.4 (load test): **harness Locust pronto e validado** (0% erro contra
+> staging) — ver [LOADTEST.md](LOADTEST.md); só a run definitiva de 200 usuários
+> pede infra co-localizada. B11.3 (alertas), D11.2 (restore) e O11.1/O11.2
 > (staging/dashboards) dependem de infraestrutura provisionada — ver
 > [RUNBOOK.md](RUNBOOK.md) e [GO-LIVE.md](GO-LIVE.md).
 

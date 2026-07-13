@@ -37,6 +37,7 @@ dev = [
     "mypy>=1.11,<2.0",
     "pytest>=8.0,<9.0",
     "ruff>=0.6,<1.0",
+    "locust>=2.31,<3.0",  # B11.4 — teste de carga (loadtest/locustfile.py)
 ]
 
 [tool.ruff]
@@ -59,5 +60,6 @@ module = [
     "openpyxl.*",
     # OTel é extra opcional (não instalado no CI base); imports são lazy/guardados.
     "opentelemetry.*",
+    "locust.*",  # dep de dev (loadtest), sem stubs
 ]
 ignore_missing_imports = true
