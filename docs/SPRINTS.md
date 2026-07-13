@@ -538,7 +538,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 - [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
 - [x] Tracing + logs distribuídos — export OTLP (traces via FastAPI/SQLAlchemy + logs correlacionados) validado end-to-end contra New Relic (`POST /v1/traces` e `/v1/logs` → 200); ativa por `OTEL_EXPORTER_OTLP_ENDPOINT` + extra `observability`
 - [ ] Alertas Grafana configurados + testados — alvos documentados no RUNBOOK; armar na infra
-- [ ] Restore drill documentado + executado — procedimento no RUNBOOK; execução pendente de infra
+- [x] Restore drill documentado + executado — dump lógico do staging → restore em PG17 limpo → 25/25 tabelas com row counts idênticos, 0 erros, RTO << 60 min; procedimento validado no [RUNBOOK §5](RUNBOOK.md)
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
 > concluídos e verificados localmente. B11.2 (OTel) **ligado a backend real**

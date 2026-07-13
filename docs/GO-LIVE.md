@@ -28,7 +28,9 @@ para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md).
 
 ## Dados & resiliência
 - [ ] Dados de teste/dev removidos; seed realista para demo (se aplicável).
-- [ ] Backups (PITR) confirmados; **restore drill** executado (RTO < 60 min documentado).
+- [~] **Restore drill** executado e validado (dump→restore→row counts idênticos,
+  RTO << 60 min) — ver [RUNBOOK §5](RUNBOOK.md). Falta só confirmar retenção do
+  PITR no painel Supabase de prod.
 - [ ] Readiness probe usando `/health` (`status == "ok"`).
 
 ## Produto & suporte

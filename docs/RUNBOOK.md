@@ -132,11 +132,64 @@ CPU > 70% · Web Vitals acima do threshold. Webhook → Discord/Slack.
 
 ## 5. Backup & restore (D11.2 — RTO < 60 min)
 
-- Backups gerenciados pelo Supabase (PITR). Validar retenção e um restore real
-  em staging periodicamente (restore drill).
-- Restore manual: `pg_restore` do dump mais recente em uma instância limpa,
-  conferir `row_counts`/checksums das tabelas principais, repontar a app.
+- Backups gerenciados pelo Supabase (PITR). O restore drill abaixo valida que um
+  `pg_dump` lógico restaura limpo e íntegro — rodar periodicamente contra staging.
 - **RTO alvo: < 60 min. RPO: conforme janela de PITR.**
+
+### Restore drill executado (validado)
+
+Instância limpa = container `postgres:17` descartável (a versão do client precisa
+`>=` a do servidor; staging é PG 17). Alvo real de DR = novo projeto Supabase.
+
+```bash
+STG="postgresql://postgres.<ref>:<senha>@<pooler>:5432/postgres"
+docker run -d --name pg-drill -e POSTGRES_PASSWORD=drill postgres:17
+
+# Espelhar o layout de extensions do Supabase no alvo (senão o schema public não
+# restaura): citext+pg_trgm em `public` (criadas pela migration 0001), pgcrypto
+# em `extensions` (pré-instalada pelo Supabase).
+docker exec pg-drill psql -U postgres -c "CREATE DATABASE restored"
+docker exec pg-drill psql -U postgres -d restored \
+  -c "CREATE EXTENSION citext" -c "CREATE EXTENSION pg_trgm" \
+  -c "CREATE SCHEMA extensions" -c "CREATE EXTENSION pgcrypto SCHEMA extensions"
+
+# Dump lógico do schema de aplicação (public), sem owner/privilégios (o alvo não
+# tem os roles app_user/app_admin).
+docker exec pg-drill pg_dump -Fc --schema=public --no-owner --no-privileges \
+  -f /tmp/staging.dump "$STG"
+
+# Restore em 3 seções. Entre pre-data e data, fixar search_path nas funções de
+# validação (o COPY do pg_restore roda com search_path='' e fn_validate_documento
+# chama fn_validate_cpf sem qualificar — ver "Achado" abaixo).
+docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
+  --section=pre-data -d restored /tmp/staging.dump
+docker exec pg-drill psql -U postgres -d restored \
+  -c "ALTER FUNCTION public.fn_validate_documento(text,text) SET search_path=public,extensions" \
+  -c "ALTER FUNCTION public.fn_validate_cpf(text) SET search_path=public,extensions" \
+  -c "ALTER FUNCTION public.fn_validate_cnpj(text) SET search_path=public,extensions"
+docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
+  --section=data -d restored /tmp/staging.dump
+docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
+  --section=post-data -d restored /tmp/staging.dump
+```
+
+**Validação de integridade** (comparar por tabela `count(*)` fonte vs alvo):
+
+- ✅ 25/25 tabelas com row counts **idênticos** ao staging (367 linhas: `audit_log`
+  246, `documento` 50, `orcamento_item` 20, `obras` 11, `clientes` 8, …).
+- ✅ 0 erros reais no restore (fora o benigno `schema "public" already exists`).
+- ✅ Integridade referencial (join `obras`↔`clientes` resolve) e `FORCE ROW LEVEL
+  SECURITY` preservado em 23 tabelas.
+- ⏱️ Dump ~20s + restore <10s para este volume → **RTO << 60 min** nessa escala
+  (cresce com o volume de dados; PITR do Supabase é o caminho primário de DR).
+
+> **Achado (hardening pendente):** `fn_validate_documento/cpf/cnpj` e as `lgpd_*`
+> não fixam `SET search_path` (como já foi feito em `uuid_generate_v7` na 0028).
+> Elas vivem em `public`, que está no search_path padrão do `app_user`, então
+> **não quebram na operação normal** — só sob search_path vazio/custom (restore,
+> ou um caller que restrinja o path). Corrigir com uma migration forward que
+> `ALTER FUNCTION ... SET search_path` fecha a fragilidade e simplifica o drill
+> (dispensa o passo de ALTER no alvo).
 
 ---
 
