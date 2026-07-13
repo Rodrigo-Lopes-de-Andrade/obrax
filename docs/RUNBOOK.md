@@ -158,20 +158,17 @@ docker exec pg-drill psql -U postgres -d restored \
 docker exec pg-drill pg_dump -Fc --schema=public --no-owner --no-privileges \
   -f /tmp/staging.dump "$STG"
 
-# Restore em 3 seções. Entre pre-data e data, fixar search_path nas funções de
-# validação (o COPY do pg_restore roda com search_path='' e fn_validate_documento
-# chama fn_validate_cpf sem qualificar — ver "Achado" abaixo).
+# Restore direto (dumps a partir da 0031 já carregam o search_path fixo nas
+# funções — o restore de seção única resolve limpo):
 docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
-  --section=pre-data -d restored /tmp/staging.dump
-docker exec pg-drill psql -U postgres -d restored \
-  -c "ALTER FUNCTION public.fn_validate_documento(text,text) SET search_path=public,extensions" \
-  -c "ALTER FUNCTION public.fn_validate_cpf(text) SET search_path=public,extensions" \
-  -c "ALTER FUNCTION public.fn_validate_cnpj(text) SET search_path=public,extensions"
-docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
-  --section=data -d restored /tmp/staging.dump
-docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
-  --section=post-data -d restored /tmp/staging.dump
+  -d restored /tmp/staging.dump
 ```
+
+> Para dumps **anteriores à 0031**, o `COPY` falha em `fn_validate_documento` →
+> `fn_validate_cpf` (search_path vazio). Fallback: restaurar em 3 seções e, entre
+> `--section=pre-data` e `--section=data`, rodar `ALTER FUNCTION
+> public.fn_validate_documento(text,text) SET search_path=public,extensions` (idem
+> cpf/cnpj) no alvo.
 
 **Validação de integridade** (comparar por tabela `count(*)` fonte vs alvo):
 
@@ -183,13 +180,12 @@ docker exec pg-drill pg_restore -U postgres --no-owner --no-privileges \
 - ⏱️ Dump ~20s + restore <10s para este volume → **RTO << 60 min** nessa escala
   (cresce com o volume de dados; PITR do Supabase é o caminho primário de DR).
 
-> **Achado (hardening pendente):** `fn_validate_documento/cpf/cnpj` e as `lgpd_*`
-> não fixam `SET search_path` (como já foi feito em `uuid_generate_v7` na 0028).
-> Elas vivem em `public`, que está no search_path padrão do `app_user`, então
-> **não quebram na operação normal** — só sob search_path vazio/custom (restore,
-> ou um caller que restrinja o path). Corrigir com uma migration forward que
-> `ALTER FUNCTION ... SET search_path` fecha a fragilidade e simplifica o drill
-> (dispensa o passo de ALTER no alvo).
+> **Achado — resolvido na 0031:** `fn_validate_documento/cpf/cnpj` e as `lgpd_*`
+> não fixavam `SET search_path` (como `uuid_generate_v7` na 0028). Viviam em
+> `public` (no search_path padrão do `app_user`), então não quebravam na operação
+> normal — só sob search_path vazio/custom (o COPY do restore). A migration 0031
+> fixa `search_path` nessas 6 funções, o que fechou a fragilidade e simplificou
+> este drill para restore de seção única.
 
 ---
 
