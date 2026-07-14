@@ -57,7 +57,9 @@ class AdminReadUser(HttpUser):
 
     @task(4)
     def dashboard(self) -> None:
-        self.client.get(f"{_API}/dashboard/summary", headers=self.auth, name="GET /dashboard/summary")
+        self.client.get(
+            f"{_API}/dashboard/summary", headers=self.auth, name="GET /dashboard/summary"
+        )
 
     @task(4)
     def list_obras(self) -> None:

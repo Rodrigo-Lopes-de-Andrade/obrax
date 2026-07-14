@@ -181,7 +181,9 @@ class TestRlsIsolamento:
 def webhook_env(monkeypatch: pytest.MonkeyPatch) -> Iterator[InProcessAgentQueue]:
     """Injeta um segredo de HMAC conhecido e uma fila limpa capturável."""
     queue = InProcessAgentQueue()
-    monkeypatch.setattr(agentes_router, "settings", replace(settings, uazapi_webhook_secret=_SECRET))
+    monkeypatch.setattr(
+        agentes_router, "settings", replace(settings, uazapi_webhook_secret=_SECRET)
+    )
     app.dependency_overrides[get_agent_queue] = lambda: queue
     yield queue
     app.dependency_overrides.pop(get_agent_queue, None)

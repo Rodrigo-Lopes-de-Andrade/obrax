@@ -69,17 +69,51 @@ CLIENTES = [
     ("PF", cpf("222555888"), "Ana Souza", "(11) 97777-2020", "ana.souza@example.com"),
     ("PF", cpf("333666999"), "Carlos Menezes", "(21) 96666-3030", "carlos.menezes@example.com"),
     ("PF", cpf("529982247"), "Beatriz Lima", "(31) 95555-4040", "beatriz.lima@example.com"),
-    ("PJ", cnpj("112223330001"), "Incorporadora Aurora S.A.", "(11) 3030-5050", "contato@aurora.example.com"),
-    ("PJ", cnpj("445556660001"), "Shopping Vale Empreendimentos", "(11) 3040-6060", "obras@vale.example.com"),
-    ("PJ", cnpj("778889990001"), "Condomínio Parque Verde", "(41) 3050-7070", "sindico@parqueverde.example.com"),
+    (
+        "PJ",
+        cnpj("112223330001"),
+        "Incorporadora Aurora S.A.",
+        "(11) 3030-5050",
+        "contato@aurora.example.com",
+    ),
+    (
+        "PJ",
+        cnpj("445556660001"),
+        "Shopping Vale Empreendimentos",
+        "(11) 3040-6060",
+        "obras@vale.example.com",
+    ),
+    (
+        "PJ",
+        cnpj("778889990001"),
+        "Condomínio Parque Verde",
+        "(41) 3050-7070",
+        "sindico@parqueverde.example.com",
+    ),
 ]
 
-OBRA_STATUS = ["execucao", "execucao", "execucao", "planejamento", "pausada",
-               "concluida", "execucao", "planejamento", "concluida", "execucao"]
+OBRA_STATUS = [
+    "execucao",
+    "execucao",
+    "execucao",
+    "planejamento",
+    "pausada",
+    "concluida",
+    "execucao",
+    "planejamento",
+    "concluida",
+    "execucao",
+]
 OBRA_NOMES = [
-    "Residencial Vila Aurora", "Reforma Comercial Centro", "Edifício Solar das Águas",
-    "Casa Alto Padrão Alphaville", "Galpão Logístico Km 32", "Retrofit Edifício Beta",
-    "Condomínio Parque Verde — Bloco A", "Escola Municipal Jardim", "Clínica Vida — Ampliação",
+    "Residencial Vila Aurora",
+    "Reforma Comercial Centro",
+    "Edifício Solar das Águas",
+    "Casa Alto Padrão Alphaville",
+    "Galpão Logístico Km 32",
+    "Retrofit Edifício Beta",
+    "Condomínio Parque Verde — Bloco A",
+    "Escola Municipal Jardim",
+    "Clínica Vida — Ampliação",
     "Praça Central — Requalificação",
 ]
 DOC_TIPOS = ["projeto", "contrato", "nota_fiscal", "foto", "outro"]
@@ -125,8 +159,11 @@ def seed() -> dict[str, object]:
         ).scalar_one()
         if n_obras:
             s.commit()
-            return {"company_id": str(company_id), "user_id": str(user_id),
-                    "status": f"já semeado ({n_obras} obras) — sem alteração"}
+            return {
+                "company_id": str(company_id),
+                "user_id": str(user_id),
+                "status": f"já semeado ({n_obras} obras) — sem alteração",
+            }
 
         # Clientes
         cliente_ids: list[str] = []
@@ -136,7 +173,14 @@ def seed() -> dict[str, object]:
                     "INSERT INTO clientes (company_id, tipo_pessoa, documento, nome, telefone, email) "
                     "VALUES (:c, :tp, :doc, :nome, :tel, :email) RETURNING id"
                 ),
-                {"c": company_id, "tp": tipo_pessoa, "doc": doc, "nome": nome, "tel": tel, "email": email},
+                {
+                    "c": company_id,
+                    "tp": tipo_pessoa,
+                    "doc": doc,
+                    "nome": nome,
+                    "tel": tel,
+                    "email": email,
+                },
             ).scalar_one()
             cliente_ids.append(cid)
 
@@ -154,8 +198,11 @@ def seed() -> dict[str, object]:
                     ":ini, :fim, :valor) RETURNING id"
                 ),
                 {
-                    "c": company_id, "cli": cliente_id, "st": status,
-                    "cod": f"OBR-D{i + 1:03d}", "nome": OBRA_NOMES[i],
+                    "c": company_id,
+                    "cli": cliente_id,
+                    "st": status,
+                    "cod": f"OBR-D{i + 1:03d}",
+                    "nome": OBRA_NOMES[i],
                     "ini": f"2025-{(i % 12) + 1:02d}-05",
                     "fim": f"2026-{(i % 12) + 1:02d}-20",
                     "valor": str(valor),
@@ -186,10 +233,15 @@ def seed() -> dict[str, object]:
                         "(:c, :o, :nome, CAST(:tipo AS documento_tipo), :path, :size, :cat, :vis, :u)"
                     ),
                     {
-                        "c": company_id, "o": oid, "nome": nome, "tipo": tipo,
+                        "c": company_id,
+                        "o": oid,
+                        "nome": nome,
+                        "tipo": tipo,
                         "path": f"documents/{company_id}/{oid}/{j}-{nome}",
-                        "size": 120000 + j * 45000, "cat": tipo,
-                        "vis": tipo in ("contrato", "foto"), "u": user_id,
+                        "size": 120000 + j * 45000,
+                        "cat": tipo,
+                        "vis": tipo in ("contrato", "foto"),
+                        "u": user_id,
                     },
                 )
                 n_docs += 1
@@ -203,8 +255,13 @@ def seed() -> dict[str, object]:
                     "INSERT INTO orcamento (company_id, obra_id, titulo, status, created_by) "
                     "VALUES (:c, :o, :t, CAST(:st AS orcamento_status), :u) RETURNING id"
                 ),
-                {"c": company_id, "o": oid, "t": f"Orçamento — {OBRA_NOMES[i]}",
-                 "st": orc_status[i], "u": user_id},
+                {
+                    "c": company_id,
+                    "o": oid,
+                    "t": f"Orçamento — {OBRA_NOMES[i]}",
+                    "st": orc_status[i],
+                    "u": user_id,
+                },
             ).scalar_one()
             custo = 200000 + i * 90000
             preco = int(custo * 1.28)
@@ -225,8 +282,13 @@ def seed() -> dict[str, object]:
                         "INSERT INTO orcamento_item (company_id, versao_id, tipo, codigo, descricao, "
                         "sort_order) VALUES (:c, :v, 'F', :cod, :desc, :so) RETURNING id"
                     ),
-                    {"c": company_id, "v": ver_id, "cod": f"{f + 1}",
-                     "desc": ["Serviços Preliminares", "Estrutura"][f], "so": f * 10},
+                    {
+                        "c": company_id,
+                        "v": ver_id,
+                        "cod": f"{f + 1}",
+                        "desc": ["Serviços Preliminares", "Estrutura"][f],
+                        "so": f * 10,
+                    },
                 ).scalar_one()
                 s.execute(
                     text(
@@ -234,10 +296,18 @@ def seed() -> dict[str, object]:
                         "descricao, unidade, quantidade, preco_unitario, subtotal, sort_order) VALUES "
                         "(:c, :v, :p, 'I', :cod, :desc, :un, :qt, :pu, :sub, :so)"
                     ),
-                    {"c": company_id, "v": ver_id, "p": fase_id,
-                     "cod": ["87490", "92715"][f], "desc": ["Concreto usinado fck 25", "Aço CA-50"][f],
-                     "un": ["m³", "kg"][f], "qt": ["45.5", "1200"][f],
-                     "pu": ["480.00", "9.80"][f], "sub": ["21840.00", "11760.00"][f], "so": f * 10 + 1},
+                    {
+                        "c": company_id,
+                        "v": ver_id,
+                        "p": fase_id,
+                        "cod": ["87490", "92715"][f],
+                        "desc": ["Concreto usinado fck 25", "Aço CA-50"][f],
+                        "un": ["m³", "kg"][f],
+                        "qt": ["45.5", "1200"][f],
+                        "pu": ["480.00", "9.80"][f],
+                        "sub": ["21840.00", "11760.00"][f],
+                        "so": f * 10 + 1,
+                    },
                 )
 
         # Chamados (tickets) + mensagens
@@ -249,16 +319,30 @@ def seed() -> dict[str, object]:
                     "INSERT INTO ticket (company_id, obra_id, titulo, descricao, status, created_by) "
                     "VALUES (:c, :o, :t, :d, CAST(:st AS ticket_status), :u) RETURNING id"
                 ),
-                {"c": company_id, "o": oid,
-                 "t": ["Infiltração no 2º pavimento", "Ajuste no cronograma", "Dúvida sobre acabamento"][i],
-                 "d": "Registrado pelo cliente via portal.", "st": ticket_status[i], "u": user_id},
+                {
+                    "c": company_id,
+                    "o": oid,
+                    "t": [
+                        "Infiltração no 2º pavimento",
+                        "Ajuste no cronograma",
+                        "Dúvida sobre acabamento",
+                    ][i],
+                    "d": "Registrado pelo cliente via portal.",
+                    "st": ticket_status[i],
+                    "u": user_id,
+                },
             ).scalar_one()
             s.execute(
                 text(
                     "INSERT INTO ticket_mensagem (company_id, ticket_id, author_id, content) "
                     "VALUES (:c, :t, :u, :msg)"
                 ),
-                {"c": company_id, "t": tid, "u": user_id, "msg": "Recebido, vamos verificar e retornar."},
+                {
+                    "c": company_id,
+                    "t": tid,
+                    "u": user_id,
+                    "msg": "Recebido, vamos verificar e retornar.",
+                },
             )
             # mensagem do cliente (author_id nulo = cliente pelo portal)
             s.execute(

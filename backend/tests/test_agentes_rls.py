@@ -75,9 +75,7 @@ def seed_agentes(two_tenants: dict[str, dict[str, str]]) -> Iterator[dict[str, d
         s.commit()
 
 
-def _select_ids_as_tenant(
-    conn: psycopg.Connection, company_id: str, table: str
-) -> set[str]:
+def _select_ids_as_tenant(conn: psycopg.Connection, company_id: str, table: str) -> set[str]:
     with conn.transaction():
         with conn.cursor() as cur:
             cur.execute("SELECT set_config('app.company_id', %s, true)", (company_id,))

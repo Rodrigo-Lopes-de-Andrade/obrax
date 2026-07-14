@@ -144,8 +144,7 @@ def upgrade() -> None:
     )
     # Poll do worker (mensagens pendentes) e listagem recente.
     op.execute(
-        "CREATE INDEX ix_agent_message_company_status "
-        "ON agent_message (company_id, status, id)"
+        "CREATE INDEX ix_agent_message_company_status ON agent_message (company_id, status, id)"
     )
     _enable_tenant_rls("agent_message")
 

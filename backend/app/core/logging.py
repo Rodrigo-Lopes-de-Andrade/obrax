@@ -25,8 +25,7 @@ request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 company_id_var: ContextVar[str] = ContextVar("company_id", default="-")
 
 _RESERVED = frozenset(
-    logging.makeLogRecord({}).__dict__.keys()
-    | {"message", "asctime", "taskName"},
+    logging.makeLogRecord({}).__dict__.keys() | {"message", "asctime", "taskName"},
 )
 
 
