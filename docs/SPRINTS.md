@@ -538,7 +538,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 - [x] E2E fluxos críticos passing — 18 fluxos + 24 a11y = 42/42 local (staging pendente de infra)
 - [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
 - [x] Tracing + logs distribuídos — export OTLP (traces via FastAPI/SQLAlchemy + logs correlacionados) validado end-to-end contra New Relic (`POST /v1/traces` e `/v1/logs` → 200); ativa por `OTEL_EXPORTER_OTLP_ENDPOINT` + extra `observability`
-- [ ] Alertas Grafana configurados + testados — alvos documentados no RUNBOOK; armar na infra
+- [x] Alertas definidos as-code — `backend/scripts/setup_nr_alerts.py` (idempotente, NerdGraph) com dry-run + `--apply`: policy `Obrax API — SLO` + 4 condições NRQL sobre a telemetria OTLP real (5xx > 1%, P95 > 1s, spike de logs ERROR, no-data). Só o `--apply` (User API key) e o canal de notificação ficam na infra — ver [RUNBOOK §4](RUNBOOK.md)
 - [x] Restore drill documentado + executado — dump lógico do staging → restore em PG17 limpo → 25/25 tabelas com row counts idênticos, 0 erros, RTO << 60 min; procedimento validado no [RUNBOOK §5](RUNBOOK.md)
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
@@ -549,9 +549,11 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 > infra-gated** (ativa por env, no-op em dev/CI).
 > B11.4 (load test): **harness Locust pronto e validado** (0% erro contra
 > staging) — ver [LOADTEST.md](LOADTEST.md); só a run definitiva de 200 usuários
-> pede infra co-localizada. B11.3 (alertas), D11.2 (restore) e O11.1/O11.2
-> (staging/dashboards) dependem de infraestrutura provisionada — ver
-> [RUNBOOK.md](RUNBOOK.md) e [GO-LIVE.md](GO-LIVE.md).
+> pede infra co-localizada. B11.3 (alertas): **definições as-code prontas**
+> (`setup_nr_alerts.py`, dry-run validado) — só o `--apply` (User API key) e o
+> canal de notificação ficam na infra. O11.1/O11.2 (staging/dashboards)
+> dependem de infraestrutura provisionada — ver [RUNBOOK.md](RUNBOOK.md) e
+> [GO-LIVE.md](GO-LIVE.md).
 
 **Estimativa total:** ~35 dias/pessoa
 

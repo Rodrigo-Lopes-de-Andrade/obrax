@@ -119,14 +119,30 @@ use-o no readiness probe verificando `status == "ok"`.
 - **Web Vitals** (F11.5): reportados via `useReportWebVitals` para o sink de
   analytics (`$web_vitals`). Thresholds de alerta: LCP > 2.5s, INP > 200ms, CLS > 0.1.
 - **Erros** (F11.5): handlers globais (`window.onerror`/`unhandledrejection`) →
-  `captureError`. Rota de produção dedicada = instalar `@sentry/nextjs` e ligar
-  em `errors.ts` sob `NEXT_PUBLIC_SENTRY_DSN`.
+  `captureError`, que roteia para o `@sentry/nextjs` (client + server) quando
+  `NEXT_PUBLIC_SENTRY_DSN`/`SENTRY_DSN` está setada; sem a env, o SDK sai do
+  bundle (DCE) e cai no sink de analytics. Replay só on-error, PII mascarada.
 - **Analytics** (F11.6): eventos de produto via `capture()` (ex.:
   `assistente_mensagem_enviada`, `lgpd_pedido_criado`).
 
 ### Alertas a armar (B11.3)
-Fila de agentes > 1000 · LLM provider down · Uazapi degradado · 5xx > 1% ·
-CPU > 70% · Web Vitals acima do threshold. Webhook → Discord/Slack.
+Definições **as-code** em `backend/scripts/setup_nr_alerts.py` (idempotente, via
+NerdGraph). Rodar sem flag faz **dry-run** (imprime as NRQL p/ validar no query
+builder); `--apply` cria/atualiza a policy `Obrax API — SLO` + condições:
+
+```bash
+cd backend && uv run python -m scripts.setup_nr_alerts            # dry-run
+NEW_RELIC_API_KEY=NRAK-… NEW_RELIC_ACCOUNT_ID=… \
+    uv run python -m scripts.setup_nr_alerts --apply             # arma
+```
+
+Condições ancoradas na telemetria OTLP já emitida: **5xx > 1%**, **latência P95
+> 1s**, **spike de logs ERROR** e **no-data (app down)**. O canal de notificação
+(webhook → Discord/Slack) é anexado à policy no fim (etapa manual no console).
+
+Ainda **fora de escopo** (exigem métrica custom ou o New Relic infra-agent, não
+emitidos hoje): fila de agentes > 1000, LLM provider down, Uazapi degradado,
+CPU > 70%. Web Vitals (LCP/INP/CLS) alertam no PostHog, não no New Relic.
 
 ---
 
