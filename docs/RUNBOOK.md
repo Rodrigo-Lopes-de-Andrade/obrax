@@ -144,6 +144,25 @@ Ainda **fora de escopo** (exigem métrica custom ou o New Relic infra-agent, nã
 emitidos hoje): fila de agentes > 1000, LLM provider down, Uazapi degradado,
 CPU > 70%. Web Vitals (LCP/INP/CLS) alertam no PostHog, não no New Relic.
 
+### Dashboard de monitoring (O11.2)
+Definições **as-code** em `backend/scripts/setup_nr_dashboards.py` (idempotente,
+via NerdGraph), pareado com os alertas: dry-run sem flag imprime os widgets/NRQL;
+`--apply` cria/atualiza o dashboard `Obrax API — SLO` (busca por nome →
+`dashboardUpdate` se existe, `dashboardCreate` se não):
+
+```bash
+cd backend && uv run python -m scripts.setup_nr_dashboards            # dry-run
+NEW_RELIC_API_KEY=NRAK-… NEW_RELIC_ACCOUNT_ID=… \
+    uv run python -m scripts.setup_nr_dashboards --apply             # publica
+```
+
+10 widgets sobre a mesma telemetria OTLP dos alertas: billboards de throughput,
+erro 5xx %, P95 e logs ERROR (com thresholds); séries de latência P50/P95/P99,
+requests por classe de status, endpoints mais lentos, logs ERROR no tempo, volume
+de logs por severidade e P95 das chamadas de saída (DB/HTTP via spans `client`).
+Fila de agentes, custo de LLM, cache hit e pool de conexões do DB ficam de fora
+pela mesma razão dos alertas — dependem de métrica custom ainda não emitida.
+
 ---
 
 ## 5. Backup & restore (D11.2 — RTO < 60 min)

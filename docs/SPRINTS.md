@@ -539,6 +539,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 - [x] Logs estruturados — JSON stdout (`LOG_FORMAT=json`) com request_id/company_id, pronto p/ Loki
 - [x] Tracing + logs distribuídos — export OTLP (traces via FastAPI/SQLAlchemy + logs correlacionados) validado end-to-end contra New Relic (`POST /v1/traces` e `/v1/logs` → 200); ativa por `OTEL_EXPORTER_OTLP_ENDPOINT` + extra `observability`
 - [x] Alertas definidos as-code — `backend/scripts/setup_nr_alerts.py` (idempotente, NerdGraph) com dry-run + `--apply`: policy `Obrax API — SLO` + 4 condições NRQL sobre a telemetria OTLP real (5xx > 1%, P95 > 1s, spike de logs ERROR, no-data). Só o `--apply` (User API key) e o canal de notificação ficam na infra — ver [RUNBOOK §4](RUNBOOK.md)
+- [x] Dashboard de monitoring as-code — `backend/scripts/setup_nr_dashboards.py` (idempotente, NerdGraph) com dry-run + `--apply`: dashboard `Obrax API — SLO` com 10 widgets sobre a mesma telemetria OTLP dos alertas (throughput, 5xx %, P95, logs ERROR, latência P50/95/99, status por classe, endpoints lentos, saída DB/HTTP). Fila de agentes/custo LLM/cache/DB-pool ficam de fora (métrica custom ainda não emitida) — ver [RUNBOOK §4](RUNBOOK.md)
 - [x] Restore drill documentado + executado — dump lógico do staging → restore em PG17 limpo → 25/25 tabelas com row counts idênticos, 0 erros, RTO << 60 min; procedimento validado no [RUNBOOK §5](RUNBOOK.md)
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
