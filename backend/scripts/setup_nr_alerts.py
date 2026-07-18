@@ -14,10 +14,9 @@ Uso:
     cd backend && uv run python -m scripts.setup_nr_alerts
 
     # aplica de fato (cria/atualiza a policy + condições):
-    NEW_RELIC_API_KEY=NRAK-xxxx NEW_RELIC_ACCOUNT_ID=1234567 \
-        uv run python -m scripts.setup_nr_alerts --apply
+    cd backend && uv run python -m scripts.setup_nr_alerts --apply
 
-Env:
+Env (lidas do .env da raiz no --apply, ou do ambiente):
     NEW_RELIC_API_KEY      User key (NRAK-...) — obrigatória só no --apply.
     NEW_RELIC_ACCOUNT_ID   ID numérico da conta — obrigatória só no --apply.
     NEW_RELIC_REGION       US (default) | EU — escolhe o endpoint NerdGraph.
@@ -231,6 +230,18 @@ def _dry_run() -> int:
     return 0
 
 
+def _load_env() -> None:
+    """Carrega as NEW_RELIC_* do .env da raiz do repo (sem sobrescrever o que
+    já estiver no ambiente), para o --apply rodar sem prefixo de export."""
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        return
+    from pathlib import Path
+
+    load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Arma os alertas New Relic da API Obrax (B11.3).")
     parser.add_argument("--apply", action="store_true", help="Aplica de fato (default: dry-run).")
@@ -238,6 +249,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if not args.apply:
         return _dry_run()
+
+    _load_env()
 
     account_raw = os.getenv("NEW_RELIC_ACCOUNT_ID")
     if not account_raw or not account_raw.isdigit():
