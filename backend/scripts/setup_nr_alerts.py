@@ -57,10 +57,9 @@ class Condition:
     description: str
 
 
-# Ancoradas na telemetria emitida hoje. Atributos seguem o que o New Relic
-# expõe no OTLP ingest: `duration.ms` (derivado) no Span; `http.status_code` e
-# `service.name` vêm do semconv OTel (a FastAPIInstrumentor emite `http.status_code`
-# — se a conta normalizar p/ `http.statusCode`, ajustar aqui após o dry-run).
+# Ancoradas na telemetria emitida hoje. Nomes de atributo validados contra a
+# conta real (NerdGraph keyset): Span tem `http.status_code`, `duration.ms` e
+# `span.kind`; Log usa `severity.text` (INFO/ERROR/…), não `level`.
 CONDITIONS: tuple[Condition, ...] = (
     Condition(
         name="5xx > 1% (5 min)",
@@ -87,7 +86,8 @@ CONDITIONS: tuple[Condition, ...] = (
     Condition(
         name="Logs ERROR em alta (5 min)",
         nrql=(
-            f"SELECT count(*) FROM Log WHERE service.name = '{SERVICE_NAME}' AND level = 'ERROR'"
+            "SELECT count(*) FROM Log "
+            f"WHERE service.name = '{SERVICE_NAME}' AND severity.text = 'ERROR'"
         ),
         operator="ABOVE",
         threshold=10.0,
