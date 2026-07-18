@@ -54,6 +54,8 @@ API como `app_admin`.
 ### Frontend (`NEXT_PUBLIC_*`, expostas ao browser — nunca secrets)
 | Variável | Default | Função |
 |---|---|---|
+| `NEXT_PUBLIC_API_URL` | `""` (mesma origem) | Base da API em prod (ex.: `https://api.obrax.com.br`). Vazio = same-origin |
+| `NEXT_PUBLIC_API_MOCKING` | — | **Setar `disabled` em prod** — senão o app sobe com o MSW (mocks) no lugar da API real |
 | `NEXT_PUBLIC_POSTHOG_KEY` | — | Liga analytics de produto (F11.6). Sem ela, `capture()` é no-op |
 | `NEXT_PUBLIC_POSTHOG_HOST` | `https://us.i.posthog.com` | Host do PostHog |
 | `NEXT_PUBLIC_SENTRY_DSN` | — | Rota de erros dedicada (F11.5); ver `lib/observability/errors.ts` |
@@ -72,6 +74,16 @@ API como `app_admin`.
 ---
 
 ## 3. Deploy
+
+### Manifestos as-code
+- **Backend** → Fly.io: `backend/Dockerfile` (multi-stage uv → gunicorn+uvicorn) +
+  `backend/fly.toml` (estratégia `bluegreen`, `release_command` roda as migrations
+  no session pooler, health check em `/health`). Preencha `app`/`primary_region` e
+  os `fly secrets set` listados em §2. Deploy: `fly deploy`.
+- **Frontend** → Vercel: `frontend/vercel.json` (framework Next, `pnpm install
+  --frozen-lockfile`, build via `pnpm build:budget` = gate de bundle no deploy).
+  Root Directory do projeto Vercel = `frontend`. Setar as `NEXT_PUBLIC_*` (§2),
+  em especial `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_API_MOCKING=disabled`.
 
 ### Migrations (rodar **antes** de subir a app)
 Use a **session pooler** (porta 5432), não a transaction pooler (6543) —

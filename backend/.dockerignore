@@ -1,0 +1,12 @@
+# Mantém a imagem enxuta e o build reprodutível: o venv é criado dentro do
+# builder pelo uv, nunca copiado do host.
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+*.log
+tests/
+loadtest/
