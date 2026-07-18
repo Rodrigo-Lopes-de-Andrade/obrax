@@ -10,6 +10,7 @@
           }
         ]
       },
+
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
@@ -19,6 +20,12 @@
           }
         ]
       }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(uv run python -m scripts.setup_nr_alerts:*)",
+      "Bash(uv run python -m scripts.setup_nr_dashboards:*)"
     ]
   }
 }
