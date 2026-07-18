@@ -50,6 +50,8 @@ const PORTAL_PAGES = [
   { name: "portal-tickets", path: "/obra/demo/tickets" },
 ];
 
+const PUBLIC_PAGES = [{ name: "landing", path: "/" }];
+
 async function scan(page: import("./fixtures").Page) {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa"])
@@ -76,6 +78,20 @@ test.describe("a11y admin", () => {
 test.describe("a11y portal", () => {
   test.use({ viewport: { width: 360, height: 780 } });
   for (const p of PORTAL_PAGES) {
+    test(`sem violações críticas: ${p.name}`, async ({ page, gotoApp }) => {
+      await gotoApp(p.path);
+      const serious = await scan(page);
+      expect(
+        serious,
+        serious.map((v) => `${v.id}: ${v.help}`).join("\n"),
+      ).toEqual([]);
+    });
+  }
+});
+
+test.describe("a11y público", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+  for (const p of PUBLIC_PAGES) {
     test(`sem violações críticas: ${p.name}`, async ({ page, gotoApp }) => {
       await gotoApp(p.path);
       const serious = await scan(page);

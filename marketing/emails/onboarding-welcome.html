@@ -1,0 +1,122 @@
+<!--
+  S12.5 — E-mail de onboarding "boas-vindas" (Obrax).
+
+  Template do seam `onboarding_welcome` (ver backend/app/integrations/notifications.py:
+  EmailMessage.template + context). O provedor de prod renderiza este HTML
+  substituindo os placeholders pelo `context`:
+
+    {{user_name}}     — primeiro nome de quem se cadastrou
+    {{company_name}}  — nome da empresa (tenant)
+    {{cta_url}}       — link para entrar no app (ex.: https://app.obrax.com.br/dashboard)
+    {{help_url}}      — link do help center (ver docs/HELP.md quando publicado)
+
+  Layout table-based com CSS inline (compatível com clientes de e-mail). Sem
+  assets externos: cores da marca embutidas. O disparo automático depende do
+  notifier/fila (hoje NoopNotifier) — ver RUNBOOK §4.
+-->
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Bem-vindo ao Obrax</title>
+  </head>
+  <body style="margin: 0; padding: 0; background-color: #15171e; font-family: 'Segoe UI', Helvetica, Arial, sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #15171e;">
+      <tr>
+        <td align="center" style="padding: 32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px; background-color: #242833; border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden;">
+            <!-- Cabeçalho -->
+            <tr>
+              <td style="padding: 32px 40px 8px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="background-color: #ff6b6b; border-radius: 8px; width: 32px; height: 32px; text-align: center; vertical-align: middle; color: #ffffff; font-weight: 700; font-size: 16px;">O</td>
+                    <td style="padding-left: 10px; color: #ffffff; font-weight: 700; font-size: 18px;">Obrax</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Corpo -->
+            <tr>
+              <td style="padding: 16px 40px 8px 40px;">
+                <h1 style="margin: 0; color: #ffffff; font-size: 26px; line-height: 1.25; font-weight: 800;">
+                  Bem-vindo ao Obrax, {{user_name}}.
+                </h1>
+                <p style="margin: 16px 0 0 0; color: #b9bfce; font-size: 15px; line-height: 1.6;">
+                  A conta da <strong style="color: #ffffff;">{{company_name}}</strong> está pronta.
+                  Em poucos minutos você já tem a primeira obra organizada — do orçamento à entrega,
+                  sem planilha solta.
+                </p>
+              </td>
+            </tr>
+
+            <!-- CTA -->
+            <tr>
+              <td style="padding: 28px 40px 8px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="background-color: #ff6b6b; border-radius: 10px;">
+                      <a href="{{cta_url}}" style="display: inline-block; padding: 13px 28px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">
+                        Configurar minha primeira obra
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Próximos passos -->
+            <tr>
+              <td style="padding: 24px 40px 8px 40px;">
+                <p style="margin: 0 0 12px 0; color: #8c92a4; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;">
+                  Para começar
+                </p>
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding: 6px 0; color: #b9bfce; font-size: 15px; line-height: 1.5;">
+                      <span style="color: #38d9a9; font-weight: 700;">1.</span>&nbsp; Cadastre sua primeira obra e o cliente.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #b9bfce; font-size: 15px; line-height: 1.5;">
+                      <span style="color: #38d9a9; font-weight: 700;">2.</span>&nbsp; Monte o orçamento com EAP e markup — gere o PDF pronto para assinar.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: #b9bfce; font-size: 15px; line-height: 1.5;">
+                      <span style="color: #38d9a9; font-weight: 700;">3.</span>&nbsp; Envie o link do portal para o cliente aprovar — sem senha.
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Ajuda -->
+            <tr>
+              <td style="padding: 20px 40px 32px 40px;">
+                <p style="margin: 0; color: #8c92a4; font-size: 14px; line-height: 1.6;">
+                  Precisa de ajuda? Veja o
+                  <a href="{{help_url}}" style="color: #845ef7; text-decoration: none; font-weight: 600;">guia de primeiros passos</a>
+                  ou responda este e-mail — a gente ajuda.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Rodapé -->
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 560px;">
+            <tr>
+              <td style="padding: 20px 40px; text-align: center; color: #8c92a4; font-size: 12px; line-height: 1.6;">
+                Obrax — Mini-ERP para construtoras e reformadoras.<br />
+                Você recebeu este e-mail porque criou uma conta no Obrax.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
