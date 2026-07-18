@@ -101,6 +101,31 @@ cd frontend && pnpm build:budget   # reprova rota > 240 kB First Load JS (shared
 `GET /health` → `{status, storage, realtime}`. É relatório (sempre 200), não gate;
 use-o no readiness probe verificando `status == "ok"`.
 
+### Virada blue-green (S12.6)
+Deploy sem downtime: sobe o ambiente novo (**green**) em paralelo ao que serve
+tráfego (**blue**), valida com smoke test e só então reponta o tráfego. Rollback
+= repontar de volta para o blue (que segue no ar até a virada estabilizar).
+
+1. **Migrations primeiro.** Forward-only e compatíveis com o blue ainda no ar
+   (expand-contract) — rode `alembic upgrade head` antes de subir o green.
+2. **Suba o green** (nova release) sem receber tráfego de produção. O readiness
+   probe (`/health` → `status == "ok"`) segura o green até ele estar pronto.
+3. **Smoke test contra o green** — o gate da virada:
+   ```bash
+   cd backend && uv run python -m scripts.smoke_test \
+       --api-url https://green.api.obrax.com.br \
+       --frontend-url https://green.obrax.com.br --require-storage
+   ```
+   Read-only (só GETs), seguro rodar contra prod. Sai != 0 se qualquer gate
+   falhar (`/health`, `/openapi.json`, rota protegida exige 401) — **não reponte
+   o tráfego se falhar**.
+4. **Cutover.** Reponte o tráfego blue → green (troca de target do
+   load balancer / `fly deploy --strategy bluegreen` / alias do Vercel).
+5. **Monitore 60 min** no dashboard `Obrax API — SLO` e nos alertas as-code
+   (§4): 5xx, P95 e logs ERROR. Mantenha o blue de pé nesse intervalo.
+6. **Rollback** (se 5xx/P95 dispararem): reponte green → blue e investigue. Como
+   as migrations são expand-contract, o blue continua compatível com o schema novo.
+
 ---
 
 ## 4. Observabilidade

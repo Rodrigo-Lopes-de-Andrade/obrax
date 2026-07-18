@@ -573,13 +573,15 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 | ✅ **S12.3** Documentação usuário | Help center básico (criar obra, orçamento, enviar cliente), FAQ, tutorial video | 2d | Docs publicadas ([HELP.md](HELP.md)); vídeos pendentes |
 | ✅ **S12.4** Go-live checklist | Backups validados, alertas armados, runbooks publicados, SLA confirmado (99.5%) | 2d | Checklist + runbook publicados ([GO-LIVE.md](GO-LIVE.md), [RUNBOOK.md](RUNBOOK.md)); SLA/status page na infra |
 | ✅ **S12.5** Marketing prep | Landing page, email template onboarding, copy explicativo tiers | 1d | Landing pública em `/` (hero + 6 recursos + 3 tiers do PRD §6b + banda IA + CTA), a11y-checada e no orçamento (181 kB); template de onboarding `marketing/emails/onboarding-welcome.html` (seam `onboarding_welcome`). Sequência automática de e-mails depende do notifier/fila (infra) |
-| **S12.6** Production deploy | Blue-green final, health check, smoke test 100%, monitoring ativo | 1d | Status page "Operational", zero downtime |
+| 🟡 **S12.6** Production deploy | Blue-green final, health check, smoke test 100%, monitoring ativo | 1d | **Gate as-code pronto:** `backend/scripts/smoke_test.py` (read-only, exit≠0 em falha, verificado local — gates health/openapi/auth + `--require-storage`) e procedimento blue-green em [RUNBOOK §3](RUNBOOK.md). Falta a virada real (cutover + status page) — depende da infra provisionada |
 
 > **Entrega S12:** S12.3 (help center + FAQ), S12.4 (go-live checklist +
 > runbook) e S12.5 (landing + copy dos tiers + template de onboarding)
-> concluídos no código. S12.1/S12.2 (beta + bugfix) e S12.6 (deploy blue-green)
-> dependem de clientes beta e infra; a sequência automática de e-mails do S12.5
-> aguarda o notifier/fila. As credenciais Supabase já estão prontas para a virada.
+> concluídos no código. S12.6 tem o **gate as-code pronto** (smoke test +
+> procedimento blue-green no RUNBOOK); falta a virada real. S12.1/S12.2 (beta +
+> bugfix) e o cutover do S12.6 dependem de clientes beta e infra; a sequência
+> automática de e-mails do S12.5 aguarda o notifier/fila. As credenciais
+> Supabase já estão prontas para a virada.
 
 **Estimativa total:** ~11 dias/pessoa
 

@@ -39,6 +39,11 @@ para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md).
 - [ ] SLA de disponibilidade confirmado (alvo 99,5%); status page pública.
 
 ## Virada (S12.6)
-- [ ] Deploy blue-green; smoke test 100% no ambiente novo antes de repontar tráfego.
-- [ ] Monitoramento ativo nos primeiros 60 min pós-virada; plano de rollback pronto.
+Procedimento passo a passo em [RUNBOOK §3 → Virada blue-green](RUNBOOK.md).
+- [ ] Migrations (expand-contract) aplicadas antes de subir o green.
+- [ ] Deploy blue-green; **smoke test 100%** no green antes de repontar tráfego:
+      `cd backend && uv run python -m scripts.smoke_test --api-url <green> --require-storage`
+      (read-only; sai != 0 se algum gate falhar → não vira).
+- [ ] Monitoramento ativo nos primeiros 60 min pós-virada no dashboard
+      `Obrax API — SLO` + alertas as-code; blue de pé para rollback.
 - [ ] Status page em **Operational**; zero downtime confirmado.
