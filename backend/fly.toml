@@ -1,6 +1,6 @@
 # Fly.io — backend Obrax (FastAPI). Preencha `app` e confira `primary_region`.
 # Deploy: `fly deploy` (usa este arquivo + Dockerfile). Ver RUNBOOK §3.
-app = "obrax-api"          # TODO: nome real do app no Fly
+app = "obrax"              # app criado no Fly (personal)
 primary_region = "gru"     # São Paulo; alinhe com a região do Supabase
 
 [build]
