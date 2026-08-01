@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "fly": {
+      "command": "fly",
+      "args": ["mcp", "server"]
+    },
+    "vercel": {
+      "type": "http",
+      "url": "https://mcp.vercel.com"
+    }
+  }
+}
