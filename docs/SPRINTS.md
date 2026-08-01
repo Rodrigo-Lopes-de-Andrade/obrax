@@ -541,6 +541,7 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 - [x] Alertas definidos as-code — `backend/scripts/setup_nr_alerts.py` (idempotente, NerdGraph) com dry-run + `--apply`: policy `Obrax API — SLO` + 4 condições NRQL sobre a telemetria OTLP real (5xx > 1%, P95 > 1s, spike de logs ERROR, no-data). Só o `--apply` (User API key) e o canal de notificação ficam na infra — ver [RUNBOOK §4](RUNBOOK.md)
 - [x] Dashboard de monitoring as-code — `backend/scripts/setup_nr_dashboards.py` (idempotente, NerdGraph) com dry-run + `--apply`: dashboard `Obrax API — SLO` com 10 widgets sobre a mesma telemetria OTLP dos alertas (throughput, 5xx %, P95, logs ERROR, latência P50/95/99, status por classe, endpoints lentos, saída DB/HTTP). Fila de agentes/custo LLM/cache/DB-pool ficam de fora (métrica custom ainda não emitida) — ver [RUNBOOK §4](RUNBOOK.md)
 - [x] Restore drill documentado + executado — dump lógico do staging → restore em PG17 limpo → 25/25 tabelas com row counts idênticos, 0 erros, RTO << 60 min; procedimento validado no [RUNBOOK §5](RUNBOOK.md)
+- [x] Pipeline de CI + deploy automático de staging as-code (O11.1) — `.github/workflows/ci.yml`: em todo PR/push roda backend (ruff + mypy + pytest com Postgres/Redis/MinIO via compose + migrations), frontend (lint + `build:budget`) e E2E (Playwright mock-first); no merge para `main` faz deploy de staging (Fly + Vercel) e roda o smoke test. Jobs de check espelham os comandos locais já verdes; deploy exige os secrets de infra (`FLY_API_TOKEN_STAGING`, `VERCEL_*`)
 
 > **Entrega S11 (código vs infra):** F11.1, F11.3, F11.4, F11.6, B11.1 e B11.5
 > concluídos e verificados localmente. B11.2 (OTel) **ligado a backend real**
@@ -552,8 +553,10 @@ a suíte de API/RLS (`test_agentes_api.py`) roda com `make test` onde houver Pos
 > staging) — ver [LOADTEST.md](LOADTEST.md); só a run definitiva de 200 usuários
 > pede infra co-localizada. B11.3 (alertas): **definições as-code prontas**
 > (`setup_nr_alerts.py`, dry-run validado) — só o `--apply` (User API key) e o
-> canal de notificação ficam na infra. O11.1/O11.2 (staging/dashboards)
-> dependem de infraestrutura provisionada — ver [RUNBOOK.md](RUNBOOK.md) e
+> canal de notificação ficam na infra. **O11.2 (dashboards) concluído** — painel
+> aplicado na conta real. **O11.1 (staging)**: pipeline de CI + deploy automático
+> **as-code** (`.github/workflows/ci.yml`); só o provisionamento do ambiente de
+> staging + secrets ficam na infra — ver [RUNBOOK.md](RUNBOOK.md) e
 > [GO-LIVE.md](GO-LIVE.md).
 
 **Estimativa total:** ~35 dias/pessoa

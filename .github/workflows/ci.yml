@@ -1,0 +1,178 @@
+# CI do Obrax (O11.1) — checks em todo PR/push; deploy automático pra STAGING no
+# merge para main. Deploy de PROD é manual (ver RUNBOOK §3, virada blue-green).
+#
+# Os jobs de check espelham exatamente os comandos locais (make lint/test,
+# pnpm lint/build:budget, pnpm test:e2e). Os jobs de deploy são templates: exigem
+# os secrets/vars listados em cada passo (FLY_API_TOKEN_STAGING, VERCEL_*, etc.).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend · lint + typecheck + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Mesma stack do dev local (Postgres + Redis + MinIO + criação de buckets).
+      # Os defaults de STORAGE_* já apontam pro MinIO local, então nada a setar.
+      - name: Sobe serviços (Postgres + Redis + MinIO)
+        run: docker compose up -d postgres redis minio minio-init
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Instala dependências
+        working-directory: backend
+        run: uv sync --frozen --extra observability
+
+      - name: Lint + format + typecheck
+        working-directory: backend
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run mypy app
+
+      - name: Aguarda o Postgres
+        run: |
+          for _ in $(seq 1 30); do
+            docker exec obrax-postgres pg_isready -U obrax -d obrax && exit 0
+            sleep 2
+          done
+          echo "Postgres não ficou pronto a tempo" >&2
+          exit 1
+
+      # Migrations forward-only ANTES dos testes (make test não auto-migra). A
+      # migration 0001 cria os roles app_user/app_admin que os testes de RLS usam.
+      - name: Migrations
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://obrax:obrax@localhost:5432/obrax
+        run: uv run alembic upgrade head
+
+      - name: Testes (pytest)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://obrax:obrax@localhost:5432/obrax
+        run: uv run pytest
+
+  frontend:
+    name: Frontend · lint + build (gate de bundle)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Instala dependências
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        working-directory: frontend
+        run: pnpm lint
+
+      - name: Build + gate de bundle (F11.3)
+        working-directory: frontend
+        run: pnpm build:budget
+
+  e2e:
+    name: E2E · Playwright (mock-first)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Instala dependências
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Instala o Chromium do Playwright
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Mock-first: o webServer do Playwright sobe o próprio `pnpm dev` com MSW —
+      # não precisa de backend nem de serviços.
+      - name: Testes E2E (a11y + fluxos críticos)
+        working-directory: frontend
+        run: pnpm test:e2e
+
+  deploy-staging:
+    name: Deploy staging (Fly + Vercel) + smoke
+    needs: [backend, frontend, e2e]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_FRONTEND_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Backend → Fly.io (app de staging). As migrations rodam no release_command
+      # do fly.toml (session pooler). Requer o secret FLY_API_TOKEN_STAGING e a
+      # var FLY_STAGING_APP.
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy backend (Fly)
+        working-directory: backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_STAGING }}
+        run: flyctl deploy --app "${{ vars.FLY_STAGING_APP }}" --remote-only
+
+      # Frontend → Vercel. Requer VERCEL_TOKEN + VERCEL_ORG_ID + VERCEL_PROJECT_ID.
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Deploy frontend (Vercel)
+        working-directory: frontend
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npx --yes vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+          npx --yes vercel build --token="$VERCEL_TOKEN"
+          npx --yes vercel deploy --prebuilt --token="$VERCEL_TOKEN"
+
+      # Gate: smoke test read-only contra o staging recém-deployado.
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Smoke test do staging
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run python -m scripts.smoke_test \
+            --api-url "${{ vars.STAGING_API_URL }}" \
+            --frontend-url "${{ vars.STAGING_FRONTEND_URL }}" \
+            --require-storage

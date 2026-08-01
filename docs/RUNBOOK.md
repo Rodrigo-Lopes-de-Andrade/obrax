@@ -75,6 +75,15 @@ API como `app_admin`.
 
 ## 3. Deploy
 
+### CI + deploy automático (O11.1)
+`.github/workflows/ci.yml`: em todo PR/push roda os checks (backend ruff+mypy+
+pytest sobre Postgres/Redis/MinIO via `docker compose` + migrations; frontend
+lint + `build:budget`; E2E Playwright mock-first). No **merge para `main`** faz
+deploy de **staging** (Fly + Vercel) e roda o `smoke_test` contra o ambiente novo.
+Deploy de **prod é manual** (virada blue-green abaixo). Requer os secrets/vars:
+`FLY_API_TOKEN_STAGING`, `FLY_STAGING_APP`, `VERCEL_TOKEN`, `VERCEL_ORG_ID`,
+`VERCEL_PROJECT_ID`, `STAGING_API_URL`, `STAGING_FRONTEND_URL`.
+
 ### Manifestos as-code
 - **Backend** → Fly.io: `backend/Dockerfile` (multi-stage uv → gunicorn+uvicorn) +
   `backend/fly.toml` (estratégia `bluegreen`, `release_command` roda as migrations
