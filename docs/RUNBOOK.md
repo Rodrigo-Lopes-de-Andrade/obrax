@@ -55,7 +55,7 @@ API como `app_admin`.
 | Variável | Default | Função |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | `""` (mesma origem) | Base da API em prod (ex.: `https://api.obrax.com.br`). Vazio = same-origin |
-| `NEXT_PUBLIC_API_MOCKING` | — | **Setar `disabled` em prod** — senão o app sobe com o MSW (mocks) no lugar da API real |
+| `NEXT_PUBLIC_API_MOCKING` | — | Desliga os mocks MSW num `next dev`/preview local. Em **prod o MSW nunca sobe** (gate `NODE_ENV==development` em `providers.tsx`) — a env só tem efeito em dev |
 | `NEXT_PUBLIC_POSTHOG_KEY` | — | Liga analytics de produto (F11.6). Sem ela, `capture()` é no-op |
 | `NEXT_PUBLIC_POSTHOG_HOST` | `https://us.i.posthog.com` | Host do PostHog |
 | `NEXT_PUBLIC_SENTRY_DSN` | — | Rota de erros dedicada (F11.5); ver `lib/observability/errors.ts` |
@@ -92,7 +92,7 @@ Deploy de **prod é manual** (virada blue-green abaixo). Requer os secrets/vars:
 - **Frontend** → Vercel: `frontend/vercel.json` (framework Next, `pnpm install
   --frozen-lockfile`, build via `pnpm build:budget` = gate de bundle no deploy).
   Root Directory do projeto Vercel = `frontend`. Setar as `NEXT_PUBLIC_*` (§2),
-  em especial `NEXT_PUBLIC_API_URL` e `NEXT_PUBLIC_API_MOCKING=disabled`.
+  em especial `NEXT_PUBLIC_API_URL` (o MSW é dev-only, não precisa desligar em prod).
 
 ### Migrations (rodar **antes** de subir a app)
 Use a **session pooler** (porta 5432), não a transaction pooler (6543) —

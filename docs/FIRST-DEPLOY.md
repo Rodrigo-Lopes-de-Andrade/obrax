@@ -101,7 +101,6 @@ Envs do projeto (Vercel → Settings → Environment Variables, ambiente **Produ
 | Variável | Valor |
 |---|---|
 | `NEXT_PUBLIC_API_URL` | `https://<obrax-api>.fly.dev` (ou o domínio da API) |
-| **`NEXT_PUBLIC_API_MOCKING`** | **`disabled`** ⚠️ sem isso o app sobe com MSW/mocks |
 | `NEXT_PUBLIC_POSTHOG_KEY` | `<posthog key>` |
 | `NEXT_PUBLIC_SENTRY_DSN` | `<sentry dsn>` |
 
