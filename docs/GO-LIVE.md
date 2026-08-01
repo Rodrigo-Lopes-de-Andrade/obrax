@@ -1,7 +1,9 @@
 # Checklist de Go-Live — Obrax
 
 Critérios de virada para produção (S12.4/S12.6). Marque cada item antes de abrir
-para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md).
+para clientes. Detalhes operacionais em [RUNBOOK.md](RUNBOOK.md). Para a sequência
+copiável do **primeiro deploy** (comandos `fly`/`vercel`/secrets), ver
+[FIRST-DEPLOY.md](FIRST-DEPLOY.md).
 
 ## Pré-requisitos de infraestrutura
 - [ ] Banco de produção (Supabase) provisionado; `alembic upgrade head` aplicado (session pooler 5432).
