@@ -643,6 +643,7 @@ dependencies = [
     { name = "boto3" },
     { name = "fastapi" },
     { name = "gunicorn" },
+    { name = "httpx" },
     { name = "openpyxl" },
     { name = "passlib", extra = ["argon2"] },
     { name = "psycopg", extra = ["binary"] },
@@ -665,7 +666,6 @@ observability = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "httpx" },
     { name = "locust" },
     { name = "mypy" },
     { name = "pytest" },
@@ -679,6 +679,7 @@ requires-dist = [
     { name = "boto3", specifier = ">=1.34,<2.0" },
     { name = "fastapi", specifier = ">=0.115,<0.116" },
     { name = "gunicorn", specifier = ">=22.0,<23.0" },
+    { name = "httpx", specifier = ">=0.27,<1.0" },
     { name = "openpyxl", specifier = ">=3.1,<4.0" },
     { name = "opentelemetry-exporter-otlp-proto-http", marker = "extra == 'observability'", specifier = ">=1.27,<2.0" },
     { name = "opentelemetry-instrumentation-fastapi", marker = "extra == 'observability'", specifier = ">=0.48b0,<1.0" },
@@ -698,7 +699,6 @@ provides-extras = ["observability"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "httpx", specifier = ">=0.27,<1.0" },
     { name = "locust", specifier = ">=2.31,<3.0" },
     { name = "mypy", specifier = ">=1.11,<2.0" },
     { name = "pytest", specifier = ">=8.0,<9.0" },
