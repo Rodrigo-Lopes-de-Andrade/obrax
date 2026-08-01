@@ -29,12 +29,16 @@ _REFRESH_COOKIE_PATH = "/api/v1/auth"
 
 
 def _set_refresh_cookie(response: Response, token: str) -> None:
+    # Frontend e backend ficam em domínios diferentes em prod (Vercel ↔ Fly), então
+    # o cookie de refresh precisa de SameSite=None + Secure para ser enviado no
+    # cross-site. Em dev (mesma origem, sem HTTPS) usa Lax (None exige Secure).
+    secure = settings.environment != "development"
     response.set_cookie(
         key=_REFRESH_COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=settings.environment != "development",
-        samesite="strict",
+        secure=secure,
+        samesite="none" if secure else "lax",
         max_age=int(REFRESH_TOKEN_TTL.total_seconds()),
         path=_REFRESH_COOKIE_PATH,
     )

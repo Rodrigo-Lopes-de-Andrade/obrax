@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -81,6 +82,17 @@ def create_app() -> FastAPI:
     # que `request.state.auth` já esteja populado quando o access-log rodar.
     app.add_middleware(RequestContextMiddleware)
     app.add_middleware(TenantMiddleware)
+    # CORS por último = outermost: trata o preflight OPTIONS e injeta os headers
+    # antes/depois dos middlewares internos. Só libera cross-site quando há origens
+    # configuradas (prod: Vercel → Fly); em dev (mesma origem via MSW) fica vazio.
+    if settings.cors_allow_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(settings.cors_allow_origins),
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     app.add_exception_handler(StarletteHTTPException, _http_exception_handler)
     app.add_exception_handler(RequestValidationError, _validation_exception_handler)

@@ -52,6 +52,11 @@ class Settings:
     # "development" desliga o atributo `Secure` do cookie de refresh (permite
     # testar via curl/http local); qualquer outro valor liga `Secure`.
     environment: str
+    # Origens permitidas no CORS (browser cross-site). Frontend e backend ficam
+    # em domínios diferentes em prod (Vercel ↔ Fly), então o browser exige CORS
+    # com credenciais. Vazio em dev (mesma origem via MSW). Env `CORS_ALLOW_ORIGINS`
+    # = lista separada por vírgula (ex.: "https://obrax-beta.vercel.app").
+    cors_allow_origins: tuple[str, ...]
     # Object store S3-compatível (Supabase Storage em staging/prod; MinIO local
     # em dev — ver docker-compose.yml). O mesmo cliente boto3 serve os dois via
     # `endpoint_url`. Defaults abaixo apontam pro MinIO local; sobrescreva por
@@ -141,6 +146,9 @@ def get_settings() -> Settings:
         app_admin_database_url=_to_psycopg_dsn(app_admin_dsn),
         jwt_secret=jwt_secret,
         environment=os.environ.get("ENVIRONMENT", "development"),
+        cors_allow_origins=tuple(
+            o.strip() for o in os.environ.get("CORS_ALLOW_ORIGINS", "").split(",") if o.strip()
+        ),
         storage_endpoint_url=os.environ.get("STORAGE_ENDPOINT_URL", "http://localhost:9000"),
         storage_region=os.environ.get("STORAGE_REGION", "us-east-1"),
         storage_access_key=os.environ.get("STORAGE_ACCESS_KEY", "obrax"),

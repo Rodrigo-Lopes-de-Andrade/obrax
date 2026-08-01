@@ -24,6 +24,8 @@ primary_region = "gru"     # São Paulo; alinhe com a região do Supabase
   OTEL_SERVICE_NAME = "obrax-api"
   OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp.nr-data.net"
   REALTIME_ENABLED = "true"
+  # Origens liberadas no CORS (browser Vercel → API Fly). Lista por vírgula.
+  CORS_ALLOW_ORIGINS = "https://obrax-beta.vercel.app"
 
 [http_service]
   internal_port = 8080
