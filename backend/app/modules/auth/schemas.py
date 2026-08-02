@@ -25,6 +25,15 @@ class AccessTokenResponse(BaseModel):
     expires_in: int
 
 
+class MeResponse(BaseModel):
+    """Usuário autenticado da sessão (GET /auth/me). `role` é do vínculo do JWT."""
+
+    id: str
+    nome: str
+    email: str
+    role: str
+
+
 class MagicConsumeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

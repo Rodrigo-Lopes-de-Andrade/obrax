@@ -128,6 +128,7 @@ export interface Usuario {
   id: string;
   nome: string;
   email: string;
+  role?: string;
 }
 
 export type TicketStatus = "aberto" | "andamento" | "resolvido" | "fechado";

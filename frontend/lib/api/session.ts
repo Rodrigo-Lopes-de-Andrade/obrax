@@ -6,4 +6,4 @@ import type { Usuario } from "./types";
  * backend real expõe o contexto do JWT); o chat usa isso para saber quais
  * mensagens são "minhas".
  */
-export const getMe = (): Promise<Usuario> => api.get<Usuario>("/api/v1/me");
+export const getMe = (): Promise<Usuario> => api.get<Usuario>("/api/v1/auth/me");
