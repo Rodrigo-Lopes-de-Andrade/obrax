@@ -3,8 +3,10 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { z } from "zod";
+
+import { ClienteFormDrawer } from "@/components/modules/cliente/ClienteFormDrawer";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -101,6 +103,7 @@ interface ObraFormDrawerProps {
 
 export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps) {
   const isEdit = Boolean(obra);
+  const [clienteDrawerOpen, setClienteDrawerOpen] = React.useState(false);
   const { data: clientesPage, isLoading: clientesLoading } = useClientes();
   const createObra = useCreateObra();
   const updateObra = useUpdateObra();
@@ -151,6 +154,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
   const clientes = clientesPage?.items ?? [];
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full gap-0 sm:max-w-md">
         <SheetHeader>
@@ -173,7 +177,19 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                 name="cliente_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cliente</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Cliente</FormLabel>
+                      {!isEdit && (
+                        <button
+                          type="button"
+                          onClick={() => setClienteDrawerOpen(true)}
+                          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                        >
+                          <Plus className="size-3" />
+                          Novo cliente
+                        </button>
+                      )}
+                    </div>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
@@ -317,5 +333,12 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
         </Form>
       </SheetContent>
     </Sheet>
+
+      <ClienteFormDrawer
+        open={clienteDrawerOpen}
+        onOpenChange={setClienteDrawerOpen}
+        onCreated={(c) => form.setValue("cliente_id", c.id, { shouldValidate: true })}
+      />
+    </>
   );
 }
