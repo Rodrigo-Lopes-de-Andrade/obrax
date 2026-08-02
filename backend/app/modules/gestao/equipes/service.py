@@ -120,6 +120,35 @@ def list_membros(
     return page, next_cursor
 
 
+def search_usuarios(
+    session: Session, *, search: str, limit: int
+) -> tuple[list[dict[str, Any]], str | None]:
+    """Usuários do tenant para o seletor de membros/menções (US-07). A RLS de
+    `user_company_role` já restringe ao company atual — o join só devolve quem
+    pertence a esta empresa. Busca opcional por nome/email (ILIKE)."""
+    termo = search.strip()
+    pattern = f"%{termo}%"
+    rows = (
+        session.execute(
+            text(
+                "SELECT u.id, u.nome, u.email, ucr.role "
+                "FROM users u JOIN user_company_role ucr ON ucr.user_id = u.id "
+                "WHERE u.deleted_at IS NULL "
+                "  AND (:termo = '' OR u.nome ILIKE :pattern OR u.email ILIKE :pattern) "
+                "ORDER BY u.nome ASC, u.id ASC "
+                "LIMIT :limit_plus_one"
+            ),
+            {"termo": termo, "pattern": pattern, "limit_plus_one": limit + 1},
+        )
+        .mappings()
+        .all()
+    )
+    has_more = len(rows) > limit
+    page = [dict(r) for r in rows[:limit]]
+    next_cursor = str(page[-1]["id"]) if has_more else None
+    return page, next_cursor
+
+
 def remove_membro(session: Session, *, obra_id: uuid.UUID, user_id: uuid.UUID) -> None:
     row = session.execute(
         text(

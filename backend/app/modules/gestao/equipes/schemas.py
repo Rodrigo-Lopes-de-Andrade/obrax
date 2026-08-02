@@ -37,3 +37,22 @@ class MembroPage(BaseModel):
     items: list[MembroOut]
     # Cursor para a próxima página (o `id` do último vínculo); None = fim.
     next_cursor: str | None
+
+
+class UsuarioOut(BaseModel):
+    """Usuário do tenant para o seletor de "adicionar membro"/menções (US-07).
+    `role` é o papel na empresa (user_company_role), só para exibição."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    nome: str
+    email: str
+    role: str | None = None
+
+
+class UsuarioPage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[UsuarioOut]
+    next_cursor: str | None
