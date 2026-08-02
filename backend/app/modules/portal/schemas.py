@@ -81,6 +81,41 @@ class PortalOrcamento(BaseModel):
     decidido_em: datetime | None
 
 
+class PortalMensagem(BaseModel):
+    """Mensagem do chat de um chamado, na visão do cliente (US-19). Espelha
+    `MensagemOut` do admin; `author_id` NULL = mensagem do próprio cliente."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    ticket_id: UUID
+    author_id: UUID | None
+    content: str
+    attachment_paths: list[str]
+    created_at: datetime
+
+
+class PortalTicket(BaseModel):
+    """Chamado da obra com o histórico de mensagens (read-only + responder)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    titulo: str
+    status: str
+    created_at: datetime
+    mensagens: list[PortalMensagem]
+
+
+class PortalMensagemIn(BaseModel):
+    """Corpo de `POST /portal/tickets/{token}/{ticket_id}/mensagens` (US-19).
+    O cliente só envia texto — sem anexos (não tem acesso ao storage)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    content: str = Field(min_length=1, max_length=5000)
+
+
 class PortalAprovacaoIn(BaseModel):
     """Corpo de `POST /portal/orcamentos/{token}/aprovar|rejeitar` (B9.3)."""
 
