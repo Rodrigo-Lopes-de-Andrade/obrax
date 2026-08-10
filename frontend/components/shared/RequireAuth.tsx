@@ -5,23 +5,33 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/state/auth";
 
-/** Gate client-side das áreas autenticadas: sem access token, redireciona para
- * `/login`. Renderiza `null` até o efeito rodar (mesmo output no server e no
- * primeiro render do client → sem mismatch de hidratação), evitando flash do
- * conteúdo protegido. O token é rehidratado do localStorage pelo `persist`. */
+/** Gate client-side das áreas autenticadas. Sem access token → `/login`.
+ *
+ * Crítico: só decide DEPOIS que o `persist` (zustand) hidrata o token do
+ * localStorage. Sem esperar, um refresh/entrada direta numa rota protegida
+ * enxergaria `token=null` (ainda não hidratado) e deslogaria o usuário. */
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const token = useAuth((s) => s.accessToken);
-  const [ready, setReady] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      router.replace("/login");
-    } else {
-      setReady(true);
+    if (useAuth.persist.hasHydrated()) {
+      setHydrated(true);
+      return;
     }
-  }, [token, router]);
+    const unsub = useAuth.persist.onFinishHydration(() => setHydrated(true));
+    return unsub;
+  }, []);
 
-  if (!ready) return null;
+  useEffect(() => {
+    if (hydrated && !token) {
+      router.replace("/login");
+    }
+  }, [hydrated, token, router]);
+
+  // Espera a hidratação antes de renderizar/decidir (mesmo output no server e no
+  // 1º render do client → sem mismatch; evita flash e o logout indevido).
+  if (!hydrated || !token) return null;
   return <>{children}</>;
 }

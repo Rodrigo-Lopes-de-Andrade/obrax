@@ -79,7 +79,9 @@ class TestPermissoes:
     def test_criar_exige_owner_admin(
         self, client: TestClient, seed_tenant: Callable[..., SeededUser]
     ) -> None:
-        membro = seed_tenant(role="membro")
+        # `viewer` é papel não-privilegiado válido no enum user_role (não
+        # owner/admin) → criar permissão de IA deve ser negado.
+        membro = seed_tenant(role="viewer")
         r = client.post(
             "/api/v1/ia/permissoes", json=_perm_body("+5511900000000"), headers=membro.auth_header
         )

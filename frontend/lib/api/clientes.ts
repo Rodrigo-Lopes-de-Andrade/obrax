@@ -1,5 +1,5 @@
 import { api } from "./client";
-import type { Cliente, Page } from "./types";
+import type { Cliente, ClienteCreateInput, Page } from "./types";
 
 export interface ListClientesParams {
   search?: string | null;
@@ -20,3 +20,6 @@ export const listClientes = (
   params: ListClientesParams = {},
 ): Promise<Page<Cliente>> =>
   api.get<Page<Cliente>>(`/api/v1/clientes${buildQuery(params)}`);
+
+export const createCliente = (data: ClienteCreateInput): Promise<Cliente> =>
+  api.post<Cliente>("/api/v1/clientes", data);

@@ -30,9 +30,9 @@ primary_region = "gru"     # São Paulo; alinhe com a região do Supabase
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "stop"
+  auto_stop_machines = "off"  # sempre quente: sem cold start no login (porta de entrada)
   auto_start_machines = true
-  min_machines_running = 1   # suba p/ 2+ para alta disponibilidade
+  min_machines_running = 1    # suba p/ 2+ para alta disponibilidade
 
   [http_service.concurrency]
     type = "requests"

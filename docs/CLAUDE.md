@@ -148,7 +148,7 @@ frontend/
 Ponto de maior acoplamento — trate com cuidado.
 
 - **Transporte:** REST JSON sobre HTTPS. Streaming SSE para o chat do Assistente IA (`/api/v1/ia/stream`).
-- **Endpoints principais:** ver `obrax-especificacoes-tecnicas.md` seção 6. Base: `/api/v1/`.
+- **Endpoints principais:** ver `docs/ESPEC.md` seção 6 (Contratos de API). Base: `/api/v1/`.
 - **Fonte da verdade:** schemas Pydantic em `backend/app/modules/*/schemas.py` (re-exportados via `backend/server/models.py`).
 - **Ao mudar o contrato:** atualizar `schemas.py` **e** os testes de integração na mesma PR. Os tipos TS são **gerados** via `openapi-typescript` — **rode `make gen-types`, não edite à mão**.
 - **Convenções:**
@@ -235,7 +235,9 @@ DOPPLER_TOKEN (ou INFISICAL_TOKEN)
 |-----------|------------|---------|
 | PRD V3.0 | `docs/PRD.md` | Fonte da verdade de produto. 24 USs, RNFs, roadmap, specs técnicas |
 | SPRINTS V1.0 | `docs/SPRINTS.md` | 12 sprints × 2 semanas. Tasks B/F/D/O com critérios de aceite |
-| Specs Técnicas | `docs/obrax-especificacoes-tecnicas.md` | Stack decisions, schema, inventário de componentes, contratos de API |
-| Comparação Design | `docs/obrax-comparacao-frontend-vs-prd.md` | Cobertura do Claude Design vs PRD. Gaps e próximos passos |
-| Prompt Frontend | `docs/obrax-frontend-prompt.md` | Prompt completo para Next.js (design tokens, componentes, hooks) |
-| Prompt Design Faltante | `docs/obrax-prompt-claude-design-telas-faltantes.md` | 9 entregas para telas ainda não construídas no Claude Design |
+| Specs Técnicas V1.0 | `docs/ESPEC.md` | Stack decisions, schema, inventário de componentes, contratos de API |
+| Runbook Operacional | `docs/RUNBOOK.md` | Deploy, variáveis de ambiente, observabilidade, resposta a incidentes |
+| Primeiro Deploy | `docs/FIRST-DEPLOY.md` | Sequência copiável da primeira virada de produção (`fly`/`vercel`/secrets) |
+| Checklist de Go-Live | `docs/GO-LIVE.md` | Critérios de aceite para abrir a plataforma a clientes |
+| Teste de Carga | `docs/LOADTEST.md` | Harness Locust dos fluxos de leitura mais quentes vs. metas de RNF |
+| Central de Ajuda | `docs/HELP.md` | Guia de uso do produto para o cliente final |

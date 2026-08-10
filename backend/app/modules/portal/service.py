@@ -205,6 +205,101 @@ def get_portal_orcamento(
     return _orcamento_out(session, storage, row)
 
 
+_TICKET_NAO_ENCONTRADO = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND, detail="chamado não encontrado nesta obra"
+)
+_TICKET_FECHADO = HTTPException(
+    status_code=status.HTTP_409_CONFLICT, detail="chamado fechado não aceita novas mensagens"
+)
+
+
+def list_portal_tickets(session: Session, *, obra_id: uuid.UUID) -> list[dict[str, Any]]:
+    """Chamados da obra (US-19), cada um com o histórico de mensagens em ordem
+    cronológica. Escopado à obra do token — a RLS já isola o tenant, e o filtro
+    `obra_id` restringe à obra do link (um cliente não vê chamados de outras
+    obras do mesmo tenant)."""
+    tickets = (
+        session.execute(
+            text(
+                "SELECT id, titulo, status, created_at FROM ticket "
+                "WHERE obra_id = :obra_id AND deleted_at IS NULL "
+                "ORDER BY created_at DESC"
+            ),
+            {"obra_id": obra_id},
+        )
+        .mappings()
+        .all()
+    )
+    if not tickets:
+        return []
+
+    msgs_por_ticket: dict[uuid.UUID, list[dict[str, Any]]] = {}
+    for m in (
+        session.execute(
+            text(
+                "SELECT id, ticket_id, author_id, content, attachment_paths, created_at "
+                "FROM ticket_mensagem WHERE ticket_id = ANY(:ids) "
+                "ORDER BY created_at ASC, id ASC"
+            ),
+            {"ids": [t["id"] for t in tickets]},
+        )
+        .mappings()
+        .all()
+    ):
+        msgs_por_ticket.setdefault(m["ticket_id"], []).append(dict(m))
+
+    return [{**dict(t), "mensagens": msgs_por_ticket.get(t["id"], [])} for t in tickets]
+
+
+def add_portal_mensagem(
+    session: Session,
+    notifier: Notifier,
+    *,
+    company_id: str,
+    obra_id: uuid.UUID,
+    ticket_id: uuid.UUID,
+    content: str,
+) -> dict[str, Any]:
+    """Registra uma mensagem do cliente num chamado (US-19). `author_id` NULL
+    marca a autoria do cliente (o front alinha à direita). 404 se o chamado não
+    for desta obra; 409 se estiver fechado. Notifica os gestores (best-effort)."""
+    ticket = (
+        session.execute(
+            text(
+                "SELECT titulo, status FROM ticket "
+                "WHERE id = :tid AND obra_id = :obra_id AND deleted_at IS NULL"
+            ),
+            {"tid": ticket_id, "obra_id": obra_id},
+        )
+        .mappings()
+        .first()
+    )
+    if ticket is None:
+        raise _TICKET_NAO_ENCONTRADO
+    if ticket["status"] == "fechado":
+        raise _TICKET_FECHADO
+
+    row = (
+        session.execute(
+            text(
+                "INSERT INTO ticket_mensagem (company_id, ticket_id, author_id, content) "
+                "VALUES (:c, :tid, NULL, :content) "
+                "RETURNING id, ticket_id, author_id, content, attachment_paths, created_at"
+            ),
+            {"c": company_id, "tid": ticket_id, "content": content},
+        )
+        .mappings()
+        .one()
+    )
+    _notify_gestores(
+        session,
+        notifier,
+        company_id=company_id,
+        assunto=f"Nova mensagem do cliente no chamado '{ticket['titulo']}'",
+    )
+    return dict(row)
+
+
 def _decode_assinatura(data_url: str) -> bytes:
     """Aceita `data:image/...;base64,<b64>` ou base64 cru. 422 se inválido."""
     b64 = data_url.split(",", 1)[1] if data_url.startswith("data:") else data_url

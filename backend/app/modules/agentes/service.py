@@ -251,7 +251,7 @@ def list_interactions(
                 _INTERACTION_SELECT
                 + "WHERE (CAST(:cursor AS uuid) IS NULL OR i.id < CAST(:cursor AS uuid)) "
                 "  AND (CAST(:obra AS uuid) IS NULL OR i.obra_id = CAST(:obra AS uuid)) "
-                "  AND (:agent IS NULL OR i.agent = :agent) "
+                "  AND (CAST(:agent AS text) IS NULL OR i.agent = CAST(:agent AS text)) "
                 "ORDER BY i.id DESC LIMIT :limit_plus_one"
             ),
             {

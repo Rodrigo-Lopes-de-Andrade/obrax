@@ -1,29 +1,51 @@
 "use client";
 
 import { useRef } from "react";
-import { Building, ChevronDown, Search, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Building,
+  ChevronDown,
+  Search,
+  Bell,
+  MessagesSquare,
+  Star,
+  Settings,
+  CreditCard,
+  LogOut,
+} from "lucide-react";
 import { Avatar } from "@/components/shared/Avatar";
 import { useUiStore } from "@/state/ui";
-import { obraAtual } from "@/lib/mock/dashboard-obra";
+import { useMe } from "@/lib/hooks/use-session";
+import { logout } from "@/lib/api/auth";
 import { useOnClickOutside } from "@/lib/hooks/use-on-click-outside";
 
-const USUARIO = { nome: "Marina Alves", email: "marina@obrax.com.br" };
-
 export function Topbar() {
+  const router = useRouter();
+  const { data: me } = useMe();
   const avatarOpen = useUiStore((s) => s.avatarMenuOpen);
   const toggleAvatarMenu = useUiStore((s) => s.toggleAvatarMenu);
   const closeAvatarMenu = useUiStore((s) => s.closeAvatarMenu);
   const menuRef = useRef<HTMLDivElement>(null);
   useOnClickOutside(menuRef, closeAvatarMenu);
 
+  const nome = me?.nome ?? "";
+  const email = me?.email ?? "";
+
+  async function handleLogout() {
+    closeAvatarMenu();
+    await logout();
+    router.push("/login");
+  }
+
   return (
     <header className="flex h-17 flex-shrink-0 items-center gap-4.5 border-b border-white/5 bg-background px-6">
       <button
         type="button"
+        onClick={() => router.push("/obras")}
         className="flex items-center gap-2 rounded-lg border border-white/7 bg-muted px-3.5 py-2 text-[13.5px] font-semibold"
       >
         <Building className="h-4 w-4 text-primary" />
-        {obraAtual.nome}
+        Obras
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
       </button>
 
@@ -63,24 +85,26 @@ export function Topbar() {
             aria-expanded={avatarOpen}
             className="flex items-center gap-2 rounded-full border-none bg-transparent p-0.75"
           >
-            <Avatar name={USUARIO.nome} variant="gradient" className="size-9 text-[13px]" />
+            <Avatar name={nome} variant="gradient" className="size-9 text-[13px]" />
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
 
           {avatarOpen && (
             <div className="absolute top-12 right-0 z-40 w-57 overflow-hidden rounded-[10px] border border-white/8 bg-popover shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
               <div className="border-b border-white/6 px-4 py-3.5">
-                <div className="text-sm font-bold">{USUARIO.nome}</div>
-                <div className="mt-px text-xs text-muted-foreground">{USUARIO.email}</div>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-secondary/16 px-2.5 py-0.75 text-[11px] font-bold text-secondary">
-                  <Star className="h-3 w-3" />
-                  Plano Pro
-                </div>
+                <div className="text-sm font-bold">{nome || "—"}</div>
+                <div className="mt-px text-xs text-muted-foreground">{email}</div>
+                {me?.role && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-secondary/16 px-2.5 py-0.75 text-[11px] font-bold text-secondary capitalize">
+                    <Star className="h-3 w-3" />
+                    {me.role}
+                  </div>
+                )}
               </div>
               <div className="p-1.5">
-                <DropdownItem icon={Settings} label="Configurações" />
-                <DropdownItem icon={CreditCard} label="Meu plano" />
-                <DropdownItem icon={LogOut} label="Sair" danger />
+                <DropdownItem icon={Settings} label="Configurações" onClick={closeAvatarMenu} />
+                <DropdownItem icon={CreditCard} label="Meu plano" onClick={closeAvatarMenu} />
+                <DropdownItem icon={LogOut} label="Sair" danger onClick={handleLogout} />
               </div>
             </div>
           )}
@@ -94,19 +118,23 @@ function DropdownItem({
   icon: Icon,
   label,
   danger,
+  onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   danger?: boolean;
+  onClick?: () => void;
 }) {
   return (
-    <div
-      className={`flex cursor-pointer items-center gap-2.75 rounded-[7px] px-2.75 py-2.25 text-[13.5px] font-medium hover:bg-white/5 hover:text-foreground ${
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex w-full cursor-pointer items-center gap-2.75 rounded-[7px] px-2.75 py-2.25 text-left text-[13.5px] font-medium hover:bg-white/5 hover:text-foreground ${
         danger ? "text-primary" : "text-subtle-foreground"
       }`}
     >
       <Icon className="h-4 w-4" />
       {label}
-    </div>
+    </button>
   );
 }
