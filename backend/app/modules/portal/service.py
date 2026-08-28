@@ -312,3 +312,72 @@ def decide_orcamento(
 
     atual = _current_orcamento(session, obra_id)
     return _orcamento_out(session, storage, atual)
+
+
+_TICKET_NAO_ENCONTRADO = HTTPException(
+    status_code=status.HTTP_404_NOT_FOUND, detail="chamado não encontrado"
+)
+
+_MSG_COLUMNS = "id, ticket_id, author_id, content, attachment_paths, created_at"
+
+
+def get_portal_tickets(session: Session, *, obra_id: uuid.UUID) -> list[dict[str, Any]]:
+    """Chamados da obra do token, com o histórico completo de mensagens em ordem
+    cronológica (o chat do portal é curto — carrega tudo, sem cursor)."""
+    tickets = (
+        session.execute(
+            text(
+                "SELECT id, titulo, CAST(status AS text) AS status, created_at FROM ticket "
+                "WHERE obra_id = :obra_id AND deleted_at IS NULL ORDER BY id DESC"
+            ),
+            {"obra_id": obra_id},
+        )
+        .mappings()
+        .all()
+    )
+    if not tickets:
+        return []
+
+    ids = [t["id"] for t in tickets]
+    mensagens = (
+        session.execute(
+            text(
+                f"SELECT {_MSG_COLUMNS} FROM ticket_mensagem "
+                "WHERE ticket_id = ANY(:ids) ORDER BY id ASC"
+            ),
+            {"ids": ids},
+        )
+        .mappings()
+        .all()
+    )
+    por_ticket: dict[uuid.UUID, list[dict[str, Any]]] = {tid: [] for tid in ids}
+    for m in mensagens:
+        por_ticket[m["ticket_id"]].append(dict(m))
+    return [dict(t, mensagens=por_ticket[t["id"]]) for t in tickets]
+
+
+def add_portal_mensagem(
+    session: Session, *, company_id: str, obra_id: uuid.UUID, ticket_id: uuid.UUID, content: str
+) -> dict[str, Any]:
+    """Resposta do cliente num chamado da obra. `author_id` NULL identifica a
+    autoria do cliente (não é um `user`). 404 se o chamado não é da obra do
+    token — o escopo do portal é uma obra só."""
+    dono = session.execute(
+        text("SELECT 1 FROM ticket WHERE id = :id AND obra_id = :obra_id AND deleted_at IS NULL"),
+        {"id": ticket_id, "obra_id": obra_id},
+    ).first()
+    if dono is None:
+        raise _TICKET_NAO_ENCONTRADO
+
+    row = (
+        session.execute(
+            text(
+                "INSERT INTO ticket_mensagem (company_id, ticket_id, author_id, content) "
+                f"VALUES (:company_id, :ticket_id, NULL, :content) RETURNING {_MSG_COLUMNS}"
+            ),
+            {"company_id": company_id, "ticket_id": ticket_id, "content": content},
+        )
+        .mappings()
+        .one()
+    )
+    return dict(row)

@@ -130,3 +130,25 @@ def remove_membro(session: Session, *, obra_id: uuid.UUID, user_id: uuid.UUID) -
     ).first()
     if row is None:
         raise _NOT_FOUND
+
+
+def search_usuarios(session: Session, *, search: str, limit: int) -> list[dict[str, Any]]:
+    """Usuários do tenant para o seletor de membros (US-07). A RLS de
+    `user_company_role` já restringe ao tenant do contexto — o JOIN é o que
+    limita `users` (tabela de identidade global) à empresa atual."""
+    rows = (
+        session.execute(
+            text(
+                "SELECT u.id, u.nome, u.email, ucr.role FROM users u "
+                "JOIN user_company_role ucr ON ucr.user_id = u.id "
+                "WHERE u.deleted_at IS NULL "
+                "  AND (:search = '' OR u.nome ILIKE :pattern OR u.email ILIKE :pattern) "
+                "ORDER BY u.nome ASC "
+                "LIMIT :limit"
+            ),
+            {"search": search, "pattern": f"%{search}%", "limit": limit},
+        )
+        .mappings()
+        .all()
+    )
+    return [dict(r) for r in rows]

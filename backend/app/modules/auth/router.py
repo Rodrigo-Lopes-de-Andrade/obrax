@@ -12,7 +12,8 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.deps import get_admin_db
+from app.core.deps import get_admin_db, get_current_user, get_db
+from app.core.middleware import AuthContext
 from app.core.security import ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL
 from app.modules.auth import service
 from app.modules.auth.schemas import (
@@ -20,6 +21,7 @@ from app.modules.auth.schemas import (
     AccessTokenResponse,
     LoginRequest,
     MagicConsumeRequest,
+    MeResponse,
 )
 
 router = APIRouter()
@@ -100,3 +102,14 @@ def accept_invite(payload: AcceptInviteRequest, session: Session = Depends(get_a
     service.accept_invite(
         session, token=payload.token, nome=payload.nome, password=payload.password
     )
+
+
+@router.get("/me", response_model=MeResponse)
+def me(
+    auth: AuthContext = Depends(get_current_user),
+    session: Session = Depends(get_db),
+) -> MeResponse:
+    """Perfil do usuário autenticado (a partir do `sub` do JWT). `nome`/`email`
+    vêm da tabela `users`; `role` é o do vínculo carregado no token."""
+    row = service.get_me(session, user_id=auth.user_id)
+    return MeResponse(id=str(auth.user_id), nome=row["nome"], email=row["email"], role=auth.role)

@@ -15,7 +15,13 @@ from sqlalchemy.orm import Session
 
 from app.core.deps import get_db, get_tenant, require_roles
 from app.modules.gestao.equipes import service
-from app.modules.gestao.equipes.schemas import MembroCreate, MembroOut, MembroPage
+from app.modules.gestao.equipes.schemas import (
+    MembroCreate,
+    MembroOut,
+    MembroPage,
+    UsuarioOut,
+    UsuarioPage,
+)
 
 router = APIRouter(tags=["equipes"])
 
@@ -59,3 +65,17 @@ def list_membros(
 )
 def remove_membro(obra_id: UUID, user_id: UUID, session: Session = Depends(get_db)) -> None:
     service.remove_membro(session, obra_id=obra_id, user_id=user_id)
+
+
+@router.get("/usuarios", response_model=UsuarioPage)
+def search_usuarios(
+    session: Session = Depends(get_db),
+    search: str = Query(default=""),
+    limit: int = Query(default=50, ge=1, le=100),
+) -> UsuarioPage:
+    """Usuários do tenant para o seletor de "adicionar membro"/menções (US-07).
+    Leitura aberta a qualquer usuário autenticado do tenant."""
+    rows = service.search_usuarios(session, search=search, limit=limit)
+    # Lista curta e filtrada no cliente (o seletor busca por texto): sem paginação
+    # por cursor — `next_cursor` existe só para manter a forma de `Page<T>` do front.
+    return UsuarioPage(items=[UsuarioOut.model_validate(r) for r in rows], next_cursor=None)

@@ -79,9 +79,9 @@ class TestPermissoes:
     def test_criar_exige_owner_admin(
         self, client: TestClient, seed_tenant: Callable[..., SeededUser]
     ) -> None:
-        membro = seed_tenant(role="membro")
+        gestor = seed_tenant(role="gestor")
         r = client.post(
-            "/api/v1/ia/permissoes", json=_perm_body("+5511900000000"), headers=membro.auth_header
+            "/api/v1/ia/permissoes", json=_perm_body("+5511900000000"), headers=gestor.auth_header
         )
         assert r.status_code == 403
 

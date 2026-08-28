@@ -221,3 +221,17 @@ def accept_invite(session: Session, *, token: str, nome: str, password: str) -> 
         text("UPDATE invitations SET accepted_at = now() WHERE token_hash = :hash"),
         {"hash": token_hash},
     )
+
+
+def get_me(session: Session, *, user_id: uuid.UUID) -> dict[str, str]:
+    """Nome/e-mail do usuário da sessão. Roda sob `get_db` (RLS): a policy
+    `users_tenant_select` já restringe ao tenant do JWT."""
+    row = session.execute(
+        text("SELECT nome, email FROM users WHERE id = :uid AND deleted_at IS NULL"),
+        {"uid": str(user_id)},
+    ).first()
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="usuário não encontrado"
+        )
+    return {"nome": str(row[0]), "email": str(row[1])}

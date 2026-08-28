@@ -37,3 +37,12 @@ class AcceptInviteRequest(BaseModel):
     token: str
     nome: str = Field(min_length=1)
     password: str = Field(min_length=8)
+
+
+class MeResponse(BaseModel):
+    """Usuário autenticado da sessão (GET /auth/me). `role` é do vínculo do JWT."""
+
+    id: str
+    nome: str
+    email: str
+    role: str

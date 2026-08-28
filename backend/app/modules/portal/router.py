@@ -22,8 +22,11 @@ from app.modules.portal.deps import PortalContext, get_portal_context, get_porta
 from app.modules.portal.schemas import (
     PortalAprovacaoIn,
     PortalLinkOut,
+    PortalMensagem,
+    PortalMensagemIn,
     PortalObra,
     PortalOrcamento,
+    PortalTicket,
 )
 
 router = APIRouter(tags=["portal"])
@@ -107,3 +110,35 @@ def portal_rejeitar(
         payload=payload,
     )
     return PortalOrcamento.model_validate(out)
+
+
+@router.get("/portal/tickets/{token}", response_model=list[PortalTicket])
+def portal_tickets(
+    ctx: PortalContext = Depends(get_portal_context),
+    session: Session = Depends(get_portal_db),
+) -> list[PortalTicket]:
+    """Chamados da obra para o cliente, com o histórico de mensagens (US-19)."""
+    rows = service.get_portal_tickets(session, obra_id=ctx.obra_id)
+    return [PortalTicket.model_validate(r) for r in rows]
+
+
+@router.post(
+    "/portal/tickets/{token}/{ticket_id}/mensagens",
+    response_model=PortalMensagem,
+    status_code=status.HTTP_201_CREATED,
+)
+def portal_add_mensagem(
+    ticket_id: UUID,
+    payload: PortalMensagemIn,
+    ctx: PortalContext = Depends(get_portal_context),
+    session: Session = Depends(get_portal_db),
+) -> PortalMensagem:
+    """Cliente responde num chamado da obra (US-19); `author_id` fica NULL."""
+    row = service.add_portal_mensagem(
+        session,
+        company_id=str(ctx.company_id),
+        obra_id=ctx.obra_id,
+        ticket_id=ticket_id,
+        content=payload.content,
+    )
+    return PortalMensagem.model_validate(row)
