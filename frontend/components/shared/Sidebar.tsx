@@ -19,6 +19,9 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
+
+import { Avatar } from "@/components/shared/Avatar";
+import { useMe } from "@/lib/hooks/use-session";
 import { cn } from "@/lib/utils";
 import { useUiStore } from "@/state/ui";
 
@@ -44,6 +47,7 @@ const navIa = [
 ];
 
 export function Sidebar() {
+  const { data: me } = useMe();
   const collapsed = useUiStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const pathname = usePathname();
@@ -140,13 +144,12 @@ export function Sidebar() {
         />
         <SidebarLink label="Configurações" icon={Settings} href="#" collapsed={collapsed} />
         <div className="mt-1.5 flex items-center gap-2.5 rounded-[10px] border border-white/5 bg-popover px-2.5 py-2.5">
-          <div className="flex h-8.5 w-8.5 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-secondary to-[var(--chart-4)] text-[13px] font-bold">
-            MA
-          </div>
-          {!collapsed && (
+          {/* Mesmo gradiente que o card usava à mão — o Avatar deriva as iniciais do nome. */}
+          <Avatar name={me?.nome ?? ""} variant="gradient" className="size-8.5 text-[13px]" />
+          {!collapsed && me && (
             <div className="min-w-0 leading-tight">
-              <div className="truncate text-[13px] font-semibold">Marina Alves</div>
-              <div className="text-[11px] text-muted-foreground">Engenheira</div>
+              <div className="truncate text-[13px] font-semibold">{me.nome}</div>
+              <div className="text-[11px] text-muted-foreground capitalize">{me.role}</div>
             </div>
           )}
         </div>
