@@ -31,3 +31,4 @@ dist/
 build/
 .env.staging
 .vercel
+.env*
