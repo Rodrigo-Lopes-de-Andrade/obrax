@@ -1,9 +1,9 @@
 import { api } from "./client";
-import type { Usuario } from "./types";
+import type { Me } from "./types";
 
 /**
- * Usuário autenticado da sessão. No mock, é um `/me` de conveniência (o
- * backend real expõe o contexto do JWT); o chat usa isso para saber quais
- * mensagens são "minhas".
+ * Usuário autenticado da sessão. `nome`/`email` vêm da tabela `users`; `role` é
+ * o do vínculo carregado no JWT. Usado pela Topbar e pelo chat de chamados (para
+ * saber quais mensagens são "minhas").
  */
-export const getMe = (): Promise<Usuario> => api.get<Usuario>("/api/v1/me");
+export const getMe = (): Promise<Me> => api.get<Me>("/api/v1/auth/me");

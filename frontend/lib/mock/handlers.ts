@@ -422,9 +422,9 @@ export const handlers = [
   }),
 
   // ── Sessão ──────────────────────────────────────────────────────────
-  http.get("/api/v1/me", async () => {
+  http.get("/api/v1/auth/me", async () => {
     await delay(80);
-    return HttpResponse.json(currentUser());
+    return HttpResponse.json({ ...currentUser(), role: "owner" });
   }),
 
   // ── Relatórios (US-10, B6.5) ────────────────────────────────────────

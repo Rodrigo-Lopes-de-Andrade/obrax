@@ -29,12 +29,7 @@ export const addMembro = (
 export const removeMembro = (obraId: string, userId: string): Promise<void> =>
   api.delete(`/api/v1/obras/${obraId}/membros/${userId}`);
 
-/**
- * Busca usuários do tenant para o seletor de "adicionar membro". Endpoint de
- * listagem de usuários ainda não existe no backend (fora do escopo de B3.6);
- * por ora só o mock MSW responde — ao ligar o backend real, criar
- * GET /api/v1/usuarios.
- */
+/** Busca usuários do tenant para o seletor de "adicionar membro" (US-07). */
 export const searchUsuarios = (search: string): Promise<Page<Usuario>> => {
   const qs = search ? `?search=${encodeURIComponent(search)}` : "";
   return api.get<Page<Usuario>>(`/api/v1/usuarios${qs}`);

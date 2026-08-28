@@ -130,6 +130,15 @@ export interface Usuario {
   email: string;
 }
 
+/** Usuário autenticado da sessão (GET /auth/me). Superset de `Usuario`: traz o
+ * `role` do vínculo carregado no JWT. */
+export interface Me {
+  id: string;
+  nome: string;
+  email: string;
+  role: string;
+}
+
 export type TicketStatus = "aberto" | "andamento" | "resolvido" | "fechado";
 
 export interface Ticket {
