@@ -2,10 +2,9 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building, ChevronDown, Search, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
+import { ChevronDown, Search, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
 import { Avatar } from "@/components/shared/Avatar";
 import { useUiStore } from "@/state/ui";
-import { obraAtual } from "@/lib/mock/dashboard-obra";
 import { useOnClickOutside } from "@/lib/hooks/use-on-click-outside";
 import { useMe } from "@/lib/hooks/use-session";
 import { logout } from "@/lib/api/auth";
@@ -34,15 +33,6 @@ export function Topbar() {
 
   return (
     <header className="flex h-17 flex-shrink-0 items-center gap-4.5 border-b border-white/5 bg-background px-6">
-      <button
-        type="button"
-        className="flex items-center gap-2 rounded-lg border border-white/7 bg-muted px-3.5 py-2 text-[13.5px] font-semibold"
-      >
-        <Building className="h-4 w-4 text-primary" />
-        {obraAtual.nome}
-        <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-      </button>
-
       <div className="relative max-w-110 flex-1">
         <Search className="absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground/70" />
         <input
