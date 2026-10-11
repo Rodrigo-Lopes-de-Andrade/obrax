@@ -5,12 +5,20 @@ import { test as base, expect, type Page } from "@playwright/test";
  * 1. Bloqueia o service worker do PWA (`/sw.js`) — ele disputa o scope "/" com o
  *    MSW e, se vencer, manda todo /api/v1/* pra rede (404). Bloqueado, o worker
  *    do MSW controla a aba.
- * 2. `gotoApp`: navega e espera o MSW subir. Numa aba nova o SW do MSW só
+ * 2. Semeia uma sessão no localStorage (chave do `persist` de state/auth.ts) para
+ *    o RequireAuth liberar as rotas admin. O MSW não valida o token.
+ * 3. `gotoApp`: navega e espera o MSW subir. Numa aba nova o SW do MSW só
  *    controla após um reload — por isso o goto→reload (ver memória do projeto).
  */
 export const test = base.extend<{ gotoApp: (path: string) => Promise<void> }>({
   context: async ({ context }, use) => {
     await context.route("**/sw.js", (route) => route.fulfill({ status: 404, body: "" }));
+    await context.addInitScript(() => {
+      window.localStorage.setItem(
+        "obrax-auth",
+        JSON.stringify({ state: { accessToken: "e2e-mock-token" }, version: 0 }),
+      );
+    });
     await use(context);
   },
   gotoApp: async ({ page }, use) => {

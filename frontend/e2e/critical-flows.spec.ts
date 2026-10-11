@@ -3,7 +3,7 @@ import { expect, test } from "./fixtures";
 /**
  * Fluxos críticos E2E (F11.4) contra o frontend mock-first (MSW). Cobrem as
  * jornadas principais dos três públicos (admin, campo, portal) e do Módulo 3.
- * Não há login: o mock injeta um usuário; as rotas são acessíveis direto.
+ * Não há login: a fixture semeia um token e o MSW responde o /auth/me.
  */
 
 test.describe("admin", () => {
