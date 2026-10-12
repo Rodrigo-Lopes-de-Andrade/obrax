@@ -35,26 +35,34 @@ export function Topbar() {
     <header className="flex h-17 flex-shrink-0 items-center gap-4.5 border-b border-white/5 bg-background px-6">
       <div className="relative max-w-110 flex-1">
         <Search className="absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground/70" />
+        {/* Busca global, notificações e mensagens ainda não têm backend: ficam
+            visíveis como "Em breve" (mesmo padrão do Sidebar), sem fingir estado. */}
         <input
           type="text"
+          disabled
+          title="Em breve"
+          aria-label="Buscar (em breve)"
           placeholder="Buscar obras, clientes, insumos…"
-          className="w-full rounded-lg border border-white/6 bg-muted py-2.5 pr-3 pl-10 text-[13.5px] outline-none placeholder:text-muted-foreground/70"
+          className="w-full cursor-not-allowed rounded-lg border border-white/6 bg-muted py-2.5 pr-3 pl-10 text-[13.5px] outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
         />
       </div>
 
       <div className="ml-auto flex items-center gap-2">
         <button
           type="button"
-          aria-label="Notificações"
-          className="relative flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
+          disabled
+          title="Em breve"
+          aria-label="Notificações (em breve)"
+          className="flex h-9.5 w-9.5 cursor-not-allowed items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground/50"
         >
           <Bell className="h-4.5 w-4.5" />
-          <span className="absolute top-2 right-2 h-1.75 w-1.75 rounded-full border-[1.5px] border-muted bg-primary" />
         </button>
         <button
           type="button"
-          aria-label="Mensagens"
-          className="flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
+          disabled
+          title="Em breve"
+          aria-label="Mensagens (em breve)"
+          className="flex h-9.5 w-9.5 cursor-not-allowed items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground/50"
         >
           <MessagesSquare className="h-4.5 w-4.5" />
         </button>
@@ -86,8 +94,8 @@ export function Topbar() {
                 )}
               </div>
               <div className="p-1.5">
-                <DropdownItem icon={Settings} label="Configurações" />
-                <DropdownItem icon={CreditCard} label="Meu plano" />
+                <DropdownItem icon={Settings} label="Configurações" disabled />
+                <DropdownItem icon={CreditCard} label="Meu plano" disabled />
                 <DropdownItem
                   icon={LogOut}
                   label={saindo ? "Saindo…" : "Sair"}
@@ -107,19 +115,25 @@ function DropdownItem({
   icon: Icon,
   label,
   danger,
+  disabled,
   onClick,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   danger?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full cursor-pointer items-center gap-2.75 rounded-[7px] px-2.75 py-2.25 text-left text-[13.5px] font-medium hover:bg-white/5 hover:text-foreground ${
-        danger ? "text-primary" : "text-subtle-foreground"
+      disabled={disabled}
+      title={disabled ? "Em breve" : undefined}
+      className={`flex w-full items-center gap-2.75 rounded-[7px] px-2.75 py-2.25 text-left text-[13.5px] font-medium ${
+        disabled
+          ? "cursor-not-allowed text-muted-foreground/50"
+          : `cursor-pointer hover:bg-white/5 hover:text-foreground ${danger ? "text-primary" : "text-subtle-foreground"}`
       }`}
     >
       <Icon className="h-4 w-4" />

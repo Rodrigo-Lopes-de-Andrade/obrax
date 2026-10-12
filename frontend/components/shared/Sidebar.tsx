@@ -29,7 +29,7 @@ const navGestao = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Obra", icon: Building2, href: "/obras" },
   { label: "Chamados", icon: MessageSquare, href: "/tickets" },
-  { label: "Clientes", icon: Users, href: "#" },
+  { label: "Clientes", icon: Users, href: "#", disabled: true },
   { label: "Orçamentos", icon: FileText, href: "/orcamentos" },
 ];
 
@@ -142,7 +142,7 @@ export function Sidebar() {
           active={isActive("/privacidade")}
           collapsed={collapsed}
         />
-        <SidebarLink label="Configurações" icon={Settings} href="#" collapsed={collapsed} />
+        <SidebarLink label="Configurações" icon={Settings} href="#" disabled collapsed={collapsed} />
         <div className="mt-1.5 flex items-center gap-2.5 rounded-[10px] border border-white/5 bg-popover px-2.5 py-2.5">
           {/* Mesmo gradiente que o card usava à mão — o Avatar deriva as iniciais do nome. */}
           <Avatar name={me?.nome ?? ""} variant="gradient" className="size-8.5 text-[13px]" />
