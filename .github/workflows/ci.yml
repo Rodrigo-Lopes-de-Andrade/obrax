@@ -129,7 +129,10 @@ jobs:
   deploy-staging:
     name: Deploy staging (Fly + Vercel) + smoke
     needs: [backend, frontend, e2e]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    # Liga com a variável de REPOSITÓRIO STAGING_DEPLOY_ENABLED=true (vars de
+    # environment não existem ainda no `if` do job). Sem ela o job fica "skipped"
+    # em vez de vermelho enquanto o staging não está provisionado.
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.STAGING_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-staging
