@@ -22,6 +22,10 @@ jobs:
   backend:
     name: Backend · lint + typecheck + test
     runs-on: ubuntu-latest
+    # Segredo só de teste: config.py recusa subir sem JWT_SECRET (migrations e pytest
+    # importam settings). Nunca reutilizar fora do CI.
+    env:
+      JWT_SECRET: ci-only-test-secret-not-for-production
     steps:
       - uses: actions/checkout@v4
 
