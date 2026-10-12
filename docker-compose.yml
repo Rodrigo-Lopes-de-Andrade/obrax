@@ -33,7 +33,10 @@ services:
   # StorageClient (app/integrations/storage.py) fala S3 via boto3 — mesmo código
   # aponta pro MinIO em dev e pro endpoint S3 do Supabase em staging/prod.
   minio:
-    image: minio/minio
+    # minio/minio e minio/mc saíram do Docker Hub (404) — usamos as builds da
+    # Chainguard. Tag -dev porque traz shell (healthcheck e o init usam sh).
+    image: cgr.dev/chainguard/minio:latest-dev
+    user: "0" # a imagem roda como 65532 e o volume nomeado nasce de root
     container_name: obrax-minio
     command: server /data --console-address ":9001"
     environment:
@@ -45,14 +48,14 @@ services:
     volumes:
       - miniodata:/data
     healthcheck:
-      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:9000/minio/health/live || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 12
 
   # Cria os buckets de dev uma vez (idempotente). Sai com 0 após criar.
   minio-init:
-    image: minio/mc
+    image: cgr.dev/chainguard/minio-client:latest-dev
     container_name: obrax-minio-init
     depends_on:
       - minio
