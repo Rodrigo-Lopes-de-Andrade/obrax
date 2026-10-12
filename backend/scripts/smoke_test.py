@@ -5,7 +5,8 @@ o tráfego. Se qualquer checagem-gate falhar, sai com código != 0 e a virada N�
 deve prosseguir. Só faz GETs idempotentes — seguro rodar contra produção.
 
 Checagens (gate = bloqueia a virada; info = só reporta):
-    [gate] /health              → 200 e status "ok" (com --require-storage,
+    [gate] /health              → 200 e status "ok" — inclui os dois roles do
+                                  banco (app_user e app_admin). Com --require-storage,
                                   exige storage "ok" também).
     [gate] /openapi.json        → 200; confirma que a API certa está servindo
                                   (imprime title/version — útil p/ conferir o build).
@@ -55,7 +56,14 @@ def check_health(client: httpx.Client, api_url: str, require_storage: bool) -> C
         return CheckResult("health", False, True, f"HTTP {resp.status_code}")
     body = resp.json()
     if body.get("status") != "ok":
-        return CheckResult("health", False, True, f"status={body.get('status')!r}")
+        # "degraded" = algum role do banco sem conexão (login/API dariam 500).
+        return CheckResult(
+            "health",
+            False,
+            True,
+            f"status={body.get('status')!r}, database={body.get('database')!r}, "
+            f"database_admin={body.get('database_admin')!r}",
+        )
     storage = body.get("storage")
     if require_storage and storage != "ok":
         return CheckResult("health", False, True, f"storage={storage!r} (exigido ok)")

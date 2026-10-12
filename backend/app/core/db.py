@@ -18,7 +18,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import NullPool
 
@@ -82,3 +83,22 @@ AppAdminSessionLocal = sessionmaker(
 def get_session() -> Session:
     """Sessão avulsa (role `obrax`, sem RLS) para uso em scripts/seed."""
     return SessionLocal()
+
+
+def _engine_healthy(target: Engine) -> bool:
+    try:
+        with target.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception:  # noqa: BLE001 — health é um relatório, não um gate
+        return False
+    return True
+
+
+def db_healthy() -> dict[str, bool]:
+    """Conectividade dos dois roles que a API usa (/health). `app_admin` cobre
+    login e aceite de convite; `app_user` cobre toda request autenticada — um DSN
+    errado em qualquer um derruba esses fluxos com 500 sem afetar o resto."""
+    return {
+        "app_user": _engine_healthy(app_user_engine),
+        "app_admin": _engine_healthy(app_admin_engine),
+    }

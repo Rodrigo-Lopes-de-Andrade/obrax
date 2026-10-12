@@ -13,6 +13,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.v1 import api_router
 from app.core.config import settings
+from app.core.db import db_healthy
 from app.core.logging import configure_logging
 from app.core.middleware import TenantMiddleware
 from app.core.observability import (
@@ -109,13 +110,19 @@ def create_app() -> FastAPI:
         # B8.5: reporta conectividade do storage e status do realtime. É um
         # relatório (sempre 200), não um gate — `storage_healthy` é best-effort.
         # Realtime é "ok" quando ligado e configurado; senão "disabled" (dev/CI).
+        # Banco: sem ele login/API caem com 500, então `status` vira "degraded"
+        # (o smoke test exige "ok"); o HTTP segue 200 para o check do Fly não
+        # derrubar máquinas por uma falha que é de configuração/infra.
         realtime_ok = (
             settings.realtime_enabled
             and bool(settings.supabase_url)
             and bool(settings.supabase_service_key)
         )
+        db = db_healthy()
         return {
-            "status": "ok",
+            "status": "ok" if all(db.values()) else "degraded",
+            "database": "ok" if db["app_user"] else "error",
+            "database_admin": "ok" if db["app_admin"] else "error",
             "storage": "ok" if storage_healthy() else "error",
             "realtime": "ok" if realtime_ok else "disabled",
         }
