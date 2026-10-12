@@ -17,8 +17,12 @@ import { cn } from "@/lib/utils";
 
 // S12.5 — landing de marketing. Página pública (Server Component estático), sem
 // dependência de dados: entra na rota "/" no lugar do antigo redirect p/ o app.
-// Os CTAs apontam para /dashboard (entrada do app no build mock-first — não há
-// rota de login separada). Copy dos tiers fiel ao PRD §6b.
+// Beta fechado: não há cadastro self-service, então os CTAs de conversão levam
+// à lista de espera (formulário Tally; `origem` diz qual CTA foi clicado) e
+// "Entrar" vai para /login. Copy dos tiers fiel ao PRD §6b.
+
+const WAITLIST_URL = "https://tally.so/r/pbjvey";
+const waitlist = (origem: string) => `${WAITLIST_URL}?origem=${origem}`;
 
 export const metadata: Metadata = {
   title: "Obrax — Mini-ERP para construtoras e reformadoras",
@@ -84,7 +88,7 @@ const TIERS: Tier[] = [
       "Gestão + Orçamentos",
       "500 documentos · 5 GB",
     ],
-    cta: "Começar",
+    cta: "Quero o Basic",
   },
   {
     name: "Pro",
@@ -97,7 +101,7 @@ const TIERS: Tier[] = [
       "Templates de e-mail customizados",
       "100 GB · suporte prioritário",
     ],
-    cta: "Assinar Pro",
+    cta: "Quero o Pro",
     highlight: true,
   },
   {
@@ -133,7 +137,7 @@ function Header() {
             <a href="#precos">Preços</a>
           </Button>
           <Button asChild size="sm" className="h-9 px-4">
-            <Link href="/dashboard">Entrar</Link>
+            <Link href="/login">Entrar</Link>
           </Button>
         </nav>
       </div>
@@ -163,17 +167,17 @@ function Hero() {
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Button asChild className="h-11 px-6 text-sm">
-            <Link href="/dashboard">
-              Começar grátis
+            <a href={waitlist("hero")}>
+              Entrar na lista de espera
               <ArrowRight aria-hidden className="size-4" />
-            </Link>
+            </a>
           </Button>
           <Button asChild variant="outline" className="h-11 px-6 text-sm">
             <a href="#precos">Ver preços</a>
           </Button>
         </div>
         <p className="mt-4 text-sm text-muted-foreground">
-          A partir de R$ 99/mês · sem cartão para testar
+          Beta fechado · a partir de R$ 99/mês
         </p>
       </div>
     </section>
@@ -272,7 +276,7 @@ function TierCard({ tier }: { tier: Tier }) {
         variant={tier.highlight ? "default" : "outline"}
         className="mt-8 h-11 px-6 text-sm"
       >
-        <Link href="/dashboard">{tier.cta}</Link>
+        <a href={waitlist(`plano-${tier.name.toLowerCase()}`)}>{tier.cta}</a>
       </Button>
     </div>
   );
@@ -306,13 +310,13 @@ function FinalCta() {
           Sua próxima obra pode começar organizada.
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-muted-foreground text-pretty">
-          Crie sua conta e configure a primeira obra em minutos.
+          Garanta sua vaga no beta e configure a primeira obra em minutos.
         </p>
         <Button asChild className="mt-8 h-11 px-6 text-sm">
-          <Link href="/dashboard">
-            Começar agora
+          <a href={waitlist("cta-final")}>
+            Quero participar do beta
             <ArrowRight aria-hidden className="size-4" />
-          </Link>
+          </a>
         </Button>
       </div>
     </section>
@@ -336,7 +340,7 @@ function Footer() {
           <a href="#precos" className="hover:text-foreground">
             Preços
           </a>
-          <Link href="/dashboard" className="hover:text-foreground">
+          <Link href="/login" className="hover:text-foreground">
             Entrar
           </Link>
         </nav>
