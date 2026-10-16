@@ -1,17 +1,21 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Search, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
+import { ChevronDown, Bell, MessagesSquare, Star, Settings, CreditCard, LogOut } from "lucide-react";
 import { Avatar } from "@/components/shared/Avatar";
 import { useUiStore } from "@/state/ui";
 import { useOnClickOutside } from "@/lib/hooks/use-on-click-outside";
 import { useMe } from "@/lib/hooks/use-session";
 import { logout } from "@/lib/api/auth";
+import { useDashboardSummary } from "@/lib/hooks/use-dashboard";
+import { GlobalSearch } from "@/components/shared/GlobalSearch";
 
 export function Topbar() {
   const router = useRouter();
   const { data: me } = useMe();
+  const abertos = useDashboardSummary().data?.tickets_abertos ?? 0;
   const [saindo, setSaindo] = useState(false);
   const avatarOpen = useUiStore((s) => s.avatarMenuOpen);
   const toggleAvatarMenu = useUiStore((s) => s.toggleAvatarMenu);
@@ -33,39 +37,33 @@ export function Topbar() {
 
   return (
     <header className="flex h-17 flex-shrink-0 items-center gap-4.5 border-b border-white/5 bg-background px-6">
-      <div className="relative max-w-110 flex-1">
-        <Search className="absolute top-1/2 left-3.5 h-4.5 w-4.5 -translate-y-1/2 text-muted-foreground/70" />
-        {/* Busca global, notificações e mensagens ainda não têm backend: ficam
-            visíveis como "Em breve" (mesmo padrão do Sidebar), sem fingir estado. */}
-        <input
-          type="text"
-          disabled
-          title="Em breve"
-          aria-label="Buscar (em breve)"
-          placeholder="Buscar obras, clientes, insumos…"
-          className="w-full cursor-not-allowed rounded-lg border border-white/6 bg-muted py-2.5 pr-3 pl-10 text-[13.5px] outline-none placeholder:text-muted-foreground/70 disabled:opacity-60"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-2">
-        <button
-          type="button"
-          disabled
-          title="Em breve"
-          aria-label="Notificações (em breve)"
-          className="flex h-9.5 w-9.5 cursor-not-allowed items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground/50"
+        {/* Sino = chamados abertos (contagem real do /dashboard/summary). */}
+        <Link
+          href="/tickets"
+          aria-label={
+            abertos ? `Chamados abertos: ${abertos}` : "Chamados — nenhum aberto"
+          }
+          title="Chamados abertos"
+          className="relative flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
         >
           <Bell className="h-4.5 w-4.5" />
-        </button>
-        <button
-          type="button"
-          disabled
-          title="Em breve"
-          aria-label="Mensagens (em breve)"
-          className="flex h-9.5 w-9.5 cursor-not-allowed items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground/50"
+          {abertos > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground tabular-nums">
+              {abertos > 99 ? "99+" : abertos}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/ia/assistente"
+          aria-label="Assistente IA"
+          title="Assistente IA"
+          className="flex h-9.5 w-9.5 items-center justify-center rounded-[9px] border border-white/6 bg-muted text-muted-foreground hover:bg-white/8 hover:text-foreground"
         >
           <MessagesSquare className="h-4.5 w-4.5" />
-        </button>
+        </Link>
 
         <div className="mx-1 h-6.5 w-px bg-white/8" />
 

@@ -45,6 +45,13 @@ export function ClientesView() {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<Cliente | undefined>(undefined);
 
+  // Busca vinda da Topbar (`/clientes?q=`). Lido no efeito (e não via
+  // useSearchParams) para a rota continuar estática sem Suspense boundary.
+  React.useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) setSearchInput(q);
+  }, []);
+
   React.useEffect(() => {
     const t = setTimeout(() => {
       setSearch(searchInput.trim());

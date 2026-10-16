@@ -27,6 +27,7 @@ export function IaInsightsCard() {
 
 function IaInsightsInner() {
   const { data, isLoading } = useIaInsights();
+  const semAcoes = (data?.acoes_ultima_semana ?? 0) === 0;
 
   return (
     <div className="rounded-[10px] border border-white/5 bg-card p-5 shadow-[0_2px_10px_rgba(0,0,0,0.22)]">
@@ -55,14 +56,16 @@ function IaInsightsInner() {
               value={String(data.acoes_ultima_semana)}
               label="ações · 7 dias"
             />
+            {/* Sem ações, o backend devolve a estimativa fixa de 12 min e taxa 1.0
+                (não há o que medir) — mostrar "—" em vez de números inventados. */}
             <Stat
               icon={Clock}
-              value={`${data.economia_tempo_min} min`}
-              label="economia média"
+              value={semAcoes ? "—" : `~${data.economia_tempo_min} min`}
+              label="economia estimada / ação"
             />
             <Stat
               icon={Gauge}
-              value={`${Math.round(data.taxa_sucesso * 100)}%`}
+              value={semAcoes ? "—" : `${Math.round(data.taxa_sucesso * 100)}%`}
               label="taxa de sucesso"
             />
           </div>

@@ -141,3 +141,25 @@ test.describe("clientes", () => {
     ).toHaveText(/Cliente Atalho Ltda/);
   });
 });
+
+test.describe("menu superior", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  test("busca global encontra uma obra e navega até ela", async ({ page, gotoApp }) => {
+    await gotoApp("/dashboard");
+    await page.getByRole("combobox", { name: "Buscar obras e clientes" }).fill("Aurora");
+    const opcao = page.getByRole("option", { name: /Edifício Aurora/ }).first();
+    await expect(opcao).toBeVisible();
+    await opcao.click();
+    await expect(page).toHaveURL(/\/obras\/[^/]+\/documentos/);
+  });
+
+  test("sino leva aos chamados e mensagens ao assistente", async ({ page, gotoApp }) => {
+    await gotoApp("/dashboard");
+    const header = page.getByRole("banner");
+    await header.getByRole("link", { name: /^Chamados/ }).click();
+    await expect(page).toHaveURL(/\/tickets$/);
+    await header.getByRole("link", { name: "Assistente IA" }).click();
+    await expect(page).toHaveURL(/\/ia\/assistente$/);
+  });
+});

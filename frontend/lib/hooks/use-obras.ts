@@ -25,10 +25,11 @@ export const obrasKeys = {
   detail: (id: string) => ["obras", "detail", id] as const,
 };
 
-export function useObras(params: ListObrasParams) {
+export function useObras(params: ListObrasParams, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: obrasKeys.list(params),
     queryFn: () => listObras(params),
+    enabled: options.enabled ?? true,
     // Mantém a página atual visível durante o refetch (paginação/filtro suaves).
     placeholderData: keepPreviousData,
   });
