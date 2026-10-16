@@ -28,13 +28,15 @@ jobs:
     steps:
       # Login com credencial inexistente: o backend consulta `users` antes de
       # responder. 401 = banco respondeu; 500 = banco fora (pausado, DSN errado).
-      # Retry curto cobre o cold start da máquina do Fly.
+      # Retry curto cobre o cold start da máquina do Fly. O e-mail precisa ter
+      # domínio comum: TLDs reservados (.invalid/.test) caem em 422 na validação,
+      # antes do banco.
       - name: Login com credencial falsa responde 401
         run: |
           for tentativa in 1 2 3; do
             code=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X POST "$API_URL/api/v1/auth/login" \
               -H "content-type: application/json" \
-              -d '{"email":"keepalive@obrax.invalid","password":"keepalive-nao-existe"}' || echo 000)
+              -d '{"email":"keepalive@obrax-monitor.com.br","password":"keepalive-nao-existe"}' || echo 000)
             echo "tentativa $tentativa: HTTP $code"
             [ "$code" = "401" ] && exit 0
             sleep 20
