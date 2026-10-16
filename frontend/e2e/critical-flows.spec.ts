@@ -100,3 +100,44 @@ test.describe("login", () => {
     });
   }
 });
+
+test.describe("clientes", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  test("cadastra um cliente pela tela de Clientes", async ({ page, gotoApp }) => {
+    await gotoApp("/clientes");
+    await page.getByRole("button", { name: /Novo cliente|Cadastrar primeiro cliente/ }).first().click();
+    const drawer = page.getByRole("dialog");
+    await drawer.getByLabel("CNPJ").fill("11222333000181");
+    await drawer.getByLabel("Razão social / nome").fill("Construtora E2E Ltda");
+    await drawer.getByRole("button", { name: "Cadastrar cliente" }).click();
+    await expect(page.getByRole("cell", { name: "Construtora E2E Ltda" })).toBeVisible();
+    await expect(page.getByText("11.222.333/0001-81")).toBeVisible();
+  });
+
+  test("CPF inválido aparece no campo, sem enviar", async ({ page, gotoApp }) => {
+    await gotoApp("/clientes");
+    await page.getByRole("button", { name: /Novo cliente|Cadastrar primeiro cliente/ }).first().click();
+    const drawer = page.getByRole("dialog");
+    await drawer.getByRole("combobox", { name: "Tipo de pessoa" }).click();
+    await page.getByRole("option", { name: "Pessoa física" }).click();
+    await drawer.getByLabel("CPF").fill("12345678900");
+    await drawer.getByLabel("Nome", { exact: true }).fill("Fulano");
+    await drawer.getByRole("button", { name: "Cadastrar cliente" }).click();
+    await expect(drawer.getByText(/Documento inválido/)).toBeVisible();
+  });
+
+  test("Nova obra: atalho cadastra e já seleciona o cliente", async ({ page, gotoApp }) => {
+    await gotoApp("/obras");
+    await page.getByRole("button", { name: "Nova obra" }).first().click();
+    await page.getByRole("button", { name: "Novo cliente" }).click();
+    const clienteDrawer = page.getByRole("dialog", { name: "Novo cliente" });
+    await clienteDrawer.getByLabel("CNPJ").fill("11.444.777/0001-61");
+    await clienteDrawer.getByLabel("Razão social / nome").fill("Cliente Atalho Ltda");
+    await clienteDrawer.getByRole("button", { name: "Cadastrar cliente" }).click();
+    await expect(clienteDrawer).toBeHidden();
+    await expect(
+      page.getByRole("dialog", { name: "Nova obra" }).getByRole("combobox", { name: "Cliente" }),
+    ).toHaveText(/Cliente Atalho Ltda/);
+  });
+});

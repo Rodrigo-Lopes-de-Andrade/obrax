@@ -30,6 +30,16 @@ export interface Cliente {
   created_at: string;
 }
 
+export interface ClienteCreateInput {
+  tipo_pessoa: TipoPessoa;
+  documento: string;
+  nome: string;
+  telefone: string | null;
+  email: string | null;
+}
+
+export type ClienteUpdateInput = Partial<ClienteCreateInput>;
+
 export interface Obra {
   id: string;
   cliente_id: string;

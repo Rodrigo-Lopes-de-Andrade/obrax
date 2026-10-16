@@ -29,7 +29,7 @@ const navGestao = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Obra", icon: Building2, href: "/obras" },
   { label: "Chamados", icon: MessageSquare, href: "/tickets" },
-  { label: "Clientes", icon: Users, href: "#", disabled: true },
+  { label: "Clientes", icon: Users, href: "/clientes" },
   { label: "Orçamentos", icon: FileText, href: "/orcamentos" },
 ];
 

@@ -35,6 +35,7 @@ function isBrandAccentContrast(v: { id: string; nodes: { any: { data?: unknown }
 const ADMIN_PAGES = [
   { name: "dashboard", path: "/dashboard" },
   { name: "obras", path: "/obras" },
+  { name: "clientes", path: "/clientes" },
   { name: "orcamentos", path: "/orcamentos" },
   { name: "tickets", path: "/tickets" },
   { name: "relatorios", path: "/relatorios" },

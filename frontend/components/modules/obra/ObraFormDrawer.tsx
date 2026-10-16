@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,7 @@ import {
 import type { Obra, ObraCreateInput, ObraUpdateInput } from "@/lib/api/types";
 import { useClientes } from "@/lib/hooks/use-clientes";
 import { useCreateObra, useUpdateObra } from "@/lib/hooks/use-obras";
+import { ClienteFormDrawer } from "@/components/modules/cliente/ClienteFormDrawer";
 import { OBRA_STATUS_OPTIONS } from "./status";
 
 const schema = z
@@ -105,6 +106,11 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
   const createObra = useCreateObra();
   const updateObra = useUpdateObra();
   const pending = createObra.isPending || updateObra.isPending;
+  // Atalho "Novo cliente": cadastra sem sair da obra e já deixa selecionado.
+  const [clienteDrawerOpen, setClienteDrawerOpen] = React.useState(false);
+  // O Select descarta um value que ainda não está entre as opções, então o id
+  // do cliente recém-criado só é aplicado quando a lista recarregada o contém.
+  const [novoClienteId, setNovoClienteId] = React.useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -148,7 +154,14 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
     }
   }
 
-  const clientes = clientesPage?.items ?? [];
+  const clientes = React.useMemo(() => clientesPage?.items ?? [], [clientesPage]);
+
+  React.useEffect(() => {
+    if (novoClienteId && clientes.some((c) => c.id === novoClienteId)) {
+      form.setValue("cliente_id", novoClienteId, { shouldValidate: true });
+      setNovoClienteId(null);
+    }
+  }, [novoClienteId, clientes, form]);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -173,7 +186,21 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                 name="cliente_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cliente</FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Cliente</FormLabel>
+                      {!isEdit && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs"
+                          onClick={() => setClienteDrawerOpen(true)}
+                        >
+                          <Plus className="size-3.5" />
+                          Novo cliente
+                        </Button>
+                      )}
+                    </div>
                     <Select
                       value={field.value}
                       onValueChange={field.onChange}
@@ -196,6 +223,11 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                         ))}
                       </SelectContent>
                     </Select>
+                    {!isEdit && !clientesLoading && clientes.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhum cliente cadastrado ainda — use &ldquo;Novo cliente&rdquo; acima.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -316,6 +348,11 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
           </form>
         </Form>
       </SheetContent>
+      <ClienteFormDrawer
+        open={clienteDrawerOpen}
+        onOpenChange={setClienteDrawerOpen}
+        onSaved={(c) => setNovoClienteId(c.id)}
+      />
     </Sheet>
   );
 }

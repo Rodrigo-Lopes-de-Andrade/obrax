@@ -2,6 +2,7 @@ import Decimal from "decimal.js";
 import { http, HttpResponse, delay } from "msw";
 
 import type {
+  Cliente,
   DashboardSummary,
   Documento,
   DocumentoTipo,
@@ -187,6 +188,42 @@ export const handlers = [
       );
     }
     return HttpResponse.json(paginate(rows, cursor, limit));
+  }),
+
+  http.post("/api/v1/clientes", async ({ request }) => {
+    await delay(LATENCY);
+    const body = (await request.json()) as Partial<Cliente>;
+    const documento = (body.documento ?? "").replace(/\D/g, "");
+    if (clientes.some((c) => c.documento === documento)) {
+      return problem(409, "documento já cadastrado para esta empresa");
+    }
+    const cliente: Cliente = {
+      id: nextId(),
+      tipo_pessoa: body.tipo_pessoa ?? "PJ",
+      documento,
+      nome: body.nome ?? "",
+      telefone: body.telefone ?? null,
+      email: body.email ?? null,
+      created_at: new Date().toISOString(),
+    };
+    clientes.push(cliente);
+    return HttpResponse.json(cliente, { status: 201 });
+  }),
+
+  http.patch("/api/v1/clientes/:id", async ({ params, request }) => {
+    await delay(LATENCY);
+    const cliente = clientes.find((c) => c.id === params.id);
+    if (!cliente) return problem(404, "cliente não encontrado");
+    Object.assign(cliente, (await request.json()) as Partial<Cliente>);
+    return HttpResponse.json(cliente);
+  }),
+
+  http.delete("/api/v1/clientes/:id", async ({ params }) => {
+    await delay(LATENCY);
+    const i = clientes.findIndex((c) => c.id === params.id);
+    if (i === -1) return problem(404, "cliente não encontrado");
+    clientes.splice(i, 1);
+    return new HttpResponse(null, { status: 204 });
   }),
 
   http.get("/api/v1/obras", async ({ request }) => {
