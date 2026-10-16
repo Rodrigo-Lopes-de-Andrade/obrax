@@ -10,6 +10,23 @@ import { Label } from "@/components/ui/label";
 import { ApiError } from "@/lib/api/client";
 import { login } from "@/lib/api/auth";
 
+/** Separa "a culpa é da credencial" de "a culpa é do sistema": com um 5xx genérico
+ * o usuário acha que errou a senha e fica tentando de novo. */
+function loginErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    if (err.status === 401) return "E-mail ou senha inválidos.";
+    if (err.status === 422) return "Confira o e-mail e a senha informados.";
+    if (err.status === 429) return "Muitas tentativas. Aguarde alguns minutos e tente de novo.";
+    if (err.status >= 500) {
+      return "O sistema está indisponível no momento. Sua senha não é o problema — tente novamente em alguns minutos.";
+    }
+  } else if (err instanceof TypeError) {
+    // fetch rejeita com TypeError quando não chega ao servidor (rede/CORS).
+    return "Não foi possível falar com o servidor. Verifique sua conexão e tente de novo.";
+  }
+  return "Não foi possível entrar. Tente novamente.";
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -25,11 +42,7 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/dashboard");
     } catch (err) {
-      setError(
-        err instanceof ApiError && err.status === 401
-          ? "E-mail ou senha inválidos."
-          : "Não foi possível entrar. Tente novamente.",
-      );
+      setError(loginErrorMessage(err));
       setLoading(false);
     }
   }

@@ -76,3 +76,27 @@ test.describe("campo (mobile)", () => {
     await expect(page.locator("main, nav, header").first()).toBeVisible();
   });
 });
+
+test.describe("login", () => {
+  // O MSW não mocka /auth/login (bypass); o Playwright simula a resposta do backend.
+  const casos = [
+    { status: 401, msg: "E-mail ou senha inválidos." },
+    { status: 500, msg: /sistema está indisponível/i },
+  ];
+  for (const { status, msg } of casos) {
+    test(`mensagem de erro para HTTP ${status}`, async ({ page, context, gotoApp }) => {
+      await context.route("**/api/v1/auth/login", (route) =>
+        route.fulfill({
+          status,
+          contentType: "application/problem+json",
+          body: JSON.stringify({ status, title: "erro", detail: "erro" }),
+        }),
+      );
+      await gotoApp("/login");
+      await page.getByLabel("E-mail").fill("voce@empresa.com.br");
+      await page.getByLabel("Senha").fill("qualquer-senha");
+      await page.getByRole("button", { name: "Entrar" }).click();
+      await expect(page.locator("form").getByRole("alert")).toHaveText(msg);
+    });
+  }
+});
