@@ -1,0 +1,55 @@
+# Keepalive + alerta do banco de produção.
+#
+# O Supabase (plano free) pausa o projeto após ~7 dias sem atividade — em
+# 2026-10 isso derrubou o login inteiro (pooler respondia "tenant/user not
+# found"). Este job roda todo dia: cada checagem faz o backend consultar o banco
+# (conta como atividade) e, se falhar, a execução fica vermelha e o GitHub manda
+# e-mail ao dono do repositório.
+#
+# Atenção: o GitHub desliga workflows agendados após 60 dias sem commits no
+# repositório — ele avisa por e-mail antes; basta reativar em Actions.
+name: Keepalive produção
+
+on:
+  schedule:
+    - cron: "17 11 * * *" # todo dia, 08:17 em Brasília
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    name: Banco de produção ativo
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      API_URL: ${{ vars.PROD_API_URL || 'https://obrax.fly.dev' }}
+    steps:
+      # Login com credencial inexistente: o backend consulta `users` antes de
+      # responder. 401 = banco respondeu; 500 = banco fora (pausado, DSN errado).
+      # Retry curto cobre o cold start da máquina do Fly.
+      - name: Login com credencial falsa responde 401
+        run: |
+          for tentativa in 1 2 3; do
+            code=$(curl -s -m 30 -o /dev/null -w "%{http_code}" -X POST "$API_URL/api/v1/auth/login" \
+              -H "content-type: application/json" \
+              -d '{"email":"keepalive@obrax.invalid","password":"keepalive-nao-existe"}' || echo 000)
+            echo "tentativa $tentativa: HTTP $code"
+            [ "$code" = "401" ] && exit 0
+            sleep 20
+          done
+          echo "::error::Login respondeu HTTP $code (esperado 401). Banco de produção provavelmente fora — veja o painel do Supabase (projeto pausado?) e 'fly logs -a obrax'."
+          exit 1
+
+      # /health reporta storage e, a partir do cda9661, os roles do banco
+      # (status vira "degraded" se algum não conectar).
+      - name: /health com status ok
+        run: |
+          body=$(curl -s -m 30 "$API_URL/health")
+          echo "$body"
+          status=$(echo "$body" | jq -r '.status // empty')
+          if [ "$status" != "ok" ]; then
+            echo "::error::/health com status '$status' — $body"
+            exit 1
+          fi
