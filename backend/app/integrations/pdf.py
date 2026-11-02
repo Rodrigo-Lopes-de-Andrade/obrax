@@ -8,9 +8,10 @@ ambiente.
 - Dev / testes / CI: `HtmlPdfRenderer` — devolve o próprio HTML como bytes
   (content-type text/html). Não depende de headless/Chromium, então roda em
   qualquer máquina e no CI; o artefato ainda é visualizável no browser.
-- Staging / prod: `PuppeteerPdfRenderer` — faz POST do HTML pro sidecar
-  Puppeteer/Chromium (PDF_RENDERER_URL), que devolve o PDF binário. Seleção por
-  env, sem tocar no chamador.
+- Staging / prod: `WeasyPrintPdfRenderer` (PDF_ENGINE=weasyprint, no fly.toml)
+  — PDF real gerado in-process. Alternativa: `PuppeteerPdfRenderer`, POST do HTML
+  pra um sidecar Chromium (PDF_RENDERER_URL; tem precedência se setada — nunca
+  foi provisionado). Seleção por env, sem tocar no chamador.
 
 Seam de fila: hoje a geração é **síncrona** (o POST /pdf renderiza e sobe na
 mesma request). Quando houver fila (arq) o `pdf_job` vira um job enfileirado e o
@@ -62,6 +63,21 @@ class HtmlPdfRenderer:
         )
 
 
+class WeasyPrintPdfRenderer:
+    """Prod: converte HTML→PDF no próprio processo com WeasyPrint (Pango/HarfBuzz,
+    sem Chromium — cabe na VM de 512 MB). Import tardio: as libs de sistema só
+    existem na imagem de produção, e dev/CI seguem com o HtmlPdfRenderer."""
+
+    def render(self, *, html: str) -> RenderedPdf:
+        from weasyprint import HTML
+
+        return RenderedPdf(
+            body=HTML(string=html).write_pdf(),
+            content_type="application/pdf",
+            extension="pdf",
+        )
+
+
 class PuppeteerPdfRenderer:
     """Prod: delega a conversão HTML→PDF a um sidecar Puppeteer/Chromium via
     HTTP (mesma ideia do storage: infra pesada fora do processo da API)."""
@@ -88,6 +104,8 @@ class PuppeteerPdfRenderer:
 def _pdf_renderer() -> PdfRenderer:
     if settings.pdf_renderer_url:
         return PuppeteerPdfRenderer(base_url=settings.pdf_renderer_url)
+    if settings.pdf_engine == "weasyprint":
+        return WeasyPrintPdfRenderer()
     return HtmlPdfRenderer()
 
 

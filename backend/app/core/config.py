@@ -80,6 +80,9 @@ class Settings:
     # app/integrations/pdf.py). `pdf_download_ttl`: TTL (s) da URL assinada de
     # download do PDF — 1h, bem maior que o presign de upload por ser leitura.
     pdf_renderer_url: str
+    # Motor local de PDF quando não há sidecar: "weasyprint" (prod — PDF real,
+    # in-process) ou "html" (default dev/CI — devolve o HTML, sem libs de sistema).
+    pdf_engine: str
     pdf_download_ttl: int
     # Agentes IA (Módulo 3, Sprint 10). Provedor de API não-oficial do WhatsApp:
     # Uazapi (https://uazapi.dev/). `uazapi_webhook_secret` valida o HMAC do
@@ -159,6 +162,7 @@ def get_settings() -> Settings:
         supabase_url=os.environ.get("SUPABASE_URL", ""),
         supabase_service_key=os.environ.get("SUPABASE_SERVICE_KEY", ""),
         pdf_renderer_url=os.environ.get("PDF_RENDERER_URL", ""),
+        pdf_engine=os.environ.get("PDF_ENGINE", "html").strip().lower(),
         pdf_download_ttl=int(os.environ.get("PDF_DOWNLOAD_TTL", "3600")),
         uazapi_webhook_secret=os.environ.get("UAZAPI_WEBHOOK_SECRET", ""),
         uazapi_base_url=os.environ.get("UAZAPI_BASE_URL", ""),

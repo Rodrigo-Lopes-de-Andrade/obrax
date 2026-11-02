@@ -19,6 +19,7 @@ dependencies = [
     "openpyxl>=3.1,<4.0",
     "python-multipart>=0.0.9,<1.0",
     "httpx>=0.27,<1.0",  # cliente HTTP de runtime (integrations/uazapi.py, pdf.py)
+    "weasyprint>=63,<67",
 ]
 
 [project.optional-dependencies]
@@ -55,6 +56,7 @@ plugins = []
 [[tool.mypy.overrides]]
 module = [
     "passlib.*",
+    "weasyprint.*",
     "boto3.*",
     "botocore.*",
     "openpyxl.*",

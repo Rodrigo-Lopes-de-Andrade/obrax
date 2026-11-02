@@ -24,6 +24,8 @@ primary_region = "gru"     # São Paulo; alinhe com a região do Supabase
   OTEL_SERVICE_NAME = "obrax-api"
   OTEL_EXPORTER_OTLP_ENDPOINT = "https://otlp.nr-data.net"
   REALTIME_ENABLED = "true"
+  # PDF do orçamento gerado in-process (WeasyPrint; libs Pango no Dockerfile).
+  PDF_ENGINE = "weasyprint"
   # Origens liberadas no CORS (browser Vercel → API Fly). Lista por vírgula.
   CORS_ALLOW_ORIGINS = "https://obrax-beta.vercel.app"
 

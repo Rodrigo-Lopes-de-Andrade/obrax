@@ -25,6 +25,12 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # ---- runtime: imagem enxuta só com o venv + app ----
 FROM python:3.12-slim-bookworm AS runtime
 
+# Libs de sistema do WeasyPrint (PDF do orçamento) + fonte com acentuação.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 # Usuário não-root.
 RUN groupadd -r app && useradd -r -g app app
 WORKDIR /app
