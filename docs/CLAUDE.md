@@ -59,7 +59,7 @@ Estas decisões foram tomadas e **não devem ser revertidas sem alinhamento expl
 | **Fonte da verdade** | PRD V3.0 (não o discovery-notes.md). |
 | **Escopo MVP V1** | Módulo 1 (Gestão) + Módulo 2 (Orçamentos) + Módulo 3 (IA). |
 | **IA restrita por tier** | Módulo 3 apenas para Pro/Enterprise via PostHog flag `ia-module-enabled`. Basic vê itens bloqueados na sidebar; API retorna 403 com `upgrade_url`. |
-| **Sidebar items V2** | "Compras" (Módulo 4) e "Financeiro" (Módulo 6) ficam `disabled` com tooltip "Em breve" durante todo MVP V1. Não criar telas para eles. |
+| **Sidebar items V2** | "Compras" (Módulo 4) fica `disabled` com tooltip "Em breve" durante todo MVP V1 — não criar telas para ele. "Financeiro" (Módulos 5 e 6) é construído pelo plano [`docs/modulo-financeiro/SPRINTS.md`](modulo-financeiro/SPRINTS.md): as telas nascem nas sprints S-F4/S-F6/S-F8/S-F10 e o item da sidebar só é habilitado na **S-F11**, com aprovação humana (ERRATA E-01). |
 | **Precisão financeira** | `Decimal` Python + `NUMERIC(18,6)` Postgres. `float` é proibido em qualquer cálculo de orçamento. |
 | **Tipos TS** | Gerados via `openapi-typescript` a partir de `backend/server/models.py`. Nunca editar à mão. |
 
@@ -214,7 +214,8 @@ DOPPLER_TOKEN (ou INFISICAL_TOKEN)
 - **Tabela `audit_log`** — append-only por policy de banco (`REVOKE UPDATE, DELETE`). Nunca tente corrigir registros de auditoria; crie um registro de compensação.
 - **Tabela `consumed_tokens`** — nunca delete entradas válidas; o job de limpeza diário cuida de expirados.
 - **Segredos e `.env`** — nunca commitar chaves.
-- **Sidebar items "Compras" e "Financeiro"** — deixar como `disabled` no MVP V1. Não criar rotas ou telas para eles.
+- **Sidebar item "Compras"** — deixar como `disabled` no MVP V1. Não criar rotas ou telas para ele.
+- **Sidebar item "Financeiro"** — continua `disabled` até a **S-F11** de [`docs/modulo-financeiro/SPRINTS.md`](modulo-financeiro/SPRINTS.md), que o habilita com aprovação humana. As rotas e telas do módulo são criadas pelas sprints desse plano, e só por elas (ERRATA E-01).
 - **Feature flag `ia-module-enabled`** — não remover a verificação em nenhum endpoint do Módulo 3 ou componente de IA sem aprovação explícita.
 
 ---

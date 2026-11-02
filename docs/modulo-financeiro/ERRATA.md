@@ -38,6 +38,11 @@ dois casos a sprint queima ciclos por um conflito de documentação.
 
 Enquanto não houver decisão, **a Onda 3 não é despachável**.
 
+**Decisão (2026-11-02, humano): emendar o `docs/CLAUDE.md`.** As duas menções em *O que NÃO
+Tocar* foram reescritas: "Compras" segue proibido; "Financeiro" é construído pelas sprints deste
+plano e o item da sidebar só é habilitado na S-F11, com aprovação humana. **Resolvida — a Onda 3
+é despachável.**
+
 ---
 
 ## E-02 · `docs/CLAUDE.md` manda rodar alvos de `make` que não existem
