@@ -4,7 +4,9 @@ import * as React from "react";
 import { AlertTriangle, Download, FileSpreadsheet, Loader2, UploadCloud, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { TEMPLATE_URL } from "@/lib/api/orcamentos";
+import { TEMPLATE_PATH } from "@/lib/api/orcamentos";
+import { downloadBlob } from "@/lib/api/client";
+import { toast } from "sonner";
 import type { ImportErro } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 import { importErros, useImportPlanilha } from "@/lib/hooks/use-orcamentos";
@@ -48,8 +50,13 @@ export function ImportDialog({ open, onOpenChange, versaoId }: Props) {
   };
 
   const downloadTemplate = async () => {
-    const res = await fetch(TEMPLATE_URL, { credentials: "include" });
-    const blob = await res.blob();
+    let blob: Blob;
+    try {
+      blob = await downloadBlob(TEMPLATE_PATH);
+    } catch {
+      toast.error("Não foi possível baixar o modelo. Tente novamente.");
+      return;
+    }
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

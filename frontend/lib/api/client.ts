@@ -52,6 +52,53 @@ function refreshToken(): Promise<string | null> {
   return refreshPromise;
 }
 
+/** fetch autenticado contra a API (base + Bearer + refresh num 401), devolvendo
+ * a `Response` crua. Para o que não é JSON: download de arquivo e upload
+ * multipart — `json` define se manda `Content-Type: application/json` (FormData
+ * precisa que o browser monte o boundary). */
+async function authedFetch(
+  path: string,
+  init: RequestInit = {},
+  { json = true, retry = true }: { json?: boolean; retry?: boolean } = {},
+): Promise<Response> {
+  const token = useAuth.getState().accessToken;
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      ...(json ? { "Content-Type": "application/json" } : {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init.headers,
+    },
+    credentials: "include",
+  });
+  if (res.status === 401 && retry && !AUTH_PATHS.includes(path)) {
+    const newToken = await refreshToken();
+    if (newToken) return authedFetch(path, init, { json, retry: false });
+  }
+  return res;
+}
+
+async function problemOf(res: Response): Promise<ApiError> {
+  const isJson = res.headers.get("content-type")?.includes("json") ?? false;
+  const body: unknown = isJson ? await res.json() : undefined;
+  return new ApiError(res.status, isJson && body ? (body as ProblemDetail) : { status: res.status });
+}
+
+/** Baixa um arquivo da API (ex.: modelo XLSX) como Blob. Lança `ApiError` se
+ * não for 2xx — nunca devolve a página de erro como se fosse o arquivo. */
+export async function downloadBlob(path: string): Promise<Blob> {
+  const res = await authedFetch(path, {}, { json: false });
+  if (!res.ok) throw await problemOf(res);
+  return res.blob();
+}
+
+/** POST multipart autenticado; devolve o JSON da resposta. */
+export async function postForm<T>(path: string, form: FormData): Promise<T> {
+  const res = await authedFetch(path, { method: "POST", body: form }, { json: false });
+  if (!res.ok) throw await problemOf(res);
+  return (await res.json()) as T;
+}
+
 async function request<T>(path: string, init?: RequestInit, retry = true): Promise<T> {
   const token = useAuth.getState().accessToken;
   const res = await fetch(`${BASE}${path}`, {

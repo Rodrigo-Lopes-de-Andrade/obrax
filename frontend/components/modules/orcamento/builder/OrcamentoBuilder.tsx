@@ -174,6 +174,8 @@ export function OrcamentoBuilder({ orcamentoId }: { orcamentoId: string }) {
         ) : (
           <ResumoTab
             orcamentoId={orcamentoId}
+            obraId={orc?.obra_id ?? ""}
+            titulo={orc?.titulo ?? ""}
             status={orc?.status ?? "rascunho"}
             versao={versao}
             itens={itens}

@@ -275,7 +275,7 @@ function ItemRow(props: ItemRowProps) {
         </div>
         <div className="text-right tabular-nums">
           {isInsumo ? (
-            <InlineEdit value={cleanNum(node.preco_unitario)} numeric disabled={locked} onCommit={(v) => onPatch(node.id, "preco_unitario", v || "0")} />
+            <InlineEdit value={cleanNum(node.preco_unitario)} numeric decimals={2} disabled={locked} onCommit={(v) => onPatch(node.id, "preco_unitario", v || "0")} />
           ) : null}
         </div>
 

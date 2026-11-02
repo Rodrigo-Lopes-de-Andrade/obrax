@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, Send } from "lucide-react";
+import * as React from "react";
+import { Loader2, Send, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,16 +16,20 @@ import type { OrcamentoItem, OrcamentoStatus, VersaoResumo } from "@/lib/api/typ
 import { formatMoney, formatPercent } from "@/lib/format";
 import { useUpdateOrcamentoStatus } from "@/lib/hooks/use-orcamentos";
 import { OrcamentoStatusBadge } from "../status";
+import { EnviarClienteSheet } from "./EnviarClienteSheet";
 
 interface Props {
   orcamentoId: string;
+  obraId: string;
+  titulo: string;
   status: OrcamentoStatus;
   versao: VersaoResumo;
   itens: OrcamentoItem[];
 }
 
-export function ResumoTab({ orcamentoId, status, versao, itens }: Props) {
+export function ResumoTab({ orcamentoId, obraId, titulo, status, versao, itens }: Props) {
   const updateStatus = useUpdateOrcamentoStatus();
+  const [enviarOpen, setEnviarOpen] = React.useState(false);
   const fases = itens.filter((i) => i.tipo === "F");
   const totalFases = fases.reduce((sum, f) => sum + Number(f.subtotal), 0);
   const podeEnviar = status === "rascunho" || status === "em_revisao";
@@ -89,7 +94,11 @@ export function ResumoTab({ orcamentoId, status, versao, itens }: Props) {
           className="w-full"
           disabled={!podeEnviar || updateStatus.isPending}
           onClick={() =>
-            updateStatus.mutate({ id: orcamentoId, status: "aguardando_aprovacao" })
+            updateStatus.mutate(
+              { id: orcamentoId, status: "aguardando_aprovacao" },
+              // Mudar o status não avisa ninguém: abre o envio do link ao cliente.
+              { onSuccess: () => setEnviarOpen(true) },
+            )
           }
         >
           {updateStatus.isPending ? <Loader2 className="animate-spin" /> : <Send />}
@@ -104,7 +113,22 @@ export function ResumoTab({ orcamentoId, status, versao, itens }: Props) {
                 : "Reabra em revisão para reenviar."}
           </p>
         ) : null}
+        {status === "aguardando_aprovacao" && obraId ? (
+          <Button variant="outline" className="w-full" onClick={() => setEnviarOpen(true)}>
+            <Share2 />
+            Reenviar ao cliente
+          </Button>
+        ) : null}
       </aside>
+      {obraId ? (
+        <EnviarClienteSheet
+          open={enviarOpen}
+          onOpenChange={setEnviarOpen}
+          obraId={obraId}
+          titulo={titulo}
+          precoVenda={versao.preco_venda}
+        />
+      ) : null}
     </div>
   );
 }

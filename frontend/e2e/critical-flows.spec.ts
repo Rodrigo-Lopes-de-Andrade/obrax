@@ -163,3 +163,45 @@ test.describe("menu superior", () => {
     await expect(page).toHaveURL(/\/ia\/assistente$/);
   });
 });
+
+test.describe("orçamento", () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  async function abrirPrimeiroOrcamento(page: import("./fixtures").Page) {
+    await page.locator('a[href*="/orcamentos/"][href$="/edit"]').first().click();
+    await expect(page.getByRole("button", { name: "Resumo" })).toBeVisible();
+  }
+
+  test("baixa o modelo XLSX (não uma página HTML)", async ({ page, gotoApp }) => {
+    await gotoApp("/orcamentos");
+    await abrirPrimeiroOrcamento(page);
+    await page.getByRole("button", { name: "Importar planilha" }).click();
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Baixar modelo XLSX" }).click();
+    expect((await download).suggestedFilename()).toBe("modelo_orcamento.xlsx");
+  });
+
+  test("preço unitário aparece com vírgula decimal", async ({ page, gotoApp }) => {
+    await gotoApp("/orcamentos");
+    // O orçamento demo do mock é o que tem insumos com preço.
+    await page.getByRole("link", { name: /Orçamento Executivo — Rev\. 1/ }).first().click();
+    await expect(page.getByRole("button", { name: "Resumo" })).toBeVisible();
+    await expect(page.locator("main").getByText(/^\d{1,3}(\.\d{3})*,\d{2}$/).first()).toBeVisible();
+  });
+
+  test("enviar ao cliente gera link do portal e atalho de WhatsApp", async ({ page, gotoApp }) => {
+    await gotoApp("/orcamentos");
+    await abrirPrimeiroOrcamento(page);
+    await page.getByRole("button", { name: "Resumo" }).click();
+    const enviar = page.getByRole("button", { name: "Enviar para aprovação" });
+    if (await enviar.isEnabled()) await enviar.click();
+    else await page.getByRole("button", { name: "Reenviar ao cliente" }).click();
+    const sheet = page.getByRole("dialog", { name: "Enviar ao cliente" });
+    await expect(sheet.getByLabel("Link do portal")).toHaveValue(/\/obra\/.+/);
+    await expect(sheet.getByRole("link", { name: "Enviar pelo WhatsApp" })).toHaveAttribute(
+      "href",
+      /^https:\/\/wa\.me\/\d*\?text=.*%2Fobra%2F/,
+    );
+    await expect(sheet.getByRole("link", { name: "Enviar por e-mail" })).toHaveAttribute("href", /^mailto:/);
+  });
+});

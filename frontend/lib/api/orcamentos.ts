@@ -1,4 +1,4 @@
-import { api, ApiError } from "./client";
+import { api, ApiError, postForm } from "./client";
 import type {
   CurvaAbc,
   EapTree,
@@ -13,7 +13,6 @@ import type {
   OrcamentoStatus,
   Page,
   PrecificacaoInput,
-  ProblemDetail,
   ReorderItemInput,
 } from "./types";
 
@@ -111,23 +110,16 @@ export function setPrecificacao(
   return api.put(`/api/v1/orcamentos/versoes/${versaoId}/precificacao`, input);
 }
 
-/** URL do template XLSX para download direto (F5.5). */
-export const TEMPLATE_URL = "/api/v1/orcamentos/importar/modelo";
+/** Path do template XLSX (F5.5) — baixar via `downloadBlob`, que manda o token
+ * e usa a base da API (um fetch relativo caía no Next e devolvia HTML). */
+export const TEMPLATE_PATH = "/api/v1/orcamentos/importar/modelo";
 
 /** Import multipart — devolve a árvore criada ou lança com os erros por linha. */
 export async function importPlanilha(versaoId: string, file: File): Promise<EapTree> {
   const form = new FormData();
   form.append("arquivo", file);
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL ?? ""}/api/v1/orcamentos/versoes/${versaoId}/importar-planilha`,
-    { method: "POST", body: form, credentials: "include" },
-  );
-  const isJson = res.headers.get("content-type")?.includes("json") ?? false;
-  const body: unknown = isJson ? await res.json() : undefined;
-  if (!res.ok) {
-    throw new ApiError(res.status, (body as ProblemDetail) ?? { status: res.status });
-  }
-  return body as EapTree;
+  // postForm manda o Bearer (antes ia sem → 401 em produção).
+  return postForm<EapTree>(`/api/v1/orcamentos/versoes/${versaoId}/importar-planilha`, form);
 }
 
 /** Extrai os erros linha-a-linha de um ApiError de importação (detail.erros). */

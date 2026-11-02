@@ -19,6 +19,8 @@ interface Props {
 const pctToFraction = (pct: number) => (pct / 100).toFixed(4);
 const fractionToPct = (f: string) => Math.round(Number(f) * 10000) / 100;
 /** Markup/taxa são validados em 0–100% (critério F6.2). */
+/** 12.5 → "12,5" (exibição pt-BR; a digitação aceita vírgula ou ponto). */
+const pctBr = (pct: number) => String(pct).replace(".", ",");
 const clampPct = (pct: number) => Math.min(100, Math.max(0, pct));
 
 export function PrecificacaoTab({ versaoId, versao, itens, locked }: Props) {
@@ -173,9 +175,9 @@ function FaseOverrideRow({
   disabled: boolean;
   onCommit: (pct: number | null) => void;
 }) {
-  const [draft, setDraft] = React.useState(override != null ? String(fractionToPct(override)) : "");
+  const [draft, setDraft] = React.useState(override != null ? pctBr(fractionToPct(override)) : "");
   React.useEffect(() => {
-    setDraft(override != null ? String(fractionToPct(override)) : "");
+    setDraft(override != null ? pctBr(fractionToPct(override)) : "");
   }, [override]);
 
   const parsed = draft.trim() === "" ? null : Number(draft.trim().replace(",", "."));
@@ -190,11 +192,11 @@ function FaseOverrideRow({
     const raw = Number(trimmed.replace(",", "."));
     if (Number.isNaN(raw)) {
       // Entrada inválida: reverte para o valor atual (herda global se null).
-      setDraft(override != null ? String(fractionToPct(override)) : "");
+      setDraft(override != null ? pctBr(fractionToPct(override)) : "");
       return;
     }
     const pct = clampPct(raw); // valida 0–100% (F6.2)
-    setDraft(String(pct));
+    setDraft(pctBr(pct));
     if (pctToFraction(pct) !== override) onCommit(pct);
   };
 
@@ -209,7 +211,7 @@ function FaseOverrideRow({
           value={draft}
           disabled={disabled}
           inputMode="decimal"
-          placeholder={`${globalPct}`}
+          placeholder={pctBr(globalPct)}
           aria-invalid={invalid}
           onChange={(e) => setDraft(e.target.value)}
           onBlur={commit}
@@ -218,7 +220,7 @@ function FaseOverrideRow({
             "h-8 w-20 text-right tabular-nums",
             invalid && "border-destructive focus-visible:ring-destructive/40",
           )}
-          title={override == null ? `Herda o markup global (${globalPct}%)` : undefined}
+          title={override == null ? `Herda o markup global (${pctBr(globalPct)}%)` : undefined}
         />
         <span className="text-sm text-muted-foreground">%</span>
       </div>

@@ -8,10 +8,32 @@ interface InlineEditProps {
   value: string;
   onCommit: (value: string) => void;
   disabled?: boolean;
+  /** Valor no formato da API ("1234.5"); exibido/editado em pt-BR ("1.234,50"). */
   numeric?: boolean;
+  /** Casas decimais mínimas na exibição numérica (ex.: 2 para preço). */
+  decimals?: number;
   placeholder?: string;
   className?: string;
   inputClassName?: string;
+}
+
+/** "1234.5" → "1.234,50" (exibição). Valor não numérico passa como está. */
+function formatPtBr(value: string, decimals: number): string {
+  const n = Number(value);
+  if (value.trim() === "" || Number.isNaN(n)) return value;
+  return new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: Math.max(decimals, 4),
+  }).format(n);
+}
+
+/** Digitação pt-BR → formato da API: "1.234,56" / "1234,56" / "1234.56" → "1234.56".
+ * Com vírgula, os pontos são separador de milhar. `null` = não é número. */
+export function parsePtBr(input: string): string | null {
+  const t = input.trim().replace(/\s/g, "");
+  if (t === "") return "";
+  const normalized = t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : t;
+  return /^-?\d+(\.\d+)?$/.test(normalized) ? normalized : null;
 }
 
 /** Célula editável inline: mostra o valor; ao clicar vira input; commita no
@@ -21,21 +43,34 @@ export function InlineEdit({
   onCommit,
   disabled,
   numeric,
+  decimals = 0,
   placeholder,
   className,
   inputClassName,
 }: InlineEditProps) {
+  // Numérico: edita com vírgula decimal (sem milhar, para não atrapalhar a digitação).
+  const editValue = numeric ? value.replace(".", ",") : value;
+  const shown = numeric ? formatPtBr(value, decimals) : value;
   const [editing, setEditing] = React.useState(false);
-  const [draft, setDraft] = React.useState(value);
+  const [draft, setDraft] = React.useState(editValue);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => setDraft(value), [value]);
+  React.useEffect(() => setDraft(editValue), [editValue]);
   React.useEffect(() => {
     if (editing) inputRef.current?.select();
   }, [editing]);
 
   function commit() {
     setEditing(false);
+    if (numeric) {
+      const v = parsePtBr(draft);
+      if (v === null) {
+        setDraft(editValue); // entrada inválida: volta ao valor anterior
+        return;
+      }
+      if (v !== value) onCommit(v);
+      return;
+    }
     const v = draft.trim();
     if (v !== value) onCommit(v);
   }
@@ -43,7 +78,7 @@ export function InlineEdit({
   if (disabled) {
     return (
       <span className={cn("block truncate", numeric && "text-right tabular-nums", className)}>
-        {value || <span className="text-muted-foreground/60">{placeholder}</span>}
+        {shown || <span className="text-muted-foreground/60">{placeholder}</span>}
       </span>
     );
   }
@@ -59,7 +94,7 @@ export function InlineEdit({
           className,
         )}
       >
-        {value || <span className="text-muted-foreground/50 italic">{placeholder ?? "—"}</span>}
+        {shown || <span className="text-muted-foreground/50 italic">{placeholder ?? "—"}</span>}
       </button>
     );
   }
@@ -76,7 +111,7 @@ export function InlineEdit({
           e.preventDefault();
           commit();
         } else if (e.key === "Escape") {
-          setDraft(value);
+          setDraft(editValue);
           setEditing(false);
         }
       }}
