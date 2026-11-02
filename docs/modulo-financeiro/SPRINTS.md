@@ -25,15 +25,23 @@
    frente; não bloqueie uma sprint por ele.
 3. **Teto de 3 ciclos de correção** por sprint. Estourou, a sprint é bloqueada e volta para
    replanejamento — não para um quarto ciclo.
-4. **Sprint com `Revisor de segurança: sim` não fecha sem essa revisão**, além dos gates. Este
-   campo **não** é o caminho crítico: são coisas diferentes e estavam com o mesmo nome. A S-F2 está
-   no caminho crítico e não pede revisor; a S-F3 pede revisor e não está no caminho crítico.
-   Confundir os dois leva a priorizar a trilha errada.
+4. **Sprint com `Revisor de segurança: sim` não fecha sem essa revisão**, além dos gates. O
+   revisor é o agente **`revisor-isolamento`** (`.claude/agents/`), que precisa ter **rodado** as
+   consultas de catálogo do [Dicionário §6](DICIONARIO-DE-DADOS.md#6-verificação-do-schema) — não
+   lido o diff. Revisor genérico não serve aqui: os dois vazamentos silenciosos deste schema
+   (`FORCE ROW LEVEL SECURITY` ausente e view sem `security_invoker`) não aparecem em leitura.
+   Este campo **não** é o caminho crítico: são coisas diferentes e estavam com o mesmo nome. A
+   S-F2 está no caminho crítico e não pede revisor; a S-F3 pede revisor e não está no caminho
+   crítico. Confundir os dois leva a priorizar a trilha errada.
 5. **Slot de migration é data.** Duas sprints paralelas gerando migration no mesmo instante
    produzem ordem não determinística entre branches.
 6. Ao mudar contrato de API, atualize o schema Pydantic, o teste **e o handler MSW** na mesma
    sprint — senão o mock passa a mentir, que é como uma rota inexistente chega à `main` com todos
    os gates verdes.
+7. **Despacho:** `.claude/commands/orquestrador-financeiro.md`, que também traz a baseline medida
+   da `main` (17 testes vermelhos conhecidos, todos de mock S3 — não são regressão). Divergências
+   abertas com o resto do projeto: [ERRATA.md](ERRATA.md) — a **E-01** bloqueia a Onda 3 até haver
+   decisão humana.
 
 ---
 
