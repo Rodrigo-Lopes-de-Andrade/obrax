@@ -80,7 +80,7 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** —
 - **Paralela com:** —
 - **Revisor de segurança:** sim
-- **Status:** pendente
+- **Status:** em andamento
 - **Ciclos:** 0/3 · **Revisores OK:** —
 - **Slot de migration:** 2026-11-03 · `0032`
 - **Arquivos:**
