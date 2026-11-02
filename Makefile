@@ -20,6 +20,11 @@ down: ## Derruba a stack local
 	docker compose down
 
 migrate: ## Aplica migrations (alembic upgrade head)
+	@if [ -z "$$DATABASE_URL" ]; then \
+		echo "ERRO: DATABASE_URL nao esta setado. Sem ele o codigo cai no .env (PRODUCAO)."; \
+		echo "Exporte o banco local: export DATABASE_URL=postgresql://obrax:obrax@localhost:5432/obrax"; \
+		exit 1; \
+	fi
 	cd $(BACKEND) && uv run alembic upgrade head
 
 dev: ## Backend + frontend juntos
@@ -32,6 +37,11 @@ dev-frontend: ## Next.js dev server
 	cd $(FRONTEND) && pnpm dev
 
 test: ## Testes do backend (pytest)
+	@if [ -z "$$DATABASE_URL" ]; then \
+		echo "ERRO: DATABASE_URL nao esta setado. Sem ele o codigo cai no .env (PRODUCAO)."; \
+		echo "Exporte o banco local: export DATABASE_URL=postgresql://obrax:obrax@localhost:5432/obrax"; \
+		exit 1; \
+	fi
 	cd $(BACKEND) && uv run pytest
 
 lint: ## Lint + format check + typecheck do backend

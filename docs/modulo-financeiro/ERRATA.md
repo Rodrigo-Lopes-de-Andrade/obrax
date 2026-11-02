@@ -105,6 +105,37 @@ procurando a coluna.
 
 ---
 
+## E-05 · A baseline "17 vermelhos conhecidos" era vazamento do `.env` de produção
+
+**Severidade: muda o portão de todas as sprints.**
+
+O `.claude/commands/orquestrador-financeiro.md` (§2) manda tolerar 17 vermelhos em
+`tests/test_photos_sync.py` e `tests/test_documentos_upload.py`, atribuídos a um defeito do
+mock S3 (moto). **Não há moto nos testes:** eles falam com o S3 configurado. O
+`backend/app/core/config.py` faz `load_dotenv(.env, override=False)`, e o `.env` da raiz
+aponta o storage para **produção**. Rodar `make test` fixando só o `DATABASE_URL` faz esses
+testes lerem e gravarem no bucket de produção.
+
+Medido em 2026-11-02, na `main` em `71ac91d`, Postgres/MinIO locais via `docker compose`:
+
+| Ambiente | Resultado |
+|---|---|
+| Só `DATABASE_URL` local (como a §2 manda) | 10 falhas + 7 erros — inclusive `test_health` (storage de produção = `error`) |
+| Todas as integrações fixadas no local (= CI, que não tem `.env`) | **332 passaram · 0 falharam · 0 erros** |
+
+**Decisão (2026-11-02, humano):**
+- A baseline real é **332 verdes, 0 vermelhos**. O portão volta a ser "tudo verde": qualquer
+  vermelho é regressão da sprint, não um conjunto tolerado. A orientação da §2 do orquestrador
+  sobre os 17 vermelhos fica **revogada** por esta errata.
+- O vazamento é fechado **antes** da Onda 1, por correção fora do plano (`conftest.py` fixa as
+  integrações no local antes de importar a app; `make test`/`make migrate` exigem `DATABASE_URL`
+  explícito). Sem ela, todo ciclo de portão das sprints escreveria no storage de produção.
+
+O banco de produção não foi tocado nas medições: as DSNs `APP_*` estão vazias no `.env` e
+caíram no `DATABASE_URL` local. Só o storage vazou.
+
+---
+
 ## O que **não** está aqui
 
 Três coisas que pareciam divergência e foram **medidas** como corretas, para ninguém as

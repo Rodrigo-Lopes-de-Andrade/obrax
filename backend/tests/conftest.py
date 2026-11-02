@@ -1,15 +1,25 @@
 from __future__ import annotations
 
 import os
+from urllib.parse import urlsplit
 
 import pytest
 
 # Guarda anti-prod — DEVE rodar antes de importar `app.core.config`, que faz
-# `load_dotenv(REPO_ROOT/.env)` no import e populava `os.environ["DATABASE_URL"]`
-# a partir do `.env` (que aponta para PROD). Os testes mutam o banco (fixtures
-# inserem/limpam), então exigimos um `DATABASE_URL` setado explicitamente no
-# ambiente (banco local/staging); sem ele, aborta a sessão inteira em vez de cair
-# no fallback de produção. Prevê o engano de rodar `pytest` "solto".
+# `load_dotenv(REPO_ROOT/.env, override=False)` no import. O `.env` da raiz tem
+# credenciais de PRODUÇÃO e `override=False` significa: toda chave que NÃO está em
+# `os.environ` é preenchida a partir dele. Logo, a defesa é dupla:
+#
+# 1. `DATABASE_URL` precisa vir explícito do ambiente (os testes mutam o banco);
+#    sem ele aborta a sessão em vez de cair no fallback de produção.
+# 2. Toda chave de integração é fixada aqui com `setdefault` nos valores locais/CI
+#    (MinIO do docker-compose, integrações vazias). `setdefault` é deliberado: quem
+#    exporta um valor no shell o mantém, mas nada mais vem do `.env`. Assim os
+#    testes nunca falam com o storage/Supabase/UAZAPI de produção nem com serviços
+#    pagos (Anthropic, OpenAI, Sentry, PostHog).
+# 3. Mesmo com o DSN explícito, se o host do `DATABASE_URL` não for local, recusa
+#    (um DSN remoto colado do `.env` é o acidente que isto evita), a menos que
+#    `OBRAX_TESTS_ALLOW_REMOTE_DB=1`.
 if not os.environ.get("DATABASE_URL"):
     raise pytest.UsageError(
         "DATABASE_URL não está setado no ambiente. Os testes mutam o banco e o "
@@ -18,11 +28,52 @@ if not os.environ.get("DATABASE_URL"):
         '  DATABASE_URL="postgresql://.../postgres" pytest'
     )
 
+_LOCAL_TEST_ENV = {
+    # Storage: MinIO do docker-compose (mesmos defaults de config.py / CI).
+    "STORAGE_ENDPOINT_URL": "http://localhost:9000",
+    "STORAGE_REGION": "us-east-1",
+    "STORAGE_ACCESS_KEY": "obrax",
+    "STORAGE_SECRET_KEY": "obrax-dev-secret",
+    "STORAGE_BUCKET_DOCUMENTS": "documents-dev",
+    "STORAGE_PRESIGN_TTL": "900",
+    # Integrações externas: vazias = desabilitadas.
+    "SUPABASE_URL": "",
+    "SUPABASE_SERVICE_KEY": "",
+    "SUPABASE_SECRET_KEY": "",
+    "SUPABASE_PUBLISHABLE_KEY": "",
+    "SUPABASE_JWKS_URL": "",
+    "UAZAPI_BASE_URL": "",
+    "UAZAPI_TOKEN": "",
+    "UAZAPI_WEBHOOK_SECRET": "",
+    "REALTIME_ENABLED": "",
+    "PDF_RENDERER_URL": "",
+    # Vazio → config deriva as DSNs de app a partir do DATABASE_URL explícito.
+    "APP_USER_DATABASE_URL": "",
+    "APP_ADMIN_DATABASE_URL": "",
+    # Serviços pagos/observabilidade: nunca chamar a partir dos testes.
+    "ANTHROPIC_API_KEY": "",
+    "OPENAI_API_KEY": "",
+    "SENTRY_DSN": "",
+    "POSTHOG_API_KEY": "",
+}
+for _key, _value in _LOCAL_TEST_ENV.items():
+    os.environ.setdefault(_key, _value)
+
+_LOCAL_DB_HOSTS = {"localhost", "127.0.0.1", "::1", "postgres"}
+_db_host = (urlsplit(os.environ["DATABASE_URL"]).hostname or "").lower()
+if _db_host not in _LOCAL_DB_HOSTS and os.environ.get("OBRAX_TESTS_ALLOW_REMOTE_DB") != "1":
+    raise pytest.UsageError(
+        f"DATABASE_URL aponta para um host remoto ({_db_host or 'desconhecido'}). Os "
+        "testes mutam o banco — recuso rodar contra algo que não seja local. Use o "
+        "banco do docker compose (postgresql://obrax:obrax@localhost:5432/obrax) ou, "
+        "se for um staging descartável, exporte OBRAX_TESTS_ALLOW_REMOTE_DB=1."
+    )
+
 import secrets  # noqa: E402
 import uuid  # noqa: E402
 from collections.abc import Callable, Iterator  # noqa: E402
 from dataclasses import dataclass  # noqa: E402
-from urllib.parse import urlsplit, urlunsplit  # noqa: E402
+from urllib.parse import urlunsplit  # noqa: E402
 
 import psycopg  # noqa: E402
 from sqlalchemy import text  # noqa: E402
