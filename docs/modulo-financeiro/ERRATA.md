@@ -136,6 +136,83 @@ caíram no `DATABASE_URL` local. Só o storage vazou.
 
 ---
 
+## E-06 · Q3 do Dicionário §6 aceitava GRANT parcial
+
+Medido pelo `revisor-isolamento` na S-F1 (2026-11-03): `has_table_privilege(role, tabela,
+'SELECT, INSERT, UPDATE, DELETE')` devolve **true se o role tiver qualquer um** dos privilégios.
+Com `REVOKE SELECT, INSERT, UPDATE` sobrando só `DELETE`, a consulta dava "ok". O
+`check_schema_financeiro.py` copiou a consulta e herdou o furo.
+
+**Decisão (humano): corrigir o Dicionário.** A Q3 do §6 agora checa os quatro privilégios um a
+um. Corrigido também no script, na S-F1 (ciclo 1).
+
+---
+
+## E-07 · Uma obra, vários orçamentos — mas `obra_fase` é por obra
+
+Achado do `code-reviewer` na S-F1. O código permite vários orçamentos por obra (não há `UNIQUE`
+em `orcamento(obra_id)`; o portal escolhe o mais recente), e a ESPEC §4.5 assume "uma versão só".
+Aprovar um **segundo** orçamento da mesma obra inativava as fases do primeiro — e, com códigos
+sintéticos, sobrescrevia a fase `F000` de um com a do outro **no mesmo `id`**, transferindo em
+silêncio as despesas já apropriadas. Re-aprovar (`aprovado → aprovado`) ressincronizava o estado.
+
+**Decisão (humano, 2026-11-05): um orçamento aprovado por obra.**
+- Aprovar um orçamento quando a obra já tem **outro** orçamento `aprovado` é recusado com **409**,
+  pelo painel e pelo portal.
+- Transição para o mesmo status (`aprovado → aprovado`) não ressincroniza.
+- Aditivo é **nova versão do mesmo orçamento** (US-16), não um orçamento novo.
+- A sincronização serializa por obra (lock), fechando a corrida entre aprovações concorrentes.
+
+Sem mudança de schema. Implementado na S-F1 (ciclo 1).
+
+**Decorrências (orquestrador, S-F1 ciclo 2 — sinalizadas ao humano):** o `code-reviewer`
+reproduziu que excluir (soft-delete) o orçamento aprovado e aprovar outro reabria exatamente o
+furo acima (a `F000` de "Fundações" virava "Pintura" no mesmo `id`). Para a regra não ser
+contornável: **orçamento `aprovado` não pode ser excluído (409)**; e a ida para
+`aguardando_aprovacao` já recusa (409) quando a obra tem outro orçamento aprovado, para o cliente
+nunca receber no portal um orçamento que não pode aprovar.
+
+---
+
+## E-08 · Integridade entre tenants no nível do schema (FK sem tenant)
+
+Medido pelo `revisor-isolamento` na S-F1, como `app_user` com a GUC de A:
+`INSERT obra_fase(company_id=A, obra_id=<obra de B>)` **passa** — a FK confere a obra sem RLS. E
+`UNIQUE (obra_id, codigo)` global vira oráculo de existência de obra de outro tenant (erro de
+duplicata).
+
+Hoje **não é alcançável**: o `obra_id` vem do orçamento lido sob RLS e nenhuma rota escreve em
+`obra_fase`. Mas a S-F3 (`despesa`) e as seguintes repetem o padrão com rotas de escrita.
+
+**Decisão (humano, 2026-11-05): registrar e decidir antes da S-F3.** Saídas em discussão: FK
+composta `(company_id, obra_id) → obras(company_id, id)` (exige `UNIQUE (company_id, id)` em
+`obras`) e/ou unicidade com `company_id`. **A Onda 2 não despacha a S-F3 sem essa decisão.**
+
+---
+
+## E-09 · Débitos aceitos no fechamento da S-F1
+
+O `code-reviewer` deu FECHA no ciclo 2 (39 mutantes; todos os relevantes morrem). Ficaram
+débitos **não bloqueantes**, sem corrupção de dado — registrados para não se perderem:
+
+1. **Regra de produto, decisão humana pendente:** com dois orçamentos da mesma obra em
+   `aguardando_aprovacao`, o painel aprova o mais antigo e o portal (que mostra o mais recente,
+   `ORDER BY o.id DESC`) passa a exibir ao cliente um orçamento que ele **não consegue aprovar**
+   (409). Saídas: ao aprovar, mover os outros `aguardando` da obra para `em_revisao`; ou o portal
+   priorizar o aprovado.
+2. Botão "Excluir" aparece para orçamento aprovado (`frontend/.../OrcamentosView.tsx`); a API
+   recusa com 409 e o toast mostra o motivo.
+3. Mensagem do 409 no portal está escrita para o gestor ("crie uma nova versão"), não para o
+   cliente final.
+4. Testes: falta corrida exclusão × aprovação (o código é atômico: condição dentro do UPDATE) e
+   normalização de código de fase (caixa, `strip`); `_corrida` faz `join` em thread não iniciada se
+   o passo que segura o lock falhar.
+5. **Sem backfill de `obra_fase`** para obras com orçamento aprovado antes da S-F1; e obras legadas
+   com dois aprovados não conseguem aprovar mais nada. **Decidir antes do deploy do backend** (ver
+   também a consulta de diagnóstico em produção).
+
+---
+
 ## O que **não** está aqui
 
 Três coisas que pareciam divergência e foram **medidas** como corretas, para ninguém as

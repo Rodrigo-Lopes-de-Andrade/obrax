@@ -473,7 +473,12 @@ WHERE c.relname IN (...) AND (p.polqual IS NULL OR p.polwithcheck IS NULL);
 SELECT c.relname
 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
 WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relname IN (...)
-  AND NOT has_table_privilege('app_user', c.oid, 'SELECT, INSERT, UPDATE, DELETE');
+  -- Um has_table_privilege por privilégio: com a lista 'SELECT, INSERT, ...' a função
+  -- devolve true se o role tiver QUALQUER um deles, e GRANT parcial passa (ERRATA E-06).
+  AND NOT (has_table_privilege('app_user', c.oid, 'SELECT')
+       AND has_table_privilege('app_user', c.oid, 'INSERT')
+       AND has_table_privilege('app_user', c.oid, 'UPDATE')
+       AND has_table_privilege('app_user', c.oid, 'DELETE'));
 -- zero linhas = ok
 
 -- 4. Nenhuma view sem security_invoker sobre tabela do módulo
