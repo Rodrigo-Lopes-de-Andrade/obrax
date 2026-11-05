@@ -80,8 +80,8 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** —
 - **Paralela com:** —
 - **Revisor de segurança:** sim
-- **Status:** em andamento
-- **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** concluída (2026-11-05)
+- **Ciclos:** 2/3 · **Revisores OK:** revisor-isolamento (2026-11-05, ciclo 1; delta do ciclo 2 reaprovado — reprovado no ciclo 0 por GRANT parcial no verificador)
 - **Slot de migration:** 2026-11-03 · `0032`
 - **Arquivos:**
   `backend/alembic/versions/0032_obra_fase.py` ·
@@ -100,25 +100,25 @@ contrato gera sem erro" sem tipo nenhum.
   versão de orçamento; script de verificação de schema de [§6](DICIONARIO-DE-DADOS.md).
 - **Fora de escopo:** qualquer rota de API; qualquer tela; as outras oito tabelas.
 - **Critérios de aceite:**
-  - [ ] Aprovar uma versão de orçamento cria uma `obra_fase` por item `tipo='F'`, com
+  - [x] Aprovar uma versão de orçamento cria uma `obra_fase` por item `tipo='F'`, com
         `valor_orcado` igual ao custo direto agregado da fase — **positivo**, conferido contra
         valores calculados à mão na fixture
-  - [ ] Aprovar uma **segunda** versão com o mesmo código de fase atualiza descrição e valor, e
+  - [x] Aprovar uma **segunda** versão com o mesmo código de fase atualiza descrição e valor, e
         **mantém o mesmo `id`** — é a reconciliação da RN-F03
-  - [ ] Código de fase que sumiu da nova versão fica `ativa = false`, não é apagado
-  - [ ] Código novo na segunda versão cria fase nova
-  - [ ] `UNIQUE (obra_id, codigo)` rejeita duplicata
-  - [ ] Tenant A **vê as próprias** `obra_fase` (positivo de isolamento, SEC-F03)
-  - [ ] Tenant A recebe zero linhas das fases de B, em leitura **e** escrita (SEC-F02)
-  - [ ] `check_schema_financeiro.py` confere RLS, policy com `USING` e `WITH CHECK`, e `GRANT`
+  - [x] Código de fase que sumiu da nova versão fica `ativa = false`, não é apagado
+  - [x] Código novo na segunda versão cria fase nova
+  - [x] `UNIQUE (obra_id, codigo)` rejeita duplicata
+  - [x] Tenant A **vê as próprias** `obra_fase` (positivo de isolamento, SEC-F03)
+  - [x] Tenant A recebe zero linhas das fases de B, em leitura **e** escrita (SEC-F02)
+  - [x] `check_schema_financeiro.py` confere RLS, policy com `USING` e `WITH CHECK`, e `GRANT`
         pelo catálogo, e falha se qualquer um faltar
-  - [ ] A policy usa `app_current_company_id()`, não o cast cru — grep na migration confirma
-  - [ ] **Aprovar pela rota `PATCH /orcamentos/{id}/status` cria as fases** — o teste chama a
+  - [x] A policy usa `app_current_company_id()`, não o cast cru — grep na migration confirma
+  - [x] **Aprovar pela rota `PATCH /orcamentos/{id}/status` cria as fases** — o teste chama a
         rota, não o service
-  - [ ] **Aprovar pelo portal cria as fases** — idem, pela rota de decisão do portal. Os dois
+  - [x] **Aprovar pelo portal cria as fases** — idem, pela rota de decisão do portal. Os dois
         caminhos, senão o módulo nasce morto no fluxo real ([ESPEC §4.1](ESPEC.md#41-onde-a-sincronização-é-disparada))
-  - [ ] Fase sem `codigo` recebe o código sintético `F{sort_order:03d}` e o INSERT passa
-  - [ ] Duas fases com o mesmo código na mesma versão **recusam a aprovação** com 422 nomeando
+  - [x] Fase sem `codigo` recebe o código sintético `F{sort_order:03d}` e o INSERT passa
+  - [x] Duas fases com o mesmo código na mesma versão **recusam a aprovação** com 422 nomeando
         as fases — não deduplica em silêncio
 
 > O critério da segunda versão é o que importa mais nesta sprint, e é o único que exercita o
