@@ -28,6 +28,7 @@ from sqlalchemy.orm import Session
 from app.core.security import create_portal_token
 from app.integrations.notifications import EmailMessage, Notifier, notify_safe
 from app.integrations.storage import StorageClient
+from app.modules.financeiro.services.fases import sincronizar_fases, validar_aprovacao
 from app.modules.portal.schemas import PortalAprovacaoIn
 
 logger = logging.getLogger("app.portal")
@@ -152,9 +153,10 @@ def get_portal_obra(
     }
 
 
-def _current_orcamento(session: Session, obra_id: uuid.UUID) -> Any:
+def _current_orcamento(session: Session, obra_id: uuid.UUID, *, for_update: bool = False) -> Any:
     """Orçamento vigente que o cliente pode ver: o mais recente da obra que já
-    saiu do rascunho (aguardando_aprovacao/aprovado/rejeitado)."""
+    saiu do rascunho (aguardando_aprovacao/aprovado/rejeitado). `for_update` trava
+    a linha do orçamento: decisões concorrentes se serializam."""
     return (
         session.execute(
             text(
@@ -164,7 +166,7 @@ def _current_orcamento(session: Session, obra_id: uuid.UUID) -> Any:
                 "JOIN orcamento_versao v ON v.orcamento_id = o.id AND v.numero = o.versao_atual "
                 "WHERE o.obra_id = :obra_id AND o.deleted_at IS NULL "
                 "  AND o.status IN ('aguardando_aprovacao','aprovado','rejeitado') "
-                "ORDER BY o.id DESC LIMIT 1"
+                "ORDER BY o.id DESC LIMIT 1" + (" FOR UPDATE OF o" if for_update else "")
             ),
             {"obra_id": obra_id},
         )
@@ -257,11 +259,15 @@ def decide_orcamento(
     """Registra a decisão do cliente (aprovar/rejeitado) sobre o orçamento
     vigente: grava evidência (comentário/assinatura/IP), muda o status e, se
     aprovado, trava a versão. Só age sobre orçamento `aguardando_aprovacao`."""
-    row = _current_orcamento(session, obra_id)
+    row = _current_orcamento(session, obra_id, for_update=True)
     if row is None:
         raise _SEM_ORCAMENTO
     if row["status"] != "aguardando_aprovacao":
         raise _NAO_AGUARDA
+    if decisao == "aprovado":
+        # Toda recusa possível (E-07 409, fases duplicadas 422) ANTES de gravar a
+        # assinatura no storage: recusa nunca deixa PNG órfão (dado pessoal).
+        validar_aprovacao(session, row["id"])
 
     assinatura_path: str | None = None
     if payload.assinatura:
@@ -302,6 +308,9 @@ def decide_orcamento(
             text("UPDATE orcamento_versao SET is_locked = true WHERE id = :vid"),
             {"vid": row["versao_id"]},
         )
+        # Hook S-F1 (ESPEC §4.1): mesmo service do PATCH /status, na sessão
+        # app_user do token do portal (RLS pelo tenant do token). 422 desfaz tudo.
+        sincronizar_fases(session, row["id"])
 
     _notify_gestores(
         session,
