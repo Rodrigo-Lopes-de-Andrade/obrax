@@ -135,7 +135,7 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** S-F1
 - **Paralela com:** —
 - **Revisor de segurança:** não
-- **Status:** pendente
+- **Status:** em andamento
 - **Ciclos:** 0/3 · **Revisores OK:** —
 - **Slot de migration:** — (não cria migration)
 - **Arquivos:**
