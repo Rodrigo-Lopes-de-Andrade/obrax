@@ -640,3 +640,269 @@ export interface ProblemDetail {
   instance?: string;
   errors?: { loc?: (string | number)[]; msg?: string; type?: string }[];
 }
+
+// ───────────────────────── Financeiro (S-F2) ─────────────────────────
+// Espelha backend/app/modules/financeiro/schemas/. Dinheiro e percentual
+// chegam como string decimal (RNF-F03/RN-F10) — nunca converter para number.
+// Percentuais são FRAÇÃO ("0.1500" = 15%).
+
+/** Dinheiro: string decimal com 2 casas ("1234.50"). */
+export type Dinheiro = string;
+/** Fração decimal ("0.1500" = 15%); em `percentual_consumido` pode passar de 1. */
+export type Fracao = string;
+
+export type DespesaStatus = "prevista" | "paga" | "cancelada";
+export type MedicaoStatus = "rascunho" | "aprovada";
+export type RecebimentoStatus = "previsto" | "recebido";
+export type Periodicidade = "semanal" | "mensal";
+
+// Cronograma
+export interface CronogramaCreate {
+  periodicidade: Periodicidade;
+  data_inicio: string;
+  numero_periodos?: number | null;
+}
+export interface CronogramaOut {
+  id: string;
+  obra_id: string;
+  orcamento_versao_id: string;
+  periodicidade: Periodicidade;
+  data_inicio: string;
+  bloqueado_em: string | null;
+  created_at: string;
+}
+export interface PeriodoOut {
+  id: string;
+  numero: number;
+  inicio: string;
+  fim: string;
+}
+export interface AlocacaoOut {
+  periodo_id: string;
+  percentual_planejado: Fracao;
+  valor_planejado: Dinheiro;
+}
+export interface FaseGradeOut {
+  obra_fase_id: string;
+  codigo: string;
+  descricao: string;
+  valor_orcado: Dinheiro;
+  alocacoes: AlocacaoOut[];
+}
+export interface CronogramaGradeOut {
+  cronograma: CronogramaOut;
+  periodos: PeriodoOut[];
+  fases: FaseGradeOut[];
+}
+export interface AlocacaoIn {
+  obra_fase_id: string;
+  periodo_id: string;
+  percentual_planejado: Fracao;
+}
+export interface AlocacoesPut {
+  alocacoes: AlocacaoIn[];
+}
+
+// Medição e recebimento
+export interface MedicaoCreate {
+  periodo_id: string;
+  observacao?: string | null;
+}
+export interface MedicaoItemIn {
+  obra_fase_id: string;
+  /** Acumulado desde o início da obra (RN-F05), fração. */
+  percentual_acumulado: Fracao;
+}
+export interface MedicaoItensPut {
+  itens: MedicaoItemIn[];
+}
+export interface MedicaoAprovar {
+  vencimento?: string | null;
+}
+export interface MedicaoItemOut {
+  id: string;
+  obra_fase_id: string;
+  percentual_acumulado: Fracao;
+  valor_medido: Dinheiro;
+}
+export interface MedicaoOut {
+  id: string;
+  obra_id: string;
+  cronograma_id: string;
+  periodo_id: string;
+  status: MedicaoStatus;
+  aprovada_em: string | null;
+  aprovada_por: string | null;
+  valor_liberado: Dinheiro | null;
+  observacao: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+export interface MedicaoDetail extends MedicaoOut {
+  itens: MedicaoItemOut[];
+}
+export type MedicaoPage = Page<MedicaoOut>;
+export interface RecebimentoOut {
+  id: string;
+  obra_id: string;
+  obra_nome: string;
+  medicao_id: string;
+  /** `numero` do período do cronograma da medição. */
+  medicao_numero: number;
+  valor: Dinheiro;
+  vencimento: string;
+  status: RecebimentoStatus;
+  data_recebimento: string | null;
+  created_at: string;
+}
+export type RecebimentoPage = Page<RecebimentoOut>;
+export interface RecebimentoReceber {
+  data_recebimento: string;
+}
+export interface MedicaoAprovadaOut {
+  medicao: MedicaoDetail;
+  recebimento: RecebimentoOut | null;
+  aviso: string | null;
+}
+
+// Categorias e despesas
+export interface CategoriaCreate {
+  nome: string;
+}
+export interface CategoriaUpdate {
+  nome?: string;
+  ativa?: boolean;
+}
+export interface CategoriaOut {
+  id: string;
+  nome: string;
+  ativa: boolean;
+  created_at: string;
+}
+export interface DespesaCreate {
+  obra_fase_id: string;
+  categoria_id: string;
+  fornecedor_nome: string;
+  descricao: string;
+  valor: Dinheiro;
+  data_competencia: string;
+  vencimento: string;
+  documento_id?: string | null;
+}
+export interface DespesaUpdate {
+  obra_fase_id?: string;
+  categoria_id?: string;
+  fornecedor_nome?: string;
+  descricao?: string;
+  valor?: Dinheiro;
+  data_competencia?: string;
+  vencimento?: string;
+  /** Único campo que aceita `null` (desvincula a NF). */
+  documento_id?: string | null;
+}
+export interface DespesaPagar {
+  data_pagamento: string;
+}
+export interface DespesaParceladaCreate {
+  obra_fase_id: string;
+  categoria_id: string;
+  fornecedor_nome: string;
+  descricao: string;
+  valor: Dinheiro;
+  data_competencia: string;
+  numero_parcelas: number;
+  primeiro_vencimento: string;
+  documento_id?: string | null;
+}
+export interface DespesaOut {
+  id: string;
+  obra_id: string;
+  obra_fase_id: string;
+  fase_descricao: string;
+  categoria_id: string;
+  categoria_nome: string;
+  fornecedor_nome: string;
+  fornecedor_id: string | null;
+  descricao: string;
+  valor: Dinheiro;
+  data_competencia: string;
+  vencimento: string;
+  status: DespesaStatus;
+  data_pagamento: string | null;
+  documento_id: string | null;
+  grupo_parcelas_id: string | null;
+  parcela_num: number | null;
+  parcela_total: number | null;
+  created_at: string;
+  created_by: string | null;
+}
+export type DespesaPage = Page<DespesaOut>;
+export interface DespesaParceladaOut {
+  grupo_parcelas_id: string;
+  parcelas: DespesaOut[];
+}
+
+// Análise
+export interface FaseOrcadoRealizado {
+  obra_fase_id: string;
+  codigo: string;
+  descricao: string;
+  ativa: boolean;
+  orcado: Dinheiro;
+  realizado: Dinheiro;
+  comprometido: Dinheiro;
+  saldo: Dinheiro;
+  /** (realizado + comprometido) / orçado, fração; `null` com orçado 0. */
+  percentual_consumido: Fracao | null;
+  estourou: boolean;
+}
+export interface TotaisOrcadoRealizado {
+  orcado: Dinheiro;
+  realizado: Dinheiro;
+  comprometido: Dinheiro;
+  saldo: Dinheiro;
+  percentual_consumido: Fracao | null;
+}
+export interface OrcadoRealizadoOut {
+  obra_id: string;
+  tem_orcamento_aprovado: boolean;
+  orcamento_versao_id: string | null;
+  fases: FaseOrcadoRealizado[];
+  totais: TotaisOrcadoRealizado;
+}
+export interface CurvaSPonto {
+  periodo_id: string;
+  numero: number;
+  inicio: string;
+  fim: string;
+  corrente: boolean;
+  planejado_acumulado: Dinheiro;
+  medido_acumulado: Dinheiro;
+  realizado_acumulado: Dinheiro;
+}
+export interface CurvaSOut {
+  obra_id: string;
+  tem_cronograma: boolean;
+  pontos: CurvaSPonto[];
+}
+export interface FluxoCaixaPeriodo {
+  inicio: string;
+  fim: string;
+  saidas_previstas: Dinheiro;
+  saidas_realizadas: Dinheiro;
+  entradas_previstas: Dinheiro;
+  entradas_realizadas: Dinheiro;
+  /** entradas previstas − saídas previstas do período. */
+  saldo_previsto: Dinheiro;
+  /** recebido − pago no período. */
+  saldo_realizado: Dinheiro;
+  saldo_previsto_acumulado: Dinheiro;
+  saldo_realizado_acumulado: Dinheiro;
+}
+export interface FluxoCaixaOut {
+  obra_id: string | null;
+  de: string;
+  ate: string;
+  periodicidade: Periodicidade;
+  periodos: FluxoCaixaPeriodo[];
+}

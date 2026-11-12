@@ -5,12 +5,25 @@
  * estiver plugado.
  */
 import type {
+  CategoriaOut,
   Cliente,
+  CronogramaGradeOut,
+  CurvaSOut,
+  DespesaOut,
+  DespesaPage,
+  DespesaParceladaOut,
   Documento,
   DocumentoTipo,
+  FluxoCaixaOut,
+  MedicaoAprovadaOut,
+  MedicaoDetail,
+  MedicaoPage,
   Membro,
   Obra,
   ObraStatus,
+  OrcadoRealizadoOut,
+  RecebimentoOut,
+  RecebimentoPage,
   Ticket,
   TicketMensagem,
   TicketStatus,
@@ -279,3 +292,659 @@ export function ensureSeed(): void {
   seedMembrosParaObra(obras[n - 1].id);
   seedTickets();
 }
+
+
+// <financeiro-exemplos>
+export const FINANCEIRO_EXEMPLOS = {
+  "CategoriaOut": {
+    "id": "01900000-0000-4000-8000-00000000001f",
+    "nome": "Materiais",
+    "ativa": true,
+    "created_at": "2026-01-05T12:00:00Z"
+  },
+  "CategoriaOut[]": [
+    {
+      "id": "01900000-0000-4000-8000-00000000001f",
+      "nome": "Materiais",
+      "ativa": true,
+      "created_at": "2026-01-05T12:00:00Z"
+    },
+    {
+      "id": "01900000-0000-4000-8000-000000000020",
+      "nome": "Mão de obra",
+      "ativa": true,
+      "created_at": "2026-01-05T12:00:00Z"
+    }
+  ],
+  "DespesaOut": {
+    "id": "01900000-0000-4000-8000-000000000047",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+    "fase_descricao": "Fundação",
+    "categoria_id": "01900000-0000-4000-8000-00000000001f",
+    "categoria_nome": "Materiais",
+    "fornecedor_nome": "Concreteira Alfa",
+    "fornecedor_id": null,
+    "descricao": "Concreto usinado",
+    "valor": "12500.00",
+    "data_competencia": "2026-01-15",
+    "vencimento": "2026-02-10",
+    "status": "prevista",
+    "data_pagamento": null,
+    "documento_id": null,
+    "grupo_parcelas_id": null,
+    "parcela_num": null,
+    "parcela_total": null,
+    "created_at": "2026-01-05T12:00:00Z",
+    "created_by": "01900000-0000-4000-8000-000000000029"
+  },
+  "DespesaPage": {
+    "items": [
+      {
+        "id": "01900000-0000-4000-8000-000000000047",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "fase_descricao": "Fundação",
+        "categoria_id": "01900000-0000-4000-8000-00000000001f",
+        "categoria_nome": "Materiais",
+        "fornecedor_nome": "Concreteira Alfa",
+        "fornecedor_id": null,
+        "descricao": "Concreto usinado",
+        "valor": "12500.00",
+        "data_competencia": "2026-01-15",
+        "vencimento": "2026-02-10",
+        "status": "prevista",
+        "data_pagamento": null,
+        "documento_id": null,
+        "grupo_parcelas_id": null,
+        "parcela_num": null,
+        "parcela_total": null,
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      },
+      {
+        "id": "01900000-0000-4000-8000-00000000004b",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "fase_descricao": "Fundação",
+        "categoria_id": "01900000-0000-4000-8000-00000000001f",
+        "categoria_nome": "Materiais",
+        "fornecedor_nome": "Concreteira Alfa",
+        "fornecedor_id": null,
+        "descricao": "Aço CA-50",
+        "valor": "4500.00",
+        "data_competencia": "2026-01-15",
+        "vencimento": "2026-02-25",
+        "status": "prevista",
+        "data_pagamento": null,
+        "documento_id": null,
+        "grupo_parcelas_id": null,
+        "parcela_num": null,
+        "parcela_total": null,
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      }
+    ],
+    "next_cursor": null
+  },
+  "DespesaParceladaOut": {
+    "grupo_parcelas_id": "01900000-0000-4000-8000-000000000050",
+    "parcelas": [
+      {
+        "id": "01900000-0000-4000-8000-000000000048",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "fase_descricao": "Fundação",
+        "categoria_id": "01900000-0000-4000-8000-00000000001f",
+        "categoria_nome": "Materiais",
+        "fornecedor_nome": "Concreteira Alfa",
+        "fornecedor_id": null,
+        "descricao": "Armação (1/3)",
+        "valor": "3000.00",
+        "data_competencia": "2026-01-15",
+        "vencimento": "2026-02-10",
+        "status": "prevista",
+        "data_pagamento": null,
+        "documento_id": null,
+        "grupo_parcelas_id": "01900000-0000-4000-8000-000000000050",
+        "parcela_num": 1,
+        "parcela_total": 3,
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      },
+      {
+        "id": "01900000-0000-4000-8000-000000000049",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "fase_descricao": "Fundação",
+        "categoria_id": "01900000-0000-4000-8000-00000000001f",
+        "categoria_nome": "Materiais",
+        "fornecedor_nome": "Concreteira Alfa",
+        "fornecedor_id": null,
+        "descricao": "Armação (2/3)",
+        "valor": "3000.00",
+        "data_competencia": "2026-01-15",
+        "vencimento": "2026-03-10",
+        "status": "prevista",
+        "data_pagamento": null,
+        "documento_id": null,
+        "grupo_parcelas_id": "01900000-0000-4000-8000-000000000050",
+        "parcela_num": 2,
+        "parcela_total": 3,
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      },
+      {
+        "id": "01900000-0000-4000-8000-00000000004a",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "fase_descricao": "Fundação",
+        "categoria_id": "01900000-0000-4000-8000-00000000001f",
+        "categoria_nome": "Materiais",
+        "fornecedor_nome": "Concreteira Alfa",
+        "fornecedor_id": null,
+        "descricao": "Armação (3/3)",
+        "valor": "3000.00",
+        "data_competencia": "2026-01-15",
+        "vencimento": "2026-04-10",
+        "status": "prevista",
+        "data_pagamento": null,
+        "documento_id": null,
+        "grupo_parcelas_id": "01900000-0000-4000-8000-000000000050",
+        "parcela_num": 3,
+        "parcela_total": 3,
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      }
+    ]
+  },
+  "CronogramaGradeOut": {
+    "cronograma": {
+      "id": "01900000-0000-4000-8000-000000000003",
+      "obra_id": "01900000-0000-4000-8000-000000000001",
+      "orcamento_versao_id": "01900000-0000-4000-8000-000000000002",
+      "periodicidade": "mensal",
+      "data_inicio": "2026-01-01",
+      "bloqueado_em": null,
+      "created_at": "2026-01-05T12:00:00Z"
+    },
+    "periodos": [
+      {
+        "id": "01900000-0000-4000-8000-00000000000b",
+        "numero": 1,
+        "inicio": "2026-01-01",
+        "fim": "2026-01-31"
+      },
+      {
+        "id": "01900000-0000-4000-8000-00000000000c",
+        "numero": 2,
+        "inicio": "2026-02-01",
+        "fim": "2026-02-28"
+      },
+      {
+        "id": "01900000-0000-4000-8000-00000000000d",
+        "numero": 3,
+        "inicio": "2026-03-01",
+        "fim": "2026-03-31"
+      }
+    ],
+    "fases": [
+      {
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "codigo": "01",
+        "descricao": "Fundação",
+        "valor_orcado": "100000.00",
+        "alocacoes": [
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000b",
+            "percentual_planejado": "0.5000",
+            "valor_planejado": "50000.00"
+          },
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000c",
+            "percentual_planejado": "0.3000",
+            "valor_planejado": "30000.00"
+          },
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000d",
+            "percentual_planejado": "0.2000",
+            "valor_planejado": "20000.00"
+          }
+        ]
+      },
+      {
+        "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+        "codigo": "02",
+        "descricao": "Estrutura",
+        "valor_orcado": "50000.00",
+        "alocacoes": [
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000b",
+            "percentual_planejado": "0.2000",
+            "valor_planejado": "10000.00"
+          },
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000c",
+            "percentual_planejado": "0.4000",
+            "valor_planejado": "20000.00"
+          },
+          {
+            "periodo_id": "01900000-0000-4000-8000-00000000000d",
+            "percentual_planejado": "0.4000",
+            "valor_planejado": "20000.00"
+          }
+        ]
+      }
+    ]
+  },
+  "MedicaoDetail": {
+    "id": "01900000-0000-4000-8000-000000000033",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "cronograma_id": "01900000-0000-4000-8000-000000000003",
+    "periodo_id": "01900000-0000-4000-8000-00000000000b",
+    "status": "aprovada",
+    "aprovada_em": "2026-02-02T12:00:00Z",
+    "aprovada_por": "01900000-0000-4000-8000-000000000029",
+    "valor_liberado": "60000.00",
+    "observacao": "Primeira medição",
+    "created_at": "2026-01-05T12:00:00Z",
+    "created_by": "01900000-0000-4000-8000-000000000029",
+    "itens": [
+      {
+        "id": "01900000-0000-4000-8000-00000000003d",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "percentual_acumulado": "0.5000",
+        "valor_medido": "50000.00"
+      },
+      {
+        "id": "01900000-0000-4000-8000-00000000003e",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+        "percentual_acumulado": "0.2000",
+        "valor_medido": "10000.00"
+      }
+    ]
+  },
+  "MedicaoPage": {
+    "items": [
+      {
+        "id": "01900000-0000-4000-8000-000000000033",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "cronograma_id": "01900000-0000-4000-8000-000000000003",
+        "periodo_id": "01900000-0000-4000-8000-00000000000b",
+        "status": "aprovada",
+        "aprovada_em": "2026-02-02T12:00:00Z",
+        "aprovada_por": "01900000-0000-4000-8000-000000000029",
+        "valor_liberado": "60000.00",
+        "observacao": "Primeira medição",
+        "created_at": "2026-01-05T12:00:00Z",
+        "created_by": "01900000-0000-4000-8000-000000000029"
+      }
+    ],
+    "next_cursor": null
+  },
+  "MedicaoAprovadaOut": {
+    "medicao": {
+      "id": "01900000-0000-4000-8000-000000000033",
+      "obra_id": "01900000-0000-4000-8000-000000000001",
+      "cronograma_id": "01900000-0000-4000-8000-000000000003",
+      "periodo_id": "01900000-0000-4000-8000-00000000000b",
+      "status": "aprovada",
+      "aprovada_em": "2026-02-02T12:00:00Z",
+      "aprovada_por": "01900000-0000-4000-8000-000000000029",
+      "valor_liberado": "60000.00",
+      "observacao": "Primeira medição",
+      "created_at": "2026-01-05T12:00:00Z",
+      "created_by": "01900000-0000-4000-8000-000000000029",
+      "itens": [
+        {
+          "id": "01900000-0000-4000-8000-00000000003d",
+          "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+          "percentual_acumulado": "0.5000",
+          "valor_medido": "50000.00"
+        },
+        {
+          "id": "01900000-0000-4000-8000-00000000003e",
+          "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+          "percentual_acumulado": "0.2000",
+          "valor_medido": "10000.00"
+        }
+      ]
+    },
+    "recebimento": {
+      "id": "01900000-0000-4000-8000-000000000034",
+      "obra_id": "01900000-0000-4000-8000-000000000001",
+      "obra_nome": "Residencial Aurora",
+      "medicao_id": "01900000-0000-4000-8000-000000000033",
+      "medicao_numero": 1,
+      "valor": "60000.00",
+      "vencimento": "2026-02-20",
+      "status": "previsto",
+      "data_recebimento": null,
+      "created_at": "2026-02-02T12:00:00Z"
+    },
+    "aviso": null
+  },
+  "RecebimentoOut": {
+    "id": "01900000-0000-4000-8000-000000000034",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "obra_nome": "Residencial Aurora",
+    "medicao_id": "01900000-0000-4000-8000-000000000033",
+    "medicao_numero": 1,
+    "valor": "60000.00",
+    "vencimento": "2026-02-20",
+    "status": "previsto",
+    "data_recebimento": null,
+    "created_at": "2026-02-02T12:00:00Z"
+  },
+  "RecebimentoPage": {
+    "items": [
+      {
+        "id": "01900000-0000-4000-8000-000000000034",
+        "obra_id": "01900000-0000-4000-8000-000000000001",
+        "obra_nome": "Residencial Aurora",
+        "medicao_id": "01900000-0000-4000-8000-000000000033",
+        "medicao_numero": 1,
+        "valor": "60000.00",
+        "vencimento": "2026-02-20",
+        "status": "previsto",
+        "data_recebimento": null,
+        "created_at": "2026-02-02T12:00:00Z"
+      }
+    ],
+    "next_cursor": null
+  },
+  "OrcadoRealizadoOut": {
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "tem_orcamento_aprovado": true,
+    "orcamento_versao_id": "01900000-0000-4000-8000-000000000002",
+    "fases": [
+      {
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "codigo": "01",
+        "descricao": "Fundação",
+        "ativa": true,
+        "orcado": "100000.00",
+        "realizado": "25000.00",
+        "comprometido": "5000.00",
+        "saldo": "70000.00",
+        "percentual_consumido": "0.3000",
+        "estourou": false
+      },
+      {
+        "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+        "codigo": "02",
+        "descricao": "Estrutura",
+        "ativa": true,
+        "orcado": "50000.00",
+        "realizado": "40000.00",
+        "comprometido": "12000.00",
+        "saldo": "-2000.00",
+        "percentual_consumido": "1.0400",
+        "estourou": true
+      }
+    ],
+    "totais": {
+      "orcado": "150000.00",
+      "realizado": "65000.00",
+      "comprometido": "17000.00",
+      "saldo": "68000.00",
+      "percentual_consumido": "0.5467"
+    }
+  },
+  "CurvaSOut": {
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "tem_cronograma": true,
+    "pontos": [
+      {
+        "periodo_id": "01900000-0000-4000-8000-00000000000b",
+        "numero": 1,
+        "inicio": "2026-01-01",
+        "fim": "2026-01-31",
+        "corrente": false,
+        "planejado_acumulado": "60000.00",
+        "medido_acumulado": "60000.00",
+        "realizado_acumulado": "30000.00"
+      },
+      {
+        "periodo_id": "01900000-0000-4000-8000-00000000000c",
+        "numero": 2,
+        "inicio": "2026-02-01",
+        "fim": "2026-02-28",
+        "corrente": true,
+        "planejado_acumulado": "110000.00",
+        "medido_acumulado": "60000.00",
+        "realizado_acumulado": "65000.00"
+      },
+      {
+        "periodo_id": "01900000-0000-4000-8000-00000000000d",
+        "numero": 3,
+        "inicio": "2026-03-01",
+        "fim": "2026-03-31",
+        "corrente": false,
+        "planejado_acumulado": "150000.00",
+        "medido_acumulado": "60000.00",
+        "realizado_acumulado": "65000.00"
+      }
+    ]
+  },
+  "FluxoCaixaOut": {
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "de": "2026-01-01",
+    "ate": "2026-03-31",
+    "periodicidade": "mensal",
+    "periodos": [
+      {
+        "inicio": "2026-01-01",
+        "fim": "2026-01-31",
+        "saidas_previstas": "30000.00",
+        "saidas_realizadas": "25000.00",
+        "entradas_previstas": "0.00",
+        "entradas_realizadas": "0.00",
+        "saldo_previsto": "-30000.00",
+        "saldo_realizado": "-25000.00",
+        "saldo_previsto_acumulado": "-30000.00",
+        "saldo_realizado_acumulado": "-25000.00"
+      },
+      {
+        "inicio": "2026-02-01",
+        "fim": "2026-02-28",
+        "saidas_previstas": "20000.00",
+        "saidas_realizadas": "40000.00",
+        "entradas_previstas": "60000.00",
+        "entradas_realizadas": "60000.00",
+        "saldo_previsto": "40000.00",
+        "saldo_realizado": "20000.00",
+        "saldo_previsto_acumulado": "10000.00",
+        "saldo_realizado_acumulado": "-5000.00"
+      },
+      {
+        "inicio": "2026-03-01",
+        "fim": "2026-03-31",
+        "saidas_previstas": "0.00",
+        "saidas_realizadas": "0.00",
+        "entradas_previstas": "0.00",
+        "entradas_realizadas": "0.00",
+        "saldo_previsto": "0.00",
+        "saldo_realizado": "0.00",
+        "saldo_previsto_acumulado": "10000.00",
+        "saldo_realizado_acumulado": "-5000.00"
+      }
+    ]
+  },
+  "MedicaoDetail#rascunho": {
+    "id": "01900000-0000-4000-8000-000000000035",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "cronograma_id": "01900000-0000-4000-8000-000000000003",
+    "periodo_id": "01900000-0000-4000-8000-00000000000c",
+    "status": "rascunho",
+    "aprovada_em": null,
+    "aprovada_por": null,
+    "valor_liberado": null,
+    "observacao": "Segunda medição (em preenchimento)",
+    "created_at": "2026-01-05T12:00:00Z",
+    "created_by": "01900000-0000-4000-8000-000000000029",
+    "itens": [
+      {
+        "id": "01900000-0000-4000-8000-00000000003f",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+        "percentual_acumulado": "0.5000",
+        "valor_medido": "50000.00"
+      },
+      {
+        "id": "01900000-0000-4000-8000-000000000040",
+        "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+        "percentual_acumulado": "0.2000",
+        "valor_medido": "10000.00"
+      }
+    ]
+  },
+  "DespesaOut#cancelada": {
+    "id": "01900000-0000-4000-8000-000000000047",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+    "fase_descricao": "Fundação",
+    "categoria_id": "01900000-0000-4000-8000-00000000001f",
+    "categoria_nome": "Materiais",
+    "fornecedor_nome": "Concreteira Alfa",
+    "fornecedor_id": null,
+    "descricao": "Concreto usinado",
+    "valor": "12500.00",
+    "data_competencia": "2026-01-15",
+    "vencimento": "2026-02-10",
+    "status": "cancelada",
+    "data_pagamento": null,
+    "documento_id": null,
+    "grupo_parcelas_id": null,
+    "parcela_num": null,
+    "parcela_total": null,
+    "created_at": "2026-01-05T12:00:00Z",
+    "created_by": "01900000-0000-4000-8000-000000000029"
+  },
+  "DespesaOut#paga": {
+    "id": "01900000-0000-4000-8000-000000000047",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+    "fase_descricao": "Fundação",
+    "categoria_id": "01900000-0000-4000-8000-00000000001f",
+    "categoria_nome": "Materiais",
+    "fornecedor_nome": "Concreteira Alfa",
+    "fornecedor_id": null,
+    "descricao": "Concreto usinado",
+    "valor": "12500.00",
+    "data_competencia": "2026-01-15",
+    "vencimento": "2026-02-10",
+    "status": "paga",
+    "data_pagamento": "2026-02-10",
+    "documento_id": null,
+    "grupo_parcelas_id": null,
+    "parcela_num": null,
+    "parcela_total": null,
+    "created_at": "2026-01-05T12:00:00Z",
+    "created_by": "01900000-0000-4000-8000-000000000029"
+  },
+  "RecebimentoOut#recebido": {
+    "id": "01900000-0000-4000-8000-000000000034",
+    "obra_id": "01900000-0000-4000-8000-000000000001",
+    "obra_nome": "Residencial Aurora",
+    "medicao_id": "01900000-0000-4000-8000-000000000033",
+    "medicao_numero": 1,
+    "valor": "60000.00",
+    "vencimento": "2026-02-20",
+    "status": "recebido",
+    "data_recebimento": "2026-02-20",
+    "created_at": "2026-02-02T12:00:00Z"
+  },
+  "MedicaoAprovadaOut#sem_recebimento": {
+    "medicao": {
+      "id": "01900000-0000-4000-8000-000000000033",
+      "obra_id": "01900000-0000-4000-8000-000000000001",
+      "cronograma_id": "01900000-0000-4000-8000-000000000003",
+      "periodo_id": "01900000-0000-4000-8000-00000000000b",
+      "status": "aprovada",
+      "aprovada_em": "2026-02-02T12:00:00Z",
+      "aprovada_por": "01900000-0000-4000-8000-000000000029",
+      "valor_liberado": null,
+      "observacao": "Primeira medição",
+      "created_at": "2026-01-05T12:00:00Z",
+      "created_by": "01900000-0000-4000-8000-000000000029",
+      "itens": [
+        {
+          "id": "01900000-0000-4000-8000-00000000003d",
+          "obra_fase_id": "01900000-0000-4000-8000-000000000015",
+          "percentual_acumulado": "0.5000",
+          "valor_medido": "50000.00"
+        },
+        {
+          "id": "01900000-0000-4000-8000-00000000003e",
+          "obra_fase_id": "01900000-0000-4000-8000-000000000016",
+          "percentual_acumulado": "0.2000",
+          "valor_medido": "10000.00"
+        }
+      ]
+    },
+    "recebimento": null,
+    "aviso": "Medição aprovada, mas a obra não tem valor de contrato: nenhum recebimento foi gerado. Informe o valor do contrato para liberar o valor."
+  }
+} as const;
+// </financeiro-exemplos>
+
+// ---------------------------------------------------------------------------
+// Checagem de tipo do bloco acima contra `types.ts` (só tsc; sem efeito em runtime).
+// Fica fora do bloco porque o teste de contrato lê aquele trecho como JSON.
+//
+// `as const` torna tudo readonly (e arrays viram tuplas), então a checagem usa
+// `DeepReadonly<Tipo>`. Atribuição pega campo FALTANDO ou de tipo errado no mock;
+// ela não pega campo SOBRANDO (objeto não-literal não sofre excess property check),
+// por isso `Sobra` lista, recursivamente, as chaves do mock que o tipo não declara.
+// ---------------------------------------------------------------------------
+type DeepReadonly<T> = T extends readonly (infer U)[]
+  ? readonly DeepReadonly<U>[]
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T;
+
+type Sobra<L, T> = L extends readonly (infer LU)[]
+  ? T extends readonly (infer TU)[]
+    ? Sobra<LU, TU>
+    : never
+  : L extends object
+    ? T extends object
+      ? { [K in keyof L]: K extends keyof T ? Sobra<L[K], NonNullable<T[K]>> : K }[keyof L]
+      : never
+    : never;
+
+type Exemplos = typeof FINANCEIRO_EXEMPLOS;
+type Esperado = {
+  CategoriaOut: CategoriaOut;
+  "CategoriaOut[]": CategoriaOut[];
+  DespesaOut: DespesaOut;
+  "DespesaOut#cancelada": DespesaOut;
+  "DespesaOut#paga": DespesaOut;
+  DespesaPage: DespesaPage;
+  DespesaParceladaOut: DespesaParceladaOut;
+  CronogramaGradeOut: CronogramaGradeOut;
+  MedicaoDetail: MedicaoDetail;
+  "MedicaoDetail#rascunho": MedicaoDetail;
+  MedicaoPage: MedicaoPage;
+  MedicaoAprovadaOut: MedicaoAprovadaOut;
+  "MedicaoAprovadaOut#sem_recebimento": MedicaoAprovadaOut;
+  RecebimentoOut: RecebimentoOut;
+  "RecebimentoOut#recebido": RecebimentoOut;
+  RecebimentoPage: RecebimentoPage;
+  OrcadoRealizadoOut: OrcadoRealizadoOut;
+  CurvaSOut: CurvaSOut;
+  FluxoCaixaOut: FluxoCaixaOut;
+};
+
+// Chave a chave: falta/sobra de chave no bloco ou no mapa acima também falha.
+export const _checaExemplos: { [K in keyof Esperado]: DeepReadonly<Esperado[K]> } = FINANCEIRO_EXEMPLOS;
+export type _ChavesIguais = keyof Exemplos extends keyof Esperado
+  ? keyof Esperado extends keyof Exemplos
+    ? true
+    : never
+  : never;
+export const _chavesIguais: _ChavesIguais = true;
+export type _SemCampoSobrando = {
+  [K in keyof Exemplos & keyof Esperado]: Sobra<Exemplos[K], Esperado[K]>;
+}[keyof Exemplos & keyof Esperado];
+export const _semSobra: [_SemCampoSobrando] extends [never] ? true : _SemCampoSobrando = true;

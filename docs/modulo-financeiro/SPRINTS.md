@@ -135,8 +135,12 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** S-F1
 - **Paralela com:** —
 - **Revisor de segurança:** não
-- **Status:** em andamento
-- **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** concluída (2026-11-12)
+- **Ciclos:** 2/3 *(ciclo 1, 2026-11-12: routers agrupados em `financeiro.py`/`planejamento.py`
+  não batem com os arquivos que S-F3, S-F5, S-F7, S-F9 e S-F11 editam — desmembrar; ciclo 2,
+  2026-11-12: code-reviewer NÃO FECHA — `*Update` aceita null em campo NOT NULL; dinheiro de
+  saída sem quantizar; mock sem tipo TS; + mudanças de contrato aprovadas, ERRATA E-10)* ·
+  **Revisores OK:** code-reviewer (2026-11-12, re-revisão do ciclo 2: FECHA; ciclo 1 NÃO FECHA)
 - **Slot de migration:** — (não cria migration)
 - **Arquivos:**
   `backend/app/modules/financeiro/schemas/*.py` ·
@@ -152,22 +156,22 @@ contrato gera sem erro" sem tipo nenhum.
   handlers MSW devolvendo dados de exemplo coerentes com os schemas.
 - **Fora de escopo:** qualquer regra de negócio; qualquer persistência; qualquer tela.
 - **Critérios de aceite:**
-  - [ ] **(positivo)** As **25 operações** de [ESPEC §6](ESPEC.md#6-contratos-de-api) aparecem no
+  - [x] **(positivo)** As **25 operações** de [ESPEC §6](ESPEC.md#6-contratos-de-api) aparecem no
         OpenAPI, e as **24** que devolvem JSON trazem o `response_model` de sucesso — o schema de
         resposta está lá, não só o 501. A 25ª é `export.csv`, que devolve `text/csv` e não tem
         modelo Pydantic
-  - [ ] `make check-contract` verde: toda rota chamada por `frontend/lib/api/financeiro.ts`
-        existe no OpenAPI
-  - [ ] Todo schema tem `extra='forbid'`; campo desconhecido devolve 422
-  - [ ] Valores monetários são `Decimal` nos schemas, nunca `float`
-  - [ ] Percentuais são `Decimal` e documentados como fração no docstring do schema
-  - [ ] Os handlers MSW devolvem payload que **valida contra os schemas** — teste que carrega o
+  - [x] `make check-contract` verde: toda rota chamada por `frontend/lib/api/financeiro.ts`
+        existe no OpenAPI *(o alvo não existe — E-02; coberto por `test_check_contract_frontend_x_openapi`)*
+  - [x] Todo schema tem `extra='forbid'`; campo desconhecido devolve 422
+  - [x] Valores monetários são `Decimal` nos schemas, nunca `float`
+  - [x] Percentuais são `Decimal` e documentados como fração no docstring do schema
+  - [x] Os handlers MSW devolvem payload que **valida contra os schemas** — teste que carrega o
         exemplo do mock e valida com o Pydantic
-  - [ ] `pnpm exec tsc --noEmit` verde: o frontend compila contra os tipos novos
-  - [ ] **Nenhum `response_model` do módulo é `dict`, `Any` ou `JSONResponse`** — cada campo do
+  - [x] `pnpm exec tsc --noEmit` verde: o frontend compila contra os tipos novos
+  - [x] **Nenhum `response_model` do módulo é `dict`, `Any` ou `JSONResponse`** — cada campo do
         schema de resposta aparece nomeado no OpenAPI. Sem isto, o stub compila e o frontend
         constrói contra `unknown`, passando no critério sem contrato nenhum
-  - [ ] A contagem no OpenAPI bate com a de [ESPEC §6](ESPEC.md#6-contratos-de-api). Os três
+  - [x] A contagem no OpenAPI bate com a de [ESPEC §6](ESPEC.md#6-contratos-de-api). Os três
         números são diferentes e é fácil conferir contra o errado — **contados linha a linha:
         21 linhas de rota, 19 paths distintos, 25 operações**. Três linhas valem mais de uma
         operação (`GET,POST /financeiro/categorias`, `GET,POST /obras/{obra_id}/despesas`,
@@ -222,6 +226,10 @@ contrato gera sem erro" sem tipo nenhum.
         confere o campo alterado, não só a existência de linha. O trigger genérico grava
         `action='UPDATE'` para qualquer coisa, inclusive para o soft delete
   - [ ] Papel `ai` também recebe 403 — não só `campo` e `viewer`
+  - [ ] **`PATCH` de `descricao` preserva `documento_id` e os demais campos** — o service lê o
+        payload com `model_dump(exclude_unset=True)`. Sem isso, cada edição grava `null` nos campos
+        omitidos: os NOT NULL dão 500 e `documento_id` desvincula a NF em silêncio (achado da
+        revisão da S-F2)
   - [ ] Nenhum `float` no caminho de cálculo — verificação por `grep`/`ruff` no diff, não por
         catálogo do Postgres (catálogo não enxerga tipo de Python)
   - [ ] **O seed das categorias padrão roda uma vez por empresa e é idempotente sob concorrência.**
@@ -343,6 +351,10 @@ contrato gera sem erro" sem tipo nenhum.
   - [ ] Fase dentro do orçado vem com `estourada = false` — o par positivo, sem o qual "não
         dispara quando está dentro" ficaria verde com alerta que nunca dispara
   - [ ] Os totais da obra batem com a soma das fases
+  - [ ] **Somas em `Decimal`, conferidas contra valor exato:** fixture com valores que divergem em
+        `float` (ex.: 2000 despesas de 0,10 somam exatamente 200,00). `DinheiroOut` aceita `float`
+        e quantiza para 2 casas, então soma em `float` sai plausível e passa no contrato sem
+        este teste (achado da revisão da S-F2)
   - [ ] Obra sem orçamento aprovado devolve estado vazio sinalizado, **não zeros** (CA-F11.4)
   - [ ] Curva S devolve as três séries acumuladas por período, e os valores conferem com os da
         tela de orçado × realizado (CA-F12.5)

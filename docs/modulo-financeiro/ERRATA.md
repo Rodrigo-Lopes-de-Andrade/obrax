@@ -213,6 +213,36 @@ débitos **não bloqueantes**, sem corrupção de dado — registrados para não
 
 ---
 
+## E-10 · Lacunas do contrato da ESPEC §6 fechadas na S-F2
+
+A ESPEC §6 lista as 25 operações, mas não os corpos. O `fastapi-developer` da S-F2 propôs, e o
+humano aprovou em 2026-11-12, como **contrato oficial** (`backend/app/modules/financeiro/schemas/`):
+
+- **`DELETE /financeiro/despesas/{id}` = cancelar**: `status → cancelada` (terminal, máquina §5),
+  200 com `DespesaOut`. Não é soft-delete. Só FIN (owner/admin/financeiro).
+- **Papéis (ESPEC §9 + Dicionário §4.3):** `gestor` lê tudo, lança e edita despesa (inclui
+  parcelada), lê categorias; **não** paga, cancela, estorna, recebe, nem mexe em categorias,
+  cronograma ou medição. `orcamentista` só vê orçado × realizado e Curva S. `receber` = FIN, por
+  analogia ao pagamento. `campo`, `viewer`, `ai`: sem acesso.
+- **Adições fora da ESPEC:** `numero_periodos` opcional (1–520) ao criar cronograma (CA-F01.3);
+  `periodicidade` (`semanal`|`mensal`, padrão mensal) no fluxo de caixa, com `de`/`ate`
+  obrigatórios e `obra_id` opcional (CA-F13.2); filtros do CSV `status`, `obra_fase_id`,
+  `categoria_id`, `de`, `ate` (CA-F14.1); campos de estado vazio na análise
+  (`tem_orcamento_aprovado`, `tem_cronograma`, `corrente`, `estourou`, `percentual_consumido` como
+  fração, nulo com orçado 0); Curva S em R$ com as séries `planejado_acumulado`,
+  `medido_acumulado`, `realizado_acumulado`; aprovar medição devolve
+  `{medicao, recebimento | null, aviso | null}` e `vencimento` é opcional (CA-F04.7).
+- **Revisão da S-F2, aprovada pelo humano em 2026-11-12 (ciclo 2):** fluxo de caixa com
+  `saldo_previsto`/`saldo_realizado` e os acumulados de cada um, em vez de um `saldo` ambíguo
+  (US-F13); `RecebimentoOut` com `obra_nome` e `medicao_numero`, `DespesaOut` com
+  `fase_descricao` e `categoria_nome` (CA-F10.1); listagem de despesas da obra com `de`/`ate`,
+  os mesmos filtros do CSV (CA-F14.1). Nos `*Update`, campo NOT NULL é opcional mas **não
+  nulo**; só `documento_id` aceita `null` (= desvincular NF, CA-F07.3).
+- **Sem rota para "desfazer recebimento":** a máquina §5 tem a transição, mas o PRD (CA-F10) não a
+  pede. Fica fora; desfazer **pagamento** é o `estornar` (CA-F09.3).
+
+---
+
 ## O que **não** está aqui
 
 Três coisas que pareciam divergência e foram **medidas** como corretas, para ninguém as
