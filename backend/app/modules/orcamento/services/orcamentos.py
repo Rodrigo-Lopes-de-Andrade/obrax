@@ -18,6 +18,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from app.modules.financeiro.services.fases import sincronizar_fases, validar_aprovacao
 from app.modules.orcamento.schemas import OrcamentoCreate
 
 _ORC_COLUMNS = "id, obra_id, titulo, status, versao_atual, created_at"
@@ -167,11 +168,20 @@ def update_status(session: Session, *, orcamento_id: uuid.UUID, new_status: str)
         raise _NOT_FOUND
 
     current: str = atual["status"]
+    if new_status == current:
+        # Mesmo status: no-op idempotente (E-07) — não ressincroniza nem relocka.
+        return _detail(session, orcamento_id)
     if new_status != current and new_status not in _TRANSICOES.get(current, set()):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"transição inválida: {current} → {new_status}",
         )
+
+    # Recusas antes de qualquer escrita: E-07 (409) e fases duplicadas (422).
+    # Já na ida para `aguardando_aprovacao` vale a mesma regra: o cliente não
+    # pode receber no portal um orçamento que não poderá aprovar.
+    if new_status in ("aprovado", "aguardando_aprovacao"):
+        validar_aprovacao(session, orcamento_id)
 
     session.execute(
         text("UPDATE orcamento SET status = CAST(:s AS orcamento_status) WHERE id = :id"),
@@ -186,6 +196,9 @@ def update_status(session: Session, *, orcamento_id: uuid.UUID, new_status: str)
             ),
             {"orc": orcamento_id, "n": atual["versao_atual"]},
         )
+        # Hook S-F1 (ESPEC §4.1): sincroniza obra_fase na mesma transação; 422
+        # (fases duplicadas) desfaz também o status acima.
+        sincronizar_fases(session, orcamento_id)
     return _detail(session, orcamento_id)
 
 
@@ -209,9 +222,19 @@ def soft_delete_orcamento(session: Session, orcamento_id: uuid.UUID) -> None:
     row = session.execute(
         text(
             "UPDATE orcamento SET deleted_at = now() "
-            "WHERE id = :id AND deleted_at IS NULL RETURNING id"
+            "WHERE id = :id AND deleted_at IS NULL AND status <> 'aprovado' RETURNING id"
         ),
         {"id": orcamento_id},
     ).first()
     if row is None:
-        raise _NOT_FOUND
+        existe = session.execute(
+            text("SELECT 1 FROM orcamento WHERE id = :id AND deleted_at IS NULL"),
+            {"id": orcamento_id},
+        ).first()
+        if existe is None:
+            raise _NOT_FOUND
+        # E-07: excluir o aprovado e aprovar outro reabriria a troca de fases.
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="orçamento aprovado não pode ser excluído; crie uma nova versão",
+        )

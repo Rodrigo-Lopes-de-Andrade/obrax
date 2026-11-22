@@ -80,8 +80,8 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** —
 - **Paralela com:** —
 - **Revisor de segurança:** sim
-- **Status:** pendente
-- **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** concluída (2026-11-05)
+- **Ciclos:** 2/3 · **Revisores OK:** revisor-isolamento (2026-11-05, ciclo 1; delta do ciclo 2 reaprovado — reprovado no ciclo 0 por GRANT parcial no verificador)
 - **Slot de migration:** 2026-11-03 · `0032`
 - **Arquivos:**
   `backend/alembic/versions/0032_obra_fase.py` ·
@@ -100,25 +100,25 @@ contrato gera sem erro" sem tipo nenhum.
   versão de orçamento; script de verificação de schema de [§6](DICIONARIO-DE-DADOS.md).
 - **Fora de escopo:** qualquer rota de API; qualquer tela; as outras oito tabelas.
 - **Critérios de aceite:**
-  - [ ] Aprovar uma versão de orçamento cria uma `obra_fase` por item `tipo='F'`, com
+  - [x] Aprovar uma versão de orçamento cria uma `obra_fase` por item `tipo='F'`, com
         `valor_orcado` igual ao custo direto agregado da fase — **positivo**, conferido contra
         valores calculados à mão na fixture
-  - [ ] Aprovar uma **segunda** versão com o mesmo código de fase atualiza descrição e valor, e
+  - [x] Aprovar uma **segunda** versão com o mesmo código de fase atualiza descrição e valor, e
         **mantém o mesmo `id`** — é a reconciliação da RN-F03
-  - [ ] Código de fase que sumiu da nova versão fica `ativa = false`, não é apagado
-  - [ ] Código novo na segunda versão cria fase nova
-  - [ ] `UNIQUE (obra_id, codigo)` rejeita duplicata
-  - [ ] Tenant A **vê as próprias** `obra_fase` (positivo de isolamento, SEC-F03)
-  - [ ] Tenant A recebe zero linhas das fases de B, em leitura **e** escrita (SEC-F02)
-  - [ ] `check_schema_financeiro.py` confere RLS, policy com `USING` e `WITH CHECK`, e `GRANT`
+  - [x] Código de fase que sumiu da nova versão fica `ativa = false`, não é apagado
+  - [x] Código novo na segunda versão cria fase nova
+  - [x] `UNIQUE (obra_id, codigo)` rejeita duplicata
+  - [x] Tenant A **vê as próprias** `obra_fase` (positivo de isolamento, SEC-F03)
+  - [x] Tenant A recebe zero linhas das fases de B, em leitura **e** escrita (SEC-F02)
+  - [x] `check_schema_financeiro.py` confere RLS, policy com `USING` e `WITH CHECK`, e `GRANT`
         pelo catálogo, e falha se qualquer um faltar
-  - [ ] A policy usa `app_current_company_id()`, não o cast cru — grep na migration confirma
-  - [ ] **Aprovar pela rota `PATCH /orcamentos/{id}/status` cria as fases** — o teste chama a
+  - [x] A policy usa `app_current_company_id()`, não o cast cru — grep na migration confirma
+  - [x] **Aprovar pela rota `PATCH /orcamentos/{id}/status` cria as fases** — o teste chama a
         rota, não o service
-  - [ ] **Aprovar pelo portal cria as fases** — idem, pela rota de decisão do portal. Os dois
+  - [x] **Aprovar pelo portal cria as fases** — idem, pela rota de decisão do portal. Os dois
         caminhos, senão o módulo nasce morto no fluxo real ([ESPEC §4.1](ESPEC.md#41-onde-a-sincronização-é-disparada))
-  - [ ] Fase sem `codigo` recebe o código sintético `F{sort_order:03d}` e o INSERT passa
-  - [ ] Duas fases com o mesmo código na mesma versão **recusam a aprovação** com 422 nomeando
+  - [x] Fase sem `codigo` recebe o código sintético `F{sort_order:03d}` e o INSERT passa
+  - [x] Duas fases com o mesmo código na mesma versão **recusam a aprovação** com 422 nomeando
         as fases — não deduplica em silêncio
 
 > O critério da segunda versão é o que importa mais nesta sprint, e é o único que exercita o
@@ -135,8 +135,12 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** S-F1
 - **Paralela com:** —
 - **Revisor de segurança:** não
-- **Status:** pendente
-- **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** concluída (2026-11-12)
+- **Ciclos:** 2/3 *(ciclo 1, 2026-11-12: routers agrupados em `financeiro.py`/`planejamento.py`
+  não batem com os arquivos que S-F3, S-F5, S-F7, S-F9 e S-F11 editam — desmembrar; ciclo 2,
+  2026-11-12: code-reviewer NÃO FECHA — `*Update` aceita null em campo NOT NULL; dinheiro de
+  saída sem quantizar; mock sem tipo TS; + mudanças de contrato aprovadas, ERRATA E-10)* ·
+  **Revisores OK:** code-reviewer (2026-11-12, re-revisão do ciclo 2: FECHA; ciclo 1 NÃO FECHA)
 - **Slot de migration:** — (não cria migration)
 - **Arquivos:**
   `backend/app/modules/financeiro/schemas/*.py` ·
@@ -152,22 +156,22 @@ contrato gera sem erro" sem tipo nenhum.
   handlers MSW devolvendo dados de exemplo coerentes com os schemas.
 - **Fora de escopo:** qualquer regra de negócio; qualquer persistência; qualquer tela.
 - **Critérios de aceite:**
-  - [ ] **(positivo)** As **25 operações** de [ESPEC §6](ESPEC.md#6-contratos-de-api) aparecem no
+  - [x] **(positivo)** As **25 operações** de [ESPEC §6](ESPEC.md#6-contratos-de-api) aparecem no
         OpenAPI, e as **24** que devolvem JSON trazem o `response_model` de sucesso — o schema de
         resposta está lá, não só o 501. A 25ª é `export.csv`, que devolve `text/csv` e não tem
         modelo Pydantic
-  - [ ] `make check-contract` verde: toda rota chamada por `frontend/lib/api/financeiro.ts`
-        existe no OpenAPI
-  - [ ] Todo schema tem `extra='forbid'`; campo desconhecido devolve 422
-  - [ ] Valores monetários são `Decimal` nos schemas, nunca `float`
-  - [ ] Percentuais são `Decimal` e documentados como fração no docstring do schema
-  - [ ] Os handlers MSW devolvem payload que **valida contra os schemas** — teste que carrega o
+  - [x] `make check-contract` verde: toda rota chamada por `frontend/lib/api/financeiro.ts`
+        existe no OpenAPI *(o alvo não existe — E-02; coberto por `test_check_contract_frontend_x_openapi`)*
+  - [x] Todo schema tem `extra='forbid'`; campo desconhecido devolve 422
+  - [x] Valores monetários são `Decimal` nos schemas, nunca `float`
+  - [x] Percentuais são `Decimal` e documentados como fração no docstring do schema
+  - [x] Os handlers MSW devolvem payload que **valida contra os schemas** — teste que carrega o
         exemplo do mock e valida com o Pydantic
-  - [ ] `pnpm exec tsc --noEmit` verde: o frontend compila contra os tipos novos
-  - [ ] **Nenhum `response_model` do módulo é `dict`, `Any` ou `JSONResponse`** — cada campo do
+  - [x] `pnpm exec tsc --noEmit` verde: o frontend compila contra os tipos novos
+  - [x] **Nenhum `response_model` do módulo é `dict`, `Any` ou `JSONResponse`** — cada campo do
         schema de resposta aparece nomeado no OpenAPI. Sem isto, o stub compila e o frontend
         constrói contra `unknown`, passando no critério sem contrato nenhum
-  - [ ] A contagem no OpenAPI bate com a de [ESPEC §6](ESPEC.md#6-contratos-de-api). Os três
+  - [x] A contagem no OpenAPI bate com a de [ESPEC §6](ESPEC.md#6-contratos-de-api). Os três
         números são diferentes e é fácil conferir contra o errado — **contados linha a linha:
         21 linhas de rota, 19 paths distintos, 25 operações**. Três linhas valem mais de uma
         operação (`GET,POST /financeiro/categorias`, `GET,POST /obras/{obra_id}/despesas`,
@@ -187,8 +191,8 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** S-F2
 - **Paralela com:** S-F5, S-F4, S-F6
 - **Revisor de segurança:** sim (escrita financeira + isolamento)
-- **Status:** pendente
-- **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** concluída (2026-11-22) — débitos aceitos: 15 testes de 422 de `test_financeiro_contrato.py` ainda abrem conexão (usar `http_sentinela`); escolha do fuso sem teste que a distinga de UTC; POST de categoria só com espaços sem teste de API (o CHECK do banco barra, como 500); data futura checada antes do 404/transição; alias de papel da rota de fases (`_common.py`); índice `(company_id, obra_id, id DESC)`; teste do realizado a apontar para a rota da S-F9
+- **Ciclos:** 2/3 *(ciclo 2, 2026-11-22: nome/fornecedor só com espaços gravado vazio no POST; fase de outra obra da mesma empresa não barrada no banco; teste de contrato sem banco via sessão-sentinela; data de pagamento futura → 422 · ciclo 1, 2026-11-22: auditoria por gatilho, rota de fases, testes de contrato da fase stub — E-11)* · **Revisores OK:** revisor-isolamento (2026-11-22, ciclo 1: APROVADO — catálogo, app_user com GUC, 36 sondagens pela API, seed concorrente); delta do ciclo 2 reaprovado (FK tripla com obra_id, 42 sondagens, migration em banco novo) · code-reviewer (ciclo 1 NÃO FECHA; ciclo 2 FECHA, 2026-11-22)
 - **Slot de migration:** 2026-11-05 · `0033`
 - **Arquivos:**
   `backend/alembic/versions/0033_financeiro_base.py` ·
@@ -196,41 +200,65 @@ contrato gera sem erro" sem tipo nenhum.
   `backend/app/modules/financeiro/services/despesas.py` ·
   `backend/tests/test_despesas.py` · `test_categorias.py` · `test_despesa_parcelamento.py` ·
   `backend/tests/test_rls_financeiro.py` *(acrescenta as tabelas novas; arquivo criado na S-F1)* ·
-  `backend/scripts/check_schema_financeiro.py` *(acrescenta as tabelas novas)*
+  `backend/scripts/check_schema_financeiro.py` *(acrescenta as tabelas novas)* ·
+  `backend/app/modules/financeiro/services/fases.py` *(E-08: `ON CONFLICT` passa a
+  `(company_id, obra_id, codigo)`; arquivo da S-F1, concluída)* ·
+  `backend/app/modules/financeiro/schemas/despesa.py` *(E-11: `FaseObraOut` da rota de fases)* ·
+  `backend/tests/test_financeiro_contrato.py` *(E-11: rotas implementadas saem da lista de 501;
+  26 operações)* ·
+  `backend/tests/test_indices_paginacao.py` *(E-08: o `UNIQUE (company_id, id)` novo em `obras`
+  empata com o parcial numa massa sem obra excluída; a massa ganha obras soft-deletadas, a
+  asserção não muda)*
 - **Escopo:** `categoria_financeira` e `despesa` conforme Dicionário §4.2 e §4.3; CRUD; seed das
   categorias padrão no primeiro acesso; parcelamento; pagar e estornar.
 - **Fora de escopo:** anexo de NF *(S-F11)*; telas; agregações de análise.
 - **Tasks:** `DB-01` migration · `DB-02` índices · `DB-03` RLS e policies · `BE-01` repository ·
   `BE-02` service de parcelamento (RN-F08) · `BE-03` rotas · `QA-01` isolamento
 - **Critérios de aceite:**
-  - [ ] Despesa criada com fase, categoria, valor e datas **aparece na listagem da obra**
+  - [x] Despesa criada com fase, categoria, valor e datas **aparece na listagem da obra**
         (positivo)
-  - [ ] Despesa sem `obra_fase_id` é recusada com 422 (RN-F02)
-  - [ ] Valor zero ou negativo é recusado
-  - [ ] Parcelar 1000,00 em 3 gera 333,33 + 333,33 + 333,34, **somando exatamente 1000,00**
-  - [ ] Parcelas herdam obra, fase, categoria e fornecedor, e têm vencimentos mensais
-  - [ ] Pagar exige data e muda o status; o `CHECK` rejeita pago sem data **e** data sem pago
-  - [ ] Estornar devolve a despesa para `prevista` e limpa a data
-  - [ ] Categoria com despesa vinculada não é excluível, só desativável
-  - [ ] Categoria desativada some do formulário e **continua** nos relatórios
-  - [ ] Despesa em obra de outro tenant: 404, não 403 (SEC-F04)
-  - [ ] Papel `campo` e `viewer` recebem 403 em todas as rotas (SEC-F05)
-  - [ ] Pagamento e exclusão geram `audit_log` (SEC-F07)
-  - [ ] **Despesa paga sai do comprometido e entra no realizado da fase** — sem este, `pagar`
+  - [x] Despesa sem `obra_fase_id` é recusada com 422 (RN-F02)
+  - [x] Valor zero ou negativo é recusado
+  - [x] Parcelar 1000,00 em 3 gera 333,33 + 333,33 + 333,34, **somando exatamente 1000,00**
+  - [x] Parcelas herdam obra, fase, categoria e fornecedor, e têm vencimentos mensais
+  - [x] Pagar exige data e muda o status; o `CHECK` rejeita pago sem data **e** data sem pago
+  - [x] Estornar devolve a despesa para `prevista` e limpa a data
+  - [x] Categoria com despesa vinculada não é excluível, só desativável
+  - [x] Categoria desativada some do formulário e **continua** nos relatórios
+  - [x] Despesa em obra de outro tenant: 404, não 403 (SEC-F04)
+  - [x] Papel `campo` e `viewer` recebem 403 em todas as rotas (SEC-F05)
+  - [x] Pagamento e exclusão geram `audit_log` (SEC-F07)
+  - [x] **Despesa paga sai do comprometido e entra no realizado da fase** — sem este, `pagar`
         pode ser um `UPDATE` de status sem efeito semântico nenhum e passa em tudo
-  - [ ] O `audit_log` do pagamento é **distinguível** de um `PATCH` de descrição: o teste
+  - [x] O `audit_log` do pagamento é **distinguível** de um `PATCH` de descrição: o teste
         confere o campo alterado, não só a existência de linha. O trigger genérico grava
         `action='UPDATE'` para qualquer coisa, inclusive para o soft delete
-  - [ ] Papel `ai` também recebe 403 — não só `campo` e `viewer`
-  - [ ] Nenhum `float` no caminho de cálculo — verificação por `grep`/`ruff` no diff, não por
+  - [x] Papel `ai` também recebe 403 — não só `campo` e `viewer`
+  - [x] **`PATCH` de `descricao` preserva `documento_id` e os demais campos** — o service lê o
+        payload com `model_dump(exclude_unset=True)`. Sem isso, cada edição grava `null` nos campos
+        omitidos: os NOT NULL dão 500 e `documento_id` desvincula a NF em silêncio (achado da
+        revisão da S-F2)
+  - [x] Nenhum `float` no caminho de cálculo — verificação por `grep`/`ruff` no diff, não por
         catálogo do Postgres (catálogo não enxerga tipo de Python)
-  - [ ] **O seed das categorias padrão roda uma vez por empresa e é idempotente sob concorrência.**
+  - [x] **O seed das categorias padrão roda uma vez por empresa e é idempotente sob concorrência.**
         O CA-F05.1 diz "criado no primeiro acesso" e não diz quem dispara nem o que acontece em
         dois acessos simultâneos: duas requisições que não acham categoria nenhuma inserem o
         conjunto as duas, e a segunda bate em `uq_categoria_company_nome` — o primeiro acesso da
         empresa falha com 500. Resolva **no banco** (`INSERT ... ON CONFLICT DO NOTHING`), não com
         trava em memória: uma instância não é um processo. Teste com duas sessões concorrentes, e
         confira que o resultado tem o conjunto **uma** vez
+  - [x] **Parcela-base truncada, resíduo na última (E-11):** 100,00 em 6 = 16,66 × 5 + 16,70;
+        valor menor que N centavos → 422
+  - [x] **`GET /obras/{obra_id}/fases` (E-11)** lista as fases da obra para quem lança despesa,
+        404 para obra de outro tenant, 403 para `campo`/`viewer`/`ai`
+  - [x] **`despesa` tem o gatilho `audit_despesa` (E-11)**, conferido no catálogo; o service não
+        grava `audit_log` à mão
+  - [x] **E-08 (FK composta), medido no banco como `app_user` com a GUC de A:** `INSERT` de
+        `despesa` (e de `obra_fase`) com `company_id = A` apontando para obra ou fase de B **falha
+        por FK**; o mesmo `INSERT` apontando para obra/fase de A passa (positivo). `obras` ganha
+        `UNIQUE (company_id, id)`; a `UNIQUE (obra_id, codigo)` de `obra_fase` passa a incluir
+        `company_id`. `check_schema_financeiro.py` confere que toda FK de tabela do módulo para
+        tabela de tenant é composta com `company_id`, e falha se alguma não for
 
 ### Sprint S-F5 — Cronograma
 
@@ -256,7 +284,9 @@ contrato gera sem erro" sem tipo nenhum.
         `data_prevista_fim`, na periodicidade escolhida (positivo)
   - [ ] A distribuição inicial é linear e **cada fase soma exatamente 1,0000**
   - [ ] O total planejado é igual ao `custo_direto` da versão aprovada
-  - [ ] Obra sem orçamento aprovado recusa a criação, com mensagem dizendo o que falta
+  - [ ] Obra sem orçamento aprovado recusa a criação com **422** e mensagem dizendo o que falta, que
+        **contém "orçamento aprovado"** — a tela da S-F6 mostra o CTA para os orçamentos a partir
+        desse texto; o teste do backend fixa a frase
   - [ ] Segundo cronograma na mesma obra é recusado pelo índice único parcial
   - [ ] Ajuste cuja fase soma 0,9999 é **recusado**, e a mensagem nomeia a fase e a diferença —
         é o caso de borda de três casas decimais, o falso verde esperado aqui
@@ -266,7 +296,12 @@ contrato gera sem erro" sem tipo nenhum.
         critério de percentual fecha em 1,0000 e ainda assim os valores podem dar 999,99
   - [ ] Obra sem `data_inicio` ou sem `data_prevista_fim` devolve **422** nomeando a data que
         falta, não 500 ([ESPEC §4.4](ESPEC.md#44-os-casos-de-borda-que-o-schema-permite))
+  - [ ] `GET /obras/{obra_id}/cronograma` de obra **sem cronograma** devolve **404** — a tela da
+        S-F6 mostra o formulário de criação a partir dele (o "sem orçamento" vem do 422 do POST)
   - [ ] Isolamento nas três tabelas, positivo e negativo
+  - [ ] **E-08 (FK composta):** toda FK das tabelas novas para tabela de tenant é
+        `(company_id, x_id)`; `INSERT` como `app_user` de A apontando para linha de B falha por FK
+        (negativo) e para linha de A passa (positivo)
 
 ### Sprint S-F7 — Medição e faturamento
 
@@ -315,6 +350,9 @@ contrato gera sem erro" sem tipo nenhum.
   - [ ] Não existe `POST` de recebimento avulso — a rota não está no OpenAPI
   - [ ] Aprovação gera `audit_log` com autor e horário
   - [ ] Isolamento nas três tabelas, positivo e negativo
+  - [ ] **E-08 (FK composta):** toda FK das tabelas novas para tabela de tenant é
+        `(company_id, x_id)`; `INSERT` como `app_user` de A apontando para linha de B falha por FK
+        (negativo) e para linha de A passa (positivo)
 
 ### Sprint S-F9 — Análise: orçado × realizado, Curva S, fluxo de caixa
 
@@ -343,6 +381,10 @@ contrato gera sem erro" sem tipo nenhum.
   - [ ] Fase dentro do orçado vem com `estourada = false` — o par positivo, sem o qual "não
         dispara quando está dentro" ficaria verde com alerta que nunca dispara
   - [ ] Os totais da obra batem com a soma das fases
+  - [ ] **Somas em `Decimal`, conferidas contra valor exato:** fixture com valores que divergem em
+        `float` (ex.: 2000 despesas de 0,10 somam exatamente 200,00). `DinheiroOut` aceita `float`
+        e quantiza para 2 casas, então soma em `float` sai plausível e passa no contrato sem
+        este teste (achado da revisão da S-F2)
   - [ ] Obra sem orçamento aprovado devolve estado vazio sinalizado, **não zeros** (CA-F11.4)
   - [ ] Curva S devolve as três séries acumuladas por período, e os valores conferem com os da
         tela de orçado × realizado (CA-F12.5)
@@ -372,7 +414,7 @@ contrato gera sem erro" sem tipo nenhum.
 - **Depende de:** S-F2
 - **Paralela com:** S-F3, S-F5, S-F6
 - **Revisor de segurança:** não
-- **Status:** pendente · **Ciclos:** 0/3 · **Revisores OK:** —
+- **Status:** aguardando CI (2026-11-22) — code-reviewer FECHA condicionado a E2E verde e bundle ≤ 240 kB no build da CI; débitos: paginação e filtro de status sem E2E; erro de mutação sem teste de drawer aberto; colar "1500.5" vira 150,05 (semântica de centavos) · **Ciclos:** 2/3 *(ciclo 2, 2026-11-22: re-revisão NÃO FECHA só por E2E — `waitForRequest` espera POST que o stub atende sem rede; edição sem E2E · ciclo 1, 2026-11-22: code-reviewer NÃO FECHA — E2E com seletor ambíguo e positivo que não prova nada; estados sem teste; refetch cancelado por causa do mock; fases via rota nova E-11)* · **Revisores OK:** code-reviewer (2026-11-22, FECHA condicional)
 - **Arquivos:**
   `frontend/app/(admin)/obras/[id]/financeiro/despesas/page.tsx` ·
   `frontend/components/modules/financeiro/DespesasTable.tsx` ·
@@ -381,7 +423,9 @@ contrato gera sem erro" sem tipo nenhum.
   `frontend/lib/hooks/use-despesas.ts` · `use-categorias.ts` ·
   `frontend/app/(admin)/configuracoes/categorias/page.tsx` ·
   `frontend/components/modules/financeiro/CategoriasList.tsx` ·
-  `frontend/e2e/financeiro-despesas.spec.ts`
+  `frontend/e2e/financeiro-despesas.spec.ts` ·
+  `frontend/lib/api/types.ts` · `frontend/lib/api/financeiro.ts` · `frontend/lib/mock/handlers.ts` ·
+  `frontend/lib/mock/db.ts` *(E-11: só o espelho da rota de fases)*
 - **Escopo:** US-F05, US-F06, US-F08, US-F09 na interface.
 - **Fora de escopo:** anexo de NF *(S-F11)*; sidebar.
 - **Critérios de aceite:**
@@ -407,7 +451,7 @@ contrato gera sem erro" sem tipo nenhum.
 
 - **Agente:** nextjs-developer
 - **Depende de:** S-F2 · **Paralela com:** S-F3, S-F4, S-F5
-- **Revisor de segurança:** não · **Status:** pendente · **Ciclos:** 0/3 · **Revisores OK:** —
+- **Revisor de segurança:** não · **Status:** aguardando CI (2026-11-22) — code-reviewer FECHA condicionado a E2E verde e bundle ≤ 240 kB no build da CI; débitos: corpo do POST de criação não verificado; `Number(periodos)` aceita "1.5" (backend recusa); contraste da linha destacada só a CI mede — se o axe reprovar, vai para decisão humana, a sprint não tem mais ciclo · **Ciclos:** 3/3 *(ciclo 3, 2026-11-22: re-revisão NÃO FECHA só por E2E — seletor ambíguo na mensagem "não soma"; critério reescrito; corpo do PUT sem verificação · ciclo 2, 2026-11-22: code-reviewer NÃO FECHA — teste de recálculo passa sem recalcular; erro vira "sem orçamento"; valor da célula ignora o do servidor; gestor vê "criar"; erro sem retry · ciclo 1, 2026-11-22: estados bloqueado e sem orçamento aprovado sem teste nenhum — o mock só tem um cenário)* · **Revisores OK:** code-reviewer (2026-11-22, FECHA condicional)
 - **Arquivos:**
   `frontend/app/(admin)/obras/[id]/cronograma/page.tsx` ·
   `frontend/components/modules/financeiro/CronogramaGrid.tsx` · `CronogramaToolbar.tsx` ·
@@ -423,7 +467,12 @@ contrato gera sem erro" sem tipo nenhum.
   - [ ] Fase que não soma 100% aparece destacada **com texto**, não só cor, e o botão de salvar
         fica desabilitado com o motivo visível
   - [ ] Cronograma bloqueado abre em leitura, com aviso explicando por quê
-  - [ ] Obra sem orçamento aprovado mostra empty com CTA
+  - [ ] Obra sem cronograma (GET 404) mostra o formulário de criação a quem pode editar; se a obra
+        não tem orçamento aprovado, o POST volta **422** e a tela mostra a mensagem do backend com
+        CTA para os orçamentos — a decisão vem do 422, não de outra rota *(reescrito no ciclo 3:
+        o fluxo aprovado no ciclo 2 tirou a dependência da análise da S-F9)*
+  - [ ] O `PUT` de alocações envia **fração** (`"0.4000"`), não percentual de 0 a 100 — o E2E
+        confere o corpo enviado
   - [ ] axe-core sem violação crítica; a grade é navegável por teclado
 
 ### Sprint S-F8 — Telas de medição

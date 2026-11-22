@@ -94,6 +94,18 @@ def dataset_paginacao(two_tenants: dict) -> Iterator[dict[str, str]]:
         b_cliente = seed_clientes(b_cid, 150)
         seed_obras(a_cid, a_cliente, 8)
         seed_obras(b_cid, b_cliente, 150)
+        # Massa realista: tenant A tem obras soft-deletadas. O `uq_obras_company_id`
+        # (company_id, id), lido de trás para frente, precisa filtrar as excluídas
+        # (`Filter: deleted_at IS NULL`); o parcial `ix_obras_company_id_desc` não
+        # as contém e fica estritamente mais barato (E-08).
+        s.execute(
+            text(
+                "INSERT INTO obras (company_id, cliente_id, status, codigo, nome, deleted_at) "
+                "SELECT :co, :cl, 'cancelada'::obra_status, 'DEL-' || g, 'X', now() "
+                "FROM generate_series(1, 400) g"
+            ),
+            {"co": a_cid, "cl": a_cliente},
+        )
         s.execute(text("ANALYZE clientes"))
         s.execute(text("ANALYZE obras"))
         s.commit()

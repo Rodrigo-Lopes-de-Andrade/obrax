@@ -18,6 +18,7 @@ import type {
 import {
   clientes,
   currentUser,
+  FINANCEIRO_EXEMPLOS,
   documentos,
   ensureSeed,
   membros,
@@ -1051,5 +1052,116 @@ export const handlers = [
   http.get("/api/v1/ia/insights", async () => {
     await delay(LATENCY);
     return HttpResponse.json(getIaInsightsMock());
+  }),
+
+  // Financeiro (S-F2) — devolve FINANCEIRO_EXEMPLOS (validados contra o Pydantic).
+  http.post("/api/v1/obras/:obraId/cronograma", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CronogramaGradeOut, { status: 201 });
+  }),
+  http.get("/api/v1/obras/:obraId/cronograma", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CronogramaGradeOut);
+  }),
+  http.put("/api/v1/cronograma/:id/alocacoes", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CronogramaGradeOut);
+  }),
+  http.get("/api/v1/obras/:obraId/medicoes", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.MedicaoPage);
+  }),
+  http.post("/api/v1/obras/:obraId/medicoes", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["MedicaoDetail#rascunho"], { status: 201 });
+  }),
+  http.get("/api/v1/medicoes/:id", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.MedicaoDetail);
+  }),
+  http.put("/api/v1/medicoes/:id/itens", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.MedicaoDetail);
+  }),
+  http.post("/api/v1/medicoes/:id/aprovar", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.MedicaoAprovadaOut);
+  }),
+  http.get("/api/v1/financeiro/categorias", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["CategoriaOut[]"]);
+  }),
+  http.post("/api/v1/financeiro/categorias", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CategoriaOut, { status: 201 });
+  }),
+  http.patch("/api/v1/financeiro/categorias/:id", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CategoriaOut);
+  }),
+  http.get("/api/v1/obras/:obraId/fases", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["FaseObraOut[]"]);
+  }),
+  http.get("/api/v1/obras/:obraId/despesas", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaPage);
+  }),
+  http.post("/api/v1/obras/:obraId/despesas/parcelada", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaParceladaOut, { status: 201 });
+  }),
+  http.post("/api/v1/obras/:obraId/despesas", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaOut, { status: 201 });
+  }),
+  http.get("/api/v1/financeiro/despesas/:id", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaOut);
+  }),
+  http.patch("/api/v1/financeiro/despesas/:id", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaOut);
+  }),
+  http.delete("/api/v1/financeiro/despesas/:id", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["DespesaOut#cancelada"]);
+  }),
+  http.post("/api/v1/financeiro/despesas/:id/pagar", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["DespesaOut#paga"]);
+  }),
+  http.post("/api/v1/financeiro/despesas/:id/estornar", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaOut);
+  }),
+  http.get("/api/v1/financeiro/recebimentos", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.RecebimentoPage);
+  }),
+  http.post("/api/v1/financeiro/recebimentos/:id/receber", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["RecebimentoOut#recebido"]);
+  }),
+  http.get("/api/v1/obras/:obraId/financeiro/orcado-realizado", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.OrcadoRealizadoOut);
+  }),
+  http.get("/api/v1/obras/:obraId/financeiro/curva-s", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.CurvaSOut);
+  }),
+  http.get("/api/v1/financeiro/fluxo-caixa", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS.FluxoCaixaOut);
+  }),
+  http.get("/api/v1/obras/:obraId/financeiro/export.csv", async () => {
+    await delay(LATENCY);
+    const d = FINANCEIRO_EXEMPLOS.DespesaOut;
+    const csv = [
+      "id,fornecedor,descricao,valor,vencimento,status",
+      `${d.id},${d.fornecedor_nome},${d.descricao},${d.valor},${d.vencimento},${d.status}`,
+    ].join("\n");
+    return new HttpResponse(csv, { headers: { "Content-Type": "text/csv; charset=utf-8" } });
   }),
 ];

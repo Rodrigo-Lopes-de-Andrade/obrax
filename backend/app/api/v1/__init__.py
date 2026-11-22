@@ -16,6 +16,12 @@ from app.modules.gestao.obras.router import router as obras_router
 from app.modules.gestao.ocorrencias.router import router as ocorrencias_router
 from app.modules.gestao.relatorios.router import router as relatorios_router
 from app.modules.gestao.tickets.router import router as tickets_router
+from app.modules.financeiro.routers.analise import router as financeiro_analise_router
+from app.modules.financeiro.routers.categorias import router as financeiro_categorias_router
+from app.modules.financeiro.routers.cronograma import router as financeiro_cronograma_router
+from app.modules.financeiro.routers.despesas import router as financeiro_despesas_router
+from app.modules.financeiro.routers.medicao import router as financeiro_medicao_router
+from app.modules.financeiro.routers.recebimentos import router as financeiro_recebimentos_router
 from app.modules.lgpd.router import router as lgpd_router
 from app.modules.orcamento.routers.insumos import router as insumos_router
 from app.modules.orcamento.routers.itens import router as orcamento_itens_router
@@ -54,3 +60,10 @@ api_router.include_router(portal_router)
 api_router.include_router(lgpd_router)
 # Sem prefixo: paths absolutos (/webhook/uazapi, /ia/*, /feature-flags).
 api_router.include_router(agentes_router)
+# Sem prefixo: paths absolutos do financeiro, um router por arquivo (dono por sprint).
+api_router.include_router(financeiro_categorias_router)
+api_router.include_router(financeiro_despesas_router)
+api_router.include_router(financeiro_recebimentos_router)
+api_router.include_router(financeiro_cronograma_router)
+api_router.include_router(financeiro_medicao_router)
+api_router.include_router(financeiro_analise_router)
