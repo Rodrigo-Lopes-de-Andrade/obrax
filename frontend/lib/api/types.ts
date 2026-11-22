@@ -814,6 +814,13 @@ export interface DespesaParceladaCreate {
   primeiro_vencimento: string;
   documento_id?: string | null;
 }
+/** Lista leve das fases da obra (E-11): GET /obras/{obra_id}/fases. */
+export interface FaseObraOut {
+  id: string;
+  codigo: string;
+  descricao: string;
+  ativa: boolean;
+}
 export interface DespesaOut {
   id: string;
   obra_id: string;

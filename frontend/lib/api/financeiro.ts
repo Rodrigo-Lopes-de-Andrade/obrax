@@ -15,6 +15,7 @@ import type {
   DespesaParceladaOut,
   DespesaStatus,
   DespesaUpdate,
+  FaseObraOut,
   FluxoCaixaOut,
   MedicaoAprovadaOut,
   MedicaoAprovar,
@@ -107,6 +108,11 @@ export function createCategoria(input: CategoriaCreate): Promise<CategoriaOut> {
 }
 export function updateCategoria(id: string, input: CategoriaUpdate): Promise<CategoriaOut> {
   return api.patch(`/api/v1/financeiro/categorias/${id}`, input);
+}
+
+// Fases da obra (E-11)
+export function listFasesObra(obraId: string): Promise<FaseObraOut[]> {
+  return api.get(`/api/v1/obras/${obraId}/fases`);
 }
 
 // Despesas

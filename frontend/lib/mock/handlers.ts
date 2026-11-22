@@ -1099,6 +1099,10 @@ export const handlers = [
     await delay(LATENCY);
     return HttpResponse.json(FINANCEIRO_EXEMPLOS.CategoriaOut);
   }),
+  http.get("/api/v1/obras/:obraId/fases", async () => {
+    await delay(LATENCY);
+    return HttpResponse.json(FINANCEIRO_EXEMPLOS["FaseObraOut[]"]);
+  }),
   http.get("/api/v1/obras/:obraId/despesas", async () => {
     await delay(LATENCY);
     return HttpResponse.json(FINANCEIRO_EXEMPLOS.DespesaPage);

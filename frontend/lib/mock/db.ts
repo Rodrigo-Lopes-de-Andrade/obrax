@@ -11,6 +11,7 @@ import type {
   CurvaSOut,
   DespesaOut,
   DespesaPage,
+  FaseObraOut,
   DespesaParceladaOut,
   Documento,
   DocumentoTipo,
@@ -296,6 +297,26 @@ export function ensureSeed(): void {
 
 // <financeiro-exemplos>
 export const FINANCEIRO_EXEMPLOS = {
+  "FaseObraOut[]": [
+    {
+      "id": "01900000-0000-4000-8000-000000000015",
+      "codigo": "01",
+      "descricao": "Fundação",
+      "ativa": true
+    },
+    {
+      "id": "01900000-0000-4000-8000-000000000016",
+      "codigo": "02",
+      "descricao": "Estrutura",
+      "ativa": true
+    },
+    {
+      "id": "01900000-0000-4000-8000-000000000017",
+      "codigo": "03",
+      "descricao": "Cobertura (removida do orçamento)",
+      "ativa": false
+    }
+  ],
   "CategoriaOut": {
     "id": "01900000-0000-4000-8000-00000000001f",
     "nome": "Materiais",
@@ -915,6 +936,7 @@ type Sobra<L, T> = L extends readonly (infer LU)[]
 
 type Exemplos = typeof FINANCEIRO_EXEMPLOS;
 type Esperado = {
+  "FaseObraOut[]": FaseObraOut[];
   CategoriaOut: CategoriaOut;
   "CategoriaOut[]": CategoriaOut[];
   DespesaOut: DespesaOut;
