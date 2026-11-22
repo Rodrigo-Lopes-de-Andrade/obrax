@@ -135,6 +135,18 @@ def get_obra(session: Session, obra_id: uuid.UUID) -> dict[str, Any]:
     return dict(row)
 
 
+def proximo_codigo(session: Session) -> str:
+    """Próximo `OBR-NNNN` da empresa (RLS): maior sufixo numérico + 1, com no
+    mínimo 4 dígitos. Inclui obras excluídas, para não reaproveitar código."""
+    maior = session.execute(
+        text(
+            "SELECT COALESCE(MAX(CAST(substring(codigo FROM 5) AS BIGINT)), 0) "
+            "FROM obras WHERE codigo ~* '^OBR-[0-9]{1,15}$'"
+        )
+    ).scalar_one()
+    return f"OBR-{int(maior) + 1:04d}"
+
+
 def update_obra(session: Session, *, obra_id: uuid.UUID, payload: ObraUpdate) -> dict[str, Any]:
     existing = (
         session.execute(

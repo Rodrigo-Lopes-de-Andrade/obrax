@@ -424,6 +424,9 @@ export interface AbcItem {
   pct: string;
   pct_acumulado: string;
   classe: AbcClasseNome;
+  /** Fase e serviço da EAP onde o item está ("<código> <descrição>"). */
+  fase?: string | null;
+  servico?: string | null;
 }
 
 export interface AbcClasse {

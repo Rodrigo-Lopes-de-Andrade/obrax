@@ -240,6 +240,15 @@ export const handlers = [
     return HttpResponse.json(paginate(rows, cursor, limit));
   }),
 
+  // Antes de "/obras/:id", senão "proximo-codigo" é lido como id.
+  http.get("/api/v1/obras/proximo-codigo", async () => {
+    await delay(LATENCY);
+    const maior = obras.reduce((m, o) => {
+      const hit = /^OBR-(\d+)$/i.exec(o.codigo);
+      return hit ? Math.max(m, Number(hit[1])) : m;
+    }, 0);
+    return HttpResponse.json({ codigo: `OBR-${String(maior + 1).padStart(4, "0")}` });
+  }),
   http.get("/api/v1/obras/:id", async ({ params }) => {
     await delay(LATENCY);
     const obra = obras.find((o) => o.id === params.id);

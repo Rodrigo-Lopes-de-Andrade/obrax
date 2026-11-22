@@ -140,6 +140,23 @@ test.describe("clientes", () => {
       page.getByRole("dialog", { name: "Nova obra" }).getByRole("combobox", { name: "Cliente" }),
     ).toHaveText(/Cliente Atalho Ltda/);
   });
+
+  test("Nova obra já vem com o próximo código sugerido", async ({ page, gotoApp }) => {
+    await gotoApp("/obras");
+    await page.getByRole("button", { name: "Nova obra" }).first().click();
+    const drawer = page.getByRole("dialog", { name: "Nova obra" });
+    await expect(drawer.getByLabel("Código")).toHaveValue(/^OBR-\d{4,}$/);
+  });
+
+  test("editar o nome da obra aparece na lista", async ({ page, gotoApp }) => {
+    await gotoApp("/obras");
+    await page.getByRole("button", { name: "Editar obra" }).first().click();
+    const drawer = page.getByRole("dialog", { name: "Editar obra" });
+    await drawer.getByLabel("Nome").fill("Clínica Íris — renomeada");
+    await drawer.getByRole("button", { name: "Salvar alterações" }).click();
+    await expect(drawer).toBeHidden();
+    await expect(page.getByRole("cell", { name: "Clínica Íris — renomeada" })).toBeVisible();
+  });
 });
 
 test.describe("menu superior", () => {

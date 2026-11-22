@@ -169,6 +169,15 @@ export function ObrasTable({
         ),
       },
       {
+        accessorKey: "nome",
+        header: ({ column }) => <SortHeader column={column}>Nome</SortHeader>,
+        cell: ({ row }) => (
+          <span className="block max-w-64 truncate font-medium" title={row.original.nome}>
+            {row.original.nome}
+          </span>
+        ),
+      },
+      {
         id: "cliente",
         accessorFn: (row) => clienteName(row.cliente_id),
         header: ({ column }) => <SortHeader column={column}>Cliente</SortHeader>,

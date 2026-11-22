@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/sheet";
 import type { Obra, ObraCreateInput, ObraUpdateInput } from "@/lib/api/types";
 import { useClientes } from "@/lib/hooks/use-clientes";
-import { useCreateObra, useUpdateObra } from "@/lib/hooks/use-obras";
+import { useCreateObra, useProximoCodigoObra, useUpdateObra } from "@/lib/hooks/use-obras";
+import { parsePtBr } from "@/components/modules/orcamento/builder/InlineEdit";
 import { ClienteFormDrawer } from "@/components/modules/cliente/ClienteFormDrawer";
 import { OBRA_STATUS_OPTIONS } from "./status";
 
@@ -63,8 +64,8 @@ const schema = z
   .refine(
     (v) => {
       if (!v.valor_contrato.trim()) return true;
-      const n = Number(v.valor_contrato.replace(",", "."));
-      return !Number.isNaN(n) && n >= 0;
+      const parsed = parsePtBr(v.valor_contrato);
+      return parsed !== null && !parsed.startsWith("-");
     },
     { path: ["valor_contrato"], message: "Valor inválido" },
   );
@@ -89,7 +90,8 @@ function toFormValues(obra: Obra): FormValues {
     status: obra.status,
     data_inicio: obra.data_inicio ?? "",
     data_prevista_fim: obra.data_prevista_fim ?? "",
-    valor_contrato: obra.valor_contrato ?? "",
+    // Exibe com vírgula decimal ("480000,00"); o envio aceita "480.000,00" também.
+    valor_contrato: obra.valor_contrato ? obra.valor_contrato.replace(".", ",") : "",
   };
 }
 
@@ -105,6 +107,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
   const { data: clientesPage, isLoading: clientesLoading } = useClientes();
   const createObra = useCreateObra();
   const updateObra = useUpdateObra();
+  const proximoCodigo = useProximoCodigoObra(open && !isEdit);
   const pending = createObra.isPending || updateObra.isPending;
   // Atalho "Novo cliente": cadastra sem sair da obra e já deixa selecionado.
   const [clienteDrawerOpen, setClienteDrawerOpen] = React.useState(false);
@@ -121,11 +124,18 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
     if (open) form.reset(obra ? toFormValues(obra) : EMPTY);
   }, [open, obra, form]);
 
+  // Nova obra: preenche o código sugerido, sem atropelar o que já foi digitado.
+  // Espera o refetch: o valor em cache pode ser o da obra que acabou de ser criada.
+  const codigoSugerido = proximoCodigo.isFetching ? undefined : proximoCodigo.data?.codigo;
+  React.useEffect(() => {
+    if (open && !isEdit && codigoSugerido && !form.getValues("codigo")) {
+      form.setValue("codigo", codigoSugerido);
+    }
+  }, [open, isEdit, codigoSugerido, form]);
+
   function onSubmit(values: FormValues) {
     const orNull = (s: string) => (s.trim() === "" ? null : s.trim());
-    const valor = values.valor_contrato.trim()
-      ? values.valor_contrato.replace(",", ".").trim()
-      : null;
+    const valor = values.valor_contrato.trim() ? parsePtBr(values.valor_contrato) : null;
 
     if (isEdit && obra) {
       const data: ObraUpdateInput = {
@@ -241,7 +251,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                     <FormItem>
                       <FormLabel>Código</FormLabel>
                       <FormControl>
-                        <Input placeholder="OBR-1042" {...field} />
+                        <Input placeholder="OBR-0001" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -323,7 +333,7 @@ export function ObraFormDrawer({ open, onOpenChange, obra }: ObraFormDrawerProps
                   <FormItem>
                     <FormLabel>Valor do contrato (R$)</FormLabel>
                     <FormControl>
-                      <Input inputMode="decimal" placeholder="480000.00" {...field} />
+                      <Input inputMode="decimal" placeholder="480.000,00" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

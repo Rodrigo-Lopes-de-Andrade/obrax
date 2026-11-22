@@ -194,7 +194,7 @@ def get_curva_abc(session: Session, orcamento_id: uuid.UUID) -> dict[str, Any] |
     versão nunca foi recalculada (sem itens) — o router devolve uma curva vazia."""
     row = session.execute(
         text(
-            "SELECT v.curva_abc_json FROM orcamento o "
+            "SELECT v.id, v.curva_abc_json FROM orcamento o "
             "JOIN orcamento_versao v ON v.orcamento_id = o.id AND v.numero = o.versao_atual "
             "WHERE o.id = :id AND o.deleted_at IS NULL"
         ),
@@ -202,7 +202,44 @@ def get_curva_abc(session: Session, orcamento_id: uuid.UUID) -> dict[str, Any] |
     ).first()
     if row is None:
         raise _NOT_FOUND
-    return row[0]  # type: ignore[no-any-return]
+    curva: dict[str, Any] | None = row[1]
+    if curva and curva.get("itens"):
+        _anotar_fase_servico(session, row[0], curva["itens"])
+    return curva
+
+
+def _anotar_fase_servico(
+    session: Session, versao_id: uuid.UUID, itens: list[dict[str, Any]]
+) -> None:
+    """Preenche `fase` e `servico` de cada item da curva a partir da EAP atual.
+
+    Feito na leitura, e não no recálculo, para valer também nas versões já
+    aprovadas, cuja curva persistida não tem esses campos e nunca é recalculada.
+    """
+    rows = session.execute(
+        text(
+            "SELECT id, parent_id, tipo, codigo, descricao FROM orcamento_item WHERE versao_id = :v"
+        ),
+        {"v": versao_id},
+    ).mappings()
+    by_id = {str(r["id"]): r for r in rows}
+
+    def rotulo(no: Any) -> str:
+        return f"{no['codigo']} {no['descricao']}" if no["codigo"] else str(no["descricao"])
+
+    for item in itens:
+        fase: str | None = None
+        servico: str | None = None
+        no = by_id.get(str(item["id"]))
+        cur = by_id.get(str(no["parent_id"])) if no is not None else None
+        while cur is not None:
+            if cur["tipo"] == "S" and servico is None:
+                servico = rotulo(cur)
+            elif cur["tipo"] == "F":
+                fase = rotulo(cur)
+            cur = by_id.get(str(cur["parent_id"]))
+        item["fase"] = fase
+        item["servico"] = servico
 
 
 def soft_delete_orcamento(session: Session, orcamento_id: uuid.UUID) -> None:
