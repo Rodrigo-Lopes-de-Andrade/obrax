@@ -37,6 +37,7 @@ from app.modules.financeiro.schemas.despesa import (
     DespesaParceladaCreate,
     DespesaParceladaOut,
     DespesaUpdate,
+    FaseObraOut,
 )
 from app.modules.financeiro.schemas.analise import (
     CurvaSOut,
@@ -67,6 +68,7 @@ __all__ = [
     "DespesaParceladaCreate",
     "DespesaParceladaOut",
     "DespesaUpdate",
+    "FaseObraOut",
     "FaseGradeOut",
     "FaseOrcadoRealizado",
     "FluxoCaixaOut",

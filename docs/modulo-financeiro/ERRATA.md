@@ -188,6 +188,22 @@ Hoje **não é alcançável**: o `obra_id` vem do orçamento lido sob RLS e nenh
 composta `(company_id, obra_id) → obras(company_id, id)` (exige `UNIQUE (company_id, id)` em
 `obras`) e/ou unicidade com `company_id`. **A Onda 2 não despacha a S-F3 sem essa decisão.**
 
+**Decisão (humano, 2026-11-22): FK composta no banco.** Toda referência de uma tabela do módulo a
+uma linha de outra tabela de tenant passa a ser `(company_id, <x>_id) → <pai>(company_id, id)`,
+com `UNIQUE (company_id, id)` no pai. Vale para `obras` (pai de `obra_fase` e das tabelas novas),
+`obra_fase` (pai de `despesa`, `cronograma_alocacao`, `medicao_item`) e para cada pai novo das
+sprints seguintes. A migration `0033` (S-F3) cria `UNIQUE (company_id, id)` em `obras` e troca a
+FK de `obra_fase.obra_id` pela composta; `UNIQUE (obra_id, codigo)` de `obra_fase` passa a incluir
+`company_id`, para não ser oráculo de existência. Isto substitui as FKs simples do Dicionário
+§4 nas tabelas do módulo.
+
+Aplicação na S-F3 (orquestrador, dentro da decisão acima): também ganham `UNIQUE (company_id, id)`
+`documento` (pai de `despesa.documento_id`) e `orcamento_versao` (pai de
+`obra_fase.orcamento_versao_id`), e essas FKs viram compostas com `ON DELETE SET NULL (<coluna>)`
+(PG ≥ 15), porque `SET NULL` sem lista anularia o `company_id` NOT NULL. `users` não é tabela de
+tenant (o vínculo fica em `user_company_role`): `created_by → users(id)` continua simples, como
+exceção explícita do `check_schema_financeiro.py`.
+
 ---
 
 ## E-09 · Débitos aceitos no fechamento da S-F1
@@ -241,6 +257,43 @@ humano aprovou em 2026-11-12, como **contrato oficial** (`backend/app/modules/fi
 - **Sem rota para "desfazer recebimento":** a máquina §5 tem a transição, mas o PRD (CA-F10) não a
   pede. Fica fora; desfazer **pagamento** é o `estornar` (CA-F09.3).
 
+---
+
+## E-11 · Decisões da Onda 2/3 (S-F3, S-F4, S-F6) — 2026-11-22
+
+- **Rota nova `GET /obras/{obra_id}/fases`** (humano): lista leve das fases da obra (`id`,
+  `codigo`, `descricao`, `ativa`), papéis de leitura de despesa. Implementada na S-F3, em
+  `routers/despesas.py` (sem registro novo em `api/v1/__init__.py`). Emenda ao contrato congelado da
+  S-F2: o OpenAPI passa a **26 operações em 20 paths**. A tela de lançamento (S-F4) usa esta rota, e
+  não a análise da S-F9.
+- **Auditoria de `despesa` por gatilho** (humano): `audit_despesa` com a mesma função genérica das
+  outras tabelas, criada na própria `0033` (ainda não aplicada fora do banco local). A gravação de
+  `audit_log` pelo service sai, para não duplicar.
+- **Parcelamento (RN-F08)** (orquestrador): parcela-base truncada (`ROUND_DOWN`) e resíduo na
+  última, que nunca fica menor que as demais — 100,00 em 6 = 16,66 × 5 + 16,70. Valor menor que N
+  centavos → 422. A prévia da tela (S-F4) usa a mesma regra.
+- **`de`/`ate` da listagem e do CSV filtram `vencimento`**, inclusivo nas duas pontas.
+- **Pagamento não aceita data futura** (humano): `data_pagamento > hoje` → 422. "Paga" é dinheiro
+  que já saiu; agendamento é despesa `prevista` com vencimento.
+- **Despesa aponta para fase da MESMA obra no banco** (orquestrador, extensão da E-08):
+  `(company_id, obra_id, obra_fase_id) → obra_fase(company_id, obra_id, id)`, com a `UNIQUE` dessa
+  tripla em `obra_fase`, na própria `0033`.
+- **Decisões do implementador da S-F3, conferidas pelo code-reviewer contra ESPEC §5 e PRD:**
+  `PATCH` em despesa paga aceita só `descricao`, `fornecedor_nome` e `documento_id` (o gestor
+  edita mas não estorna); transições exatamente as da ESPEC §5, com 422 nomeando a válida;
+  categoria desativada barra despesa nova e mantém a já vinculada (CA-F05.4); **fase inativa não
+  bloqueia lançamento** na API — `GET /fases` devolve as inativas e a tela filtra; o seed das
+  categorias roda nas rotas de categorias.
+- **Testes de contrato da fase stub** (orquestrador): `test_financeiro_contrato.py` exigia 501 de
+  toda rota. Para rota implementada, o teste troca `get_db` por uma **sessão-sentinela** que levanta
+  `_ChegouAoService` no primeiro `execute`: papel autorizado tem de chegar ao service (prova que
+  passou por autenticação, papel e validação), sem banco e sem aceitar 500. O 501 continua exigido
+  das rotas ainda não implementadas, listadas no teste (`NAO_IMPLEMENTADAS`); cada sprint de backend
+  remove as suas da lista e tira o `responses=RESP_501` delas.
+- **"Hoje" do negócio é America/Sao_Paulo**, não a data UTC do servidor — senão um pagamento feito
+  às 22h seria "futuro".
+- A FK em tripla com `obra_id` vale também para `despesa.documento_id → documento(company_id,
+  obra_id, id)`, com `ON DELETE SET NULL (documento_id)`.
 ---
 
 ## O que **não** está aqui

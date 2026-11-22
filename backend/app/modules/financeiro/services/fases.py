@@ -68,7 +68,7 @@ _UPSERT_FASE = text(
         (company_id, obra_id, codigo, descricao, valor_orcado, sort_order, ativa,
          orcamento_versao_id)
     VALUES (:cid, :obra_id, :codigo, :descricao, :valor, :sort_order, true, :vid)
-    ON CONFLICT (obra_id, codigo) DO UPDATE SET
+    ON CONFLICT (company_id, obra_id, codigo) DO UPDATE SET
         descricao = EXCLUDED.descricao,
         valor_orcado = EXCLUDED.valor_orcado,
         sort_order = EXCLUDED.sort_order,

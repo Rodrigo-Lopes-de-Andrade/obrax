@@ -142,3 +142,14 @@ class DespesaParceladaOut(BaseModel):
 
     grupo_parcelas_id: UUID
     parcelas: list[DespesaOut]
+
+
+class FaseObraOut(BaseModel):
+    """Fase da obra para o seletor de lançamento (RN-F03). Inclui as inativas."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: UUID
+    codigo: str
+    descricao: str
+    ativa: bool

@@ -1,7 +1,10 @@
 """Contrato da API do financeiro (S-F2): OpenAPI, tipos, extra='forbid' e papéis.
 
 Não usa banco: o `TenantMiddleware` só decodifica o JWT, então o token é mintado
-direto. As rotas são stubs 501; o que se verifica aqui é o contrato.
+direto. As rotas ainda não implementadas são stubs 501 (lista `NAO_IMPLEMENTADAS`). Nas
+implementadas, `get_db` é trocada por uma sessão-sentinela cujo `execute` levanta
+`_ChegouAoService`: papel autorizado "chegou ao service" (passou por login, papel e
+validação) sem tocar em banco e sem aceitar 500 (E-11).
 """
 
 from __future__ import annotations
@@ -9,6 +12,7 @@ from __future__ import annotations
 import json
 import re
 import uuid
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -52,6 +56,8 @@ OPERATIONS: list[tuple[str, str, int, set[str]]] = [
     ("POST", "/financeiro/despesas/{id}/pagar", 200, _FIN),
     ("POST", "/financeiro/despesas/{id}/estornar", 200, _FIN),
     ("POST", "/obras/{obra_id}/despesas/parcelada", 201, _DESP),
+    # E-11: lista leve de fases da obra (seletor do lançamento)
+    ("GET", "/obras/{obra_id}/fases", 200, _DESP),
     ("GET", "/financeiro/recebimentos", 200, _LER),
     ("POST", "/financeiro/recebimentos/{id}/receber", 200, _FIN),
     # 6.3 Análise / 6.4 Exportação
@@ -60,6 +66,25 @@ OPERATIONS: list[tuple[str, str, int, set[str]]] = [
     ("GET", "/financeiro/fluxo-caixa", 200, _LER),
     ("GET", "/obras/{obra_id}/financeiro/export.csv", 200, _LER),
 ]
+# Rotas AINDA stub 501 (E-11). Cada sprint de backend remove as suas daqui e tira o
+# `responses=RESP_501` delas. Tudo o que não está aqui está implementado (S-F3: categorias,
+# despesas e fases da obra).
+NAO_IMPLEMENTADAS: set[tuple[str, str]] = {
+    ("POST", "/obras/{obra_id}/cronograma"),
+    ("GET", "/obras/{obra_id}/cronograma"),
+    ("PUT", "/cronograma/{id}/alocacoes"),
+    ("GET", "/obras/{obra_id}/medicoes"),
+    ("POST", "/obras/{obra_id}/medicoes"),
+    ("GET", "/medicoes/{id}"),
+    ("PUT", "/medicoes/{id}/itens"),
+    ("POST", "/medicoes/{id}/aprovar"),
+    ("GET", "/financeiro/recebimentos"),
+    ("POST", "/financeiro/recebimentos/{id}/receber"),
+    ("GET", "/obras/{obra_id}/financeiro/orcado-realizado"),
+    ("GET", "/obras/{obra_id}/financeiro/curva-s"),
+    ("GET", "/financeiro/fluxo-caixa"),
+    ("GET", "/obras/{obra_id}/financeiro/export.csv"),
+}
 CSV_OP = ("GET", "/obras/{obra_id}/financeiro/export.csv")
 JSON_OPS = [o for o in OPERATIONS if o[:2] != CSV_OP]
 ALL_ROLES = ["owner", "admin", "gestor", "orcamentista", "financeiro", "viewer", "campo", "ai"]
@@ -76,6 +101,45 @@ def spec() -> dict[str, Any]:
 @pytest.fixture(scope="module")
 def http() -> TestClient:
     return TestClient(app)
+
+
+class _ChegouAoService(Exception):
+    """A requisição passou por auth, papel e validação e o handler tentou usar o banco."""
+
+
+class _SessaoSentinela:
+    def execute(self, *_: Any, **__: Any) -> Any:
+        raise _ChegouAoService
+
+    def commit(self) -> None: ...
+
+    def rollback(self) -> None: ...
+
+    def close(self) -> None: ...
+
+
+@pytest.fixture
+def http_sentinela() -> Iterator[TestClient]:
+    """Cliente com `get_db` trocada pela sessão-sentinela. Nenhuma conexão é aberta,
+    então nada é escrito, nem se o `.env` apontar para produção."""
+    from app.core.deps import get_db
+
+    def _db() -> Iterator[_SessaoSentinela]:
+        yield _SessaoSentinela()
+
+    app.dependency_overrides[get_db] = _db
+    try:
+        yield TestClient(app, raise_server_exceptions=True)
+    finally:
+        app.dependency_overrides.pop(get_db, None)
+
+
+def chega_ao_service(client: TestClient, method: str, **kwargs: Any) -> None:
+    """Falha se a rota responder qualquer coisa (401/403/422/501/500...): o único desfecho
+    válido é o handler alcançar o banco."""
+    with pytest.raises(_ChegouAoService):
+        resp = client.request(method, **kwargs)
+        pytest.fail(f"não chegou ao service: {resp.status_code} {resp.text}")
 
 
 def _module_paths() -> set[str]:
@@ -107,17 +171,17 @@ def _success_schema(spec: dict[str, Any], method: str, path: str, code: int) -> 
 # --------------------------------------------------------------------------- #
 # Contagem
 # --------------------------------------------------------------------------- #
-def test_matriz_do_teste_tem_25_operacoes_e_19_paths() -> None:
-    assert len(OPERATIONS) == 25
-    assert len({p for _, p, _, _ in OPERATIONS}) == 19
+def test_matriz_do_teste_tem_26_operacoes_e_20_paths() -> None:
+    assert len(OPERATIONS) == 26
+    assert len({p for _, p, _, _ in OPERATIONS}) == 20
 
 
-def test_openapi_expoe_exatamente_as_25_operacoes_em_19_paths(spec: dict[str, Any]) -> None:
+def test_openapi_expoe_exatamente_as_26_operacoes_em_20_paths(spec: dict[str, Any]) -> None:
     esperado = {(m, p) for m, p, _, _ in OPERATIONS}
     atual = set(_module_ops(spec))
     assert atual == esperado, f"faltam={esperado - atual} sobram={atual - esperado}"
-    assert len(_module_ops(spec)) == 25
-    assert len({p for _, p in _module_ops(spec)}) == 19
+    assert len(_module_ops(spec)) == 26
+    assert len({p for _, p in _module_ops(spec)}) == 20
 
 
 def test_nenhuma_rota_do_modulo_fora_da_lista(spec: dict[str, Any]) -> None:
@@ -170,11 +234,14 @@ def test_operacao_json_tem_response_model_nomeado(
     alvo = schema["items"] if schema.get("type") == "array" else schema
     assert alvo.get("$ref", "").startswith("#/components/schemas/"), schema
     _assert_closed(spec, alvo, f"{method} {path}", set())
-    assert "501" in spec["paths"][PREFIX + path][method.lower()]["responses"]
+    anuncia_501 = "501" in spec["paths"][PREFIX + path][method.lower()]["responses"]
+    assert anuncia_501 == ((method, path) in NAO_IMPLEMENTADAS), (
+        "501 anunciado só nas rotas da lista NAO_IMPLEMENTADAS"
+    )
 
 
-def test_exatamente_24_operacoes_json_e_export_csv_sem_modelo(spec: dict[str, Any]) -> None:
-    assert len(JSON_OPS) == 24
+def test_exatamente_25_operacoes_json_e_export_csv_sem_modelo(spec: dict[str, Any]) -> None:
+    assert len(JSON_OPS) == 25
     op = spec["paths"][PREFIX + CSV_OP[1]]["get"]
     content = op["responses"]["200"]["content"]
     assert set(content) == {"text/csv"}
@@ -340,11 +407,11 @@ def test_patch_com_null_em_campo_not_null_devolve_422(
 
 @pytest.mark.parametrize(("path", "campos"), list(UPDATE_NAO_NULO.items()))
 def test_patch_vazio_e_valido_e_openapi_nao_anuncia_nulo(
-    spec: dict[str, Any], http: TestClient, path: str, campos: list[str]
+    spec: dict[str, Any], http_sentinela: TestClient, path: str, campos: list[str]
 ) -> None:
     kwargs = _request(spec, "PATCH", path)
     kwargs["json"] = {}
-    assert http.patch(headers=_token("owner"), **kwargs).status_code == 501
+    chega_ao_service(http_sentinela, "PATCH", headers=_token("owner"), **kwargs)
     nome = spec["paths"][PREFIX + path]["patch"]["requestBody"]["content"]["application/json"][
         "schema"
     ]["$ref"].rsplit("/", 1)[1]
@@ -356,12 +423,12 @@ def test_patch_vazio_e_valido_e_openapi_nao_anuncia_nulo(
         assert "default" not in props[campo], f"{nome}.{campo} anuncia default"
 
 
-def test_patch_despesa_documento_id_null_desvincula_e_chega_ao_501(
-    spec: dict[str, Any], http: TestClient
+def test_patch_despesa_documento_id_null_e_aceito_pela_validacao(
+    spec: dict[str, Any], http_sentinela: TestClient
 ) -> None:
     kwargs = _request(spec, "PATCH", "/financeiro/despesas/{id}")
     kwargs["json"] = {"documento_id": None}
-    assert http.patch(headers=_token("owner"), **kwargs).status_code == 501
+    chega_ao_service(http_sentinela, "PATCH", headers=_token("owner"), **kwargs)
     modelo = fin_schemas.DespesaUpdate.model_validate({"documento_id": None})
     assert modelo.model_dump(exclude_unset=True) == {"documento_id": None}
 
@@ -432,7 +499,7 @@ def test_docstring_de_schema_com_percentual_diz_fracao() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Requests: extra='forbid' -> 422 (não 501) e papéis -> 403 / 501
+# Requests: extra='forbid' -> 422 (não 501) e papéis -> 403 / 501 (stub) / não barrado
 # --------------------------------------------------------------------------- #
 def _token(role: str) -> dict[str, str]:
     tok = create_access_token(user_id=uuid.uuid4(), company_id=uuid.uuid4(), role=role).token
@@ -495,12 +562,36 @@ def _request(
 
 
 @pytest.mark.parametrize(("method", "path", "code", "_roles"), OPERATIONS)
-def test_requisicao_valida_com_papel_autorizado_devolve_501(
-    spec: dict[str, Any], http: TestClient, method: str, path: str, code: int, _roles: set[str]
+def test_requisicao_valida_com_papel_autorizado(
+    spec: dict[str, Any],
+    http_sentinela: TestClient,
+    method: str,
+    path: str,
+    code: int,
+    _roles: set[str],
 ) -> None:
-    resp = http.request(method, headers=_token("owner"), **_request(spec, method, path))
-    assert resp.status_code == 501, resp.text
-    assert resp.json()["status"] == 501  # RFC 7807
+    kwargs = _request(spec, method, path)
+    if (method, path) in NAO_IMPLEMENTADAS:
+        resp = http_sentinela.request(method, headers=_token("owner"), **kwargs)
+        assert resp.status_code == 501, resp.text
+        assert resp.json()["status"] == 501  # RFC 7807
+    else:
+        chega_ao_service(http_sentinela, method, headers=_token("owner"), **kwargs)
+
+
+@pytest.mark.parametrize(("method", "path"), sorted(NAO_IMPLEMENTADAS))
+def test_rota_nao_implementada_devolve_501_para_todo_papel_autorizado(
+    spec: dict[str, Any], http_sentinela: TestClient, method: str, path: str
+) -> None:
+    roles = next(r for m, p, _, r in OPERATIONS if (m, p) == (method, path))
+    for role in sorted(roles):
+        resp = http_sentinela.request(method, headers=_token(role), **_request(spec, method, path))
+        assert resp.status_code == 501, (role, resp.text)
+
+
+def test_lista_de_nao_implementadas_so_tem_operacoes_do_contrato() -> None:
+    assert NAO_IMPLEMENTADAS <= {(m, p) for m, p, _, _ in OPERATIONS}
+    assert len(NAO_IMPLEMENTADAS) == 14
 
 
 @pytest.mark.parametrize(
@@ -548,15 +639,22 @@ def test_campo_desconhecido_em_item_aninhado_devolve_422(
 @pytest.mark.parametrize(("method", "path", "code", "roles"), OPERATIONS)
 def test_matriz_de_papeis_espec_9(
     spec: dict[str, Any],
-    http: TestClient,
+    http_sentinela: TestClient,
     method: str,
     path: str,
     code: int,
     roles: set[str],
     role: str,
 ) -> None:
-    resp = http.request(method, headers=_token(role), **_request(spec, method, path))
-    assert resp.status_code == (501 if role in roles else 403), (role, resp.text)
+    kwargs = _request(spec, method, path)
+    if role in roles and (method, path) not in NAO_IMPLEMENTADAS:
+        chega_ao_service(http_sentinela, method, headers=_token(role), **kwargs)
+        return
+    resp = http_sentinela.request(method, headers=_token(role), **kwargs)
+    if role not in roles:
+        assert resp.status_code == 403, (role, resp.text)
+    else:
+        assert resp.status_code == 501, (role, resp.text)
 
 
 @pytest.mark.parametrize(("method", "path", "code", "roles"), OPERATIONS)
@@ -659,7 +757,7 @@ def test_check_contract_frontend_x_openapi(spec: dict[str, Any]) -> None:
         f"chamadas do frontend inexistentes no OpenAPI: {so_front}; "
         f"operações do OpenAPI sem chamada no frontend: {so_api}"
     )
-    assert len(front) == 25
+    assert len(front) == 26
 
 
 # Variantes que os handlers MSW montam (chave `Schema#variante`, validadas contra `Schema`).

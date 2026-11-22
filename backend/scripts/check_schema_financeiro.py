@@ -7,6 +7,9 @@ Confere, para cada tabela do módulo que EXISTE no banco:
   3b. USING e WITH CHECK de toda policy são EXATAMENTE a expressão canônica
       `(company_id = app_current_company_id())` (forma de pg_get_expr; Dicionário §2),
       o que também barra `... OR true` e `current_setting` cru;
+  3c. toda FK de tabela do módulo para tabela de tenant (que tem `company_id`) é composta
+      com `company_id` nas duas pontas, `(company_id, x_id) -> pai(company_id, id)`
+      (ERRATA E-08: a FK simples confere o pai sem RLS e deixa apontar para outro tenant);
   4. nenhuma view sem security_invoker (o módulo não cria views — ESPEC §7.4).
 
 Sai com código 1 e mensagem clara se algo faltar. Uso:
@@ -38,7 +41,12 @@ TABELAS_MODULO: tuple[str, ...] = (
     "medicao_item",
     "recebimento",
 )
-OBRIGATORIAS: tuple[str, ...] = ("obra_fase",)
+OBRIGATORIAS: tuple[str, ...] = ("obra_fase", "categoria_financeira", "despesa")
+# Pais que NÃO são tabela de tenant, logo FK simples para eles é correta (E-08):
+#   - `companies`: é o próprio tenant (company_id -> companies.id);
+#   - `users`: não tem company_id (o vínculo com a empresa fica em `user_company_role`),
+#     então `created_by -> users(id)` é simples, exceção explícita e decidida na S-F3.
+PAIS_NAO_TENANT: tuple[str, ...] = ("companies", "users")
 ROLES_GRANT: tuple[str, ...] = ("app_user", "app_admin")
 # Forma normalizada devolvida por pg_get_expr para o template do Dicionário §2.
 EXPR_CANONICA = "(company_id = app_current_company_id())"
@@ -76,6 +84,23 @@ SELECT c.relname, p.polname,
        COALESCE(pg_get_expr(p.polwithcheck, p.polrelid), '')
 FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid
 WHERE c.relname = ANY(%(t)s)
+"""
+# FK de tabela do módulo para pai que tem `company_id`, sem `company_id` nas DUAS pontas
+# na mesma posição da chave. `unnest(conkey, confkey)` casa coluna filha e coluna pai.
+Q_FK_NAO_COMPOSTA = """
+SELECT c.conrelid::regclass::text, c.conname, c.confrelid::regclass::text
+FROM pg_constraint c
+WHERE c.contype = 'f'
+  AND c.conrelid::regclass::text = ANY(%(t)s)
+  AND c.confrelid::regclass::text <> ALL(%(nao_tenant)s)
+  AND EXISTS (SELECT 1 FROM pg_attribute pa
+              WHERE pa.attrelid = c.confrelid AND pa.attname = 'company_id'
+                AND NOT pa.attisdropped)
+  AND NOT EXISTS (
+        SELECT 1 FROM unnest(c.conkey, c.confkey) AS k(filha, pai)
+        JOIN pg_attribute a1 ON a1.attrelid = c.conrelid AND a1.attnum = k.filha
+        JOIN pg_attribute a2 ON a2.attrelid = c.confrelid AND a2.attnum = k.pai
+        WHERE a1.attname = 'company_id' AND a2.attname = 'company_id')
 """
 Q_VIEWS = """
 SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -127,6 +152,13 @@ def verificar(conn: psycopg.Connection) -> list[str]:
                 cur.execute(Q_GRANT, {**p, "role": role, "priv": priv})
                 for (t,) in cur.fetchall():
                     erros.append(f"{t}: falta GRANT {priv} para {role}")
+
+        cur.execute(Q_FK_NAO_COMPOSTA, {**p, "nao_tenant": list(PAIS_NAO_TENANT)})
+        for filha, fk, pai in cur.fetchall():
+            erros.append(
+                f"{filha}: FK {fk} para {pai} (tabela de tenant) não é composta com "
+                f"company_id — esperado (company_id, x_id) -> {pai}(company_id, id) (E-08)"
+            )
 
         cur.execute(Q_VIEWS)
         for (v,) in cur.fetchall():
