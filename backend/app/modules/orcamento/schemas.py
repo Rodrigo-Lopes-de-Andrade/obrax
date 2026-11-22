@@ -226,6 +226,9 @@ class AbcItem(BaseModel):
     pct: Decimal  # participação individual no custo total
     pct_acumulado: Decimal  # participação acumulada (linha de Pareto)
     classe: AbcClasseNome
+    # Onde o item está na EAP ("<código> <descrição>"); preenchidos na leitura.
+    fase: str | None = None
+    servico: str | None = None
 
 
 class AbcClasse(BaseModel):

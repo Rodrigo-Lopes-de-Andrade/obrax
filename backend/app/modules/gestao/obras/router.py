@@ -17,6 +17,7 @@ from app.modules.gestao.obras import service
 from app.modules.gestao.obras.schemas import (
     ObraCreate,
     ObraOut,
+    ObraProximoCodigo,
     ObraPage,
     ObraStatus,
     ObraUpdate,
@@ -58,6 +59,14 @@ def list_obras(
         limit=limit,
     )
     return ObraPage(items=[ObraOut.model_validate(row) for row in items], next_cursor=next_cursor)
+
+
+# Antes de `/{obra_id}`: senão "proximo-codigo" é lido como UUID e vira 422.
+@router.get("/proximo-codigo", response_model=ObraProximoCodigo)
+def proximo_codigo(session: Session = Depends(get_db)) -> ObraProximoCodigo:
+    """Sugestão de código para a próxima obra (OBR-0001, OBR-0002…). Só sugere:
+    o código continua livre e editável no formulário."""
+    return ObraProximoCodigo(codigo=service.proximo_codigo(session))
 
 
 @router.get("/{obra_id}", response_model=ObraOut)

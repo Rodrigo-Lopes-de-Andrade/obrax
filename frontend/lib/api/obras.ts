@@ -27,6 +27,10 @@ function buildQuery(params: ListObrasParams): string {
 export const listObras = (params: ListObrasParams = {}): Promise<Page<Obra>> =>
   api.get<Page<Obra>>(`/api/v1/obras${buildQuery(params)}`);
 
+/** Sugestão do próximo código (OBR-0001…); o usuário pode trocar. */
+export const getProximoCodigoObra = (): Promise<{ codigo: string }> =>
+  api.get<{ codigo: string }>("/api/v1/obras/proximo-codigo");
+
 export const getObra = (id: string): Promise<Obra> =>
   api.get<Obra>(`/api/v1/obras/${id}`);
 

@@ -74,3 +74,9 @@ class ObraPage(BaseModel):
     items: list[ObraOut]
     # Cursor para a próxima página (o `id` do último item); None = fim.
     next_cursor: str | None
+
+
+class ObraProximoCodigo(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    codigo: str

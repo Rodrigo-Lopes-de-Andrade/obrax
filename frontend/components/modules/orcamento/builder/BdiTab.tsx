@@ -2,6 +2,13 @@
 
 import * as React from "react";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -28,8 +35,12 @@ function cssWidth(fraction: string | undefined): string {
   return `${(Number.isNaN(n) ? 0 : n) * 100}%`;
 }
 
+const TODAS = "__todas__";
+const SEM_FASE = "Sem fase";
+
 export function BdiTab({ orcamentoId }: { orcamentoId: string }) {
   const query = useCurvaAbc(orcamentoId);
+  const [fase, setFase] = React.useState<string>(TODAS);
 
   if (query.isLoading) {
     return (
@@ -59,6 +70,9 @@ export function BdiTab({ orcamentoId }: { orcamentoId: string }) {
   }
 
   const resumo = new Map(curva.classes.map((c) => [c.classe, c]));
+  const fases = Array.from(new Set(curva.itens.map((it) => it.fase ?? SEM_FASE)));
+  const itensTabela =
+    fase === TODAS ? curva.itens : curva.itens.filter((it) => (it.fase ?? SEM_FASE) === fase);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5 overflow-y-auto pb-2">
@@ -83,19 +97,40 @@ export function BdiTab({ orcamentoId }: { orcamentoId: string }) {
       </div>
 
       {/* Tabela de itens ordenados por custo desc */}
+      {fases.length > 1 ? (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">
+            {itensTabela.length} de {curva.itens.length} itens
+          </span>
+          <Select value={fase} onValueChange={setFase}>
+            <SelectTrigger className="w-72" aria-label="Filtrar por fase">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={TODAS}>Todas as fases</SelectItem>
+              {fases.map((f) => (
+                <SelectItem key={f} value={f}>
+                  {f}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      ) : null}
       <div className="overflow-hidden rounded-xl border border-border">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-10 text-center">Cl.</TableHead>
               <TableHead>Insumo</TableHead>
+              <TableHead>Fase / Serviço</TableHead>
               <TableHead className="text-right">Custo</TableHead>
               <TableHead className="text-right">% custo</TableHead>
               <TableHead className="w-[34%]">% acumulado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {curva.itens.map((it) => (
+            {itensTabela.map((it) => (
               <ItemRow key={it.id} item={it} />
             ))}
           </TableBody>
@@ -169,6 +204,18 @@ function ItemRow({ item }: { item: AbcItem }) {
           ) : null}
         </div>
       </TableCell>
+      <TableCell className="max-w-64">
+        <div className="flex min-w-0 flex-col">
+          <span className="truncate text-sm" title={item.fase ?? undefined}>
+            {item.fase ?? "—"}
+          </span>
+          {item.servico ? (
+            <span className="truncate text-[11px] text-muted-foreground" title={item.servico}>
+              {item.servico}
+            </span>
+          ) : null}
+        </div>
+      </TableCell>
       <TableCell className="text-right tabular-nums">{formatMoney(item.custo)}</TableCell>
       <TableCell className="text-right tabular-nums text-muted-foreground">
         {formatPercent(item.pct)}
@@ -191,7 +238,10 @@ function ItemRow({ item }: { item: AbcItem }) {
 }
 
 /** Pareto dependency-free: barras = custo individual, linha = % acumulado,
- * com guias em 80% e 95% (limiares A/B/C). */
+ * com guias em 80% e 95% (limiares A/B/C). Altura fixa e escala só na
+ * horizontal (`preserveAspectRatio="none"`): com escala proporcional, numa tela
+ * larga o gráfico dobrava de altura e os rótulos ficavam gigantes. Por isso os
+ * rótulos são HTML sobreposto, e não `<text>`, que deformaria. */
 function ParetoChart({ curva }: { curva: CurvaAbc }) {
   const W = 720;
   const H = 220;
@@ -231,24 +281,36 @@ function ParetoChart({ curva }: { curva: CurvaAbc }) {
           ))}
         </div>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Gráfico de Pareto da curva ABC">
+      <div className="relative h-56 w-full">
+      {[0.8, 0.95].map((t) => (
+        <span
+          key={t}
+          className="pointer-events-none absolute right-1 -translate-y-full text-[10px] text-muted-foreground"
+          style={{ top: `${(yFor(t) / H) * 100}%` }}
+        >
+          {t * 100}%
+        </span>
+      ))}
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="h-full w-full"
+        role="img"
+        aria-label="Gráfico de Pareto da curva ABC"
+      >
         {/* guias 80% / 95% */}
         {[0.8, 0.95].map((t) => (
-          <g key={t}>
-            <line
-              x1={padX}
-              x2={W - padX}
-              y1={yFor(t)}
-              y2={yFor(t)}
-              stroke="currentColor"
-              strokeOpacity={0.25}
-              strokeDasharray="4 4"
-              vectorEffect="non-scaling-stroke"
-            />
-            <text x={W - padX} y={yFor(t) - 3} textAnchor="end" className="fill-muted-foreground text-[10px]">
-              {t * 100}%
-            </text>
-          </g>
+          <line
+            key={t}
+            x1={padX}
+            x2={W - padX}
+            y1={yFor(t)}
+            y2={yFor(t)}
+            stroke="currentColor"
+            strokeOpacity={0.25}
+            strokeDasharray="4 4"
+            vectorEffect="non-scaling-stroke"
+          />
         ))}
         {/* barras */}
         {itens.map((it, i) => {
@@ -262,22 +324,20 @@ function ParetoChart({ curva }: { curva: CurvaAbc }) {
               y={y}
               width={barW}
               height={Math.max(h, 0.5)}
-              rx={1.5}
               fill={CLASSE[it.classe].cor}
               fillOpacity={0.85}
             >
               <title>
-                {it.descricao} — {formatMoney(it.custo)} ({formatPercent(it.pct)})
+                {it.descricao}
+                {it.fase ? ` · ${it.fase}` : ""} — {formatMoney(it.custo)} ({formatPercent(it.pct)})
               </title>
             </rect>
           );
         })}
         {/* linha acumulada */}
         <path d={linePath} fill="none" stroke="var(--color-primary)" strokeWidth={2} vectorEffect="non-scaling-stroke" />
-        {linePts.map((p, i) => (
-          <circle key={i} cx={p[0]} cy={p[1]} r={2.5} fill="var(--color-primary)" />
-        ))}
       </svg>
+      </div>
     </div>
   );
 }

@@ -252,3 +252,55 @@ def test_isolamento_entre_tenants(client: TestClient, seed_tenant: SeedTenant) -
 
     lista_b = client.get("/api/v1/obras", headers=owner_b.auth_header).json()
     assert lista_b["items"] == []
+
+
+def test_proximo_codigo_sem_obras_e_obr_0001(client: TestClient, seed_tenant: SeedTenant) -> None:
+    owner = seed_tenant(role="owner")
+    resp = client.get("/api/v1/obras/proximo-codigo", headers=owner.auth_header)
+    assert resp.status_code == 200, resp.text
+    assert resp.json() == {"codigo": "OBR-0001"}
+
+
+def test_proximo_codigo_segue_o_maior_e_ignora_caixa(
+    client: TestClient, seed_tenant: SeedTenant
+) -> None:
+    owner = seed_tenant(role="owner")
+    cliente_id = _seed_cliente(client, owner)
+    for codigo in ("OBR-002", "obr-0041", "CASA-99", "OBR-7"):
+        resp = client.post(
+            "/api/v1/obras", headers=owner.auth_header, json=_nova_obra(cliente_id, codigo=codigo)
+        )
+        assert resp.status_code == 201
+
+    resp = client.get("/api/v1/obras/proximo-codigo", headers=owner.auth_header)
+    assert resp.json() == {"codigo": "OBR-0042"}
+
+
+def test_proximo_codigo_conta_obra_excluida(client: TestClient, seed_tenant: SeedTenant) -> None:
+    owner = seed_tenant(role="owner")
+    cliente_id = _seed_cliente(client, owner)
+    obra = client.post(
+        "/api/v1/obras", headers=owner.auth_header, json=_nova_obra(cliente_id, codigo="OBR-0010")
+    ).json()
+    assert (
+        client.delete(f"/api/v1/obras/{obra['id']}", headers=owner.auth_header).status_code == 204
+    )
+
+    resp = client.get("/api/v1/obras/proximo-codigo", headers=owner.auth_header)
+    assert resp.json() == {"codigo": "OBR-0011"}
+
+
+def test_proximo_codigo_nao_ve_outra_empresa(client: TestClient, seed_tenant: SeedTenant) -> None:
+    a = seed_tenant(role="owner")
+    b = seed_tenant(role="owner")
+    cliente_a = _seed_cliente(client, a)
+    client.post(
+        "/api/v1/obras", headers=a.auth_header, json=_nova_obra(cliente_a, codigo="OBR-0500")
+    )
+
+    assert client.get("/api/v1/obras/proximo-codigo", headers=a.auth_header).json() == {
+        "codigo": "OBR-0501"
+    }
+    assert client.get("/api/v1/obras/proximo-codigo", headers=b.auth_header).json() == {
+        "codigo": "OBR-0001"
+    }

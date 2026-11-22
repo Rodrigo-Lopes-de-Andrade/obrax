@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import json
+
 import uuid
 from collections.abc import Callable
 from decimal import Decimal
@@ -186,3 +188,51 @@ def test_endpoint_curva_abc_vazia(client: TestClient, seed_tenant: SeedTenant) -
     resp = client.get(f"/api/v1/orcamentos/{orc['id']}/curva-abc", headers=owner.auth_header)
     assert resp.status_code == 200, resp.text
     assert resp.json()["custo_total"] == "0"
+
+
+def test_endpoint_curva_abc_identifica_fase_e_servico(
+    client: TestClient, seed_tenant: SeedTenant
+) -> None:
+    """Cada item da curva diz em que fase e serviço da EAP está."""
+    owner = seed_tenant(role="owner")
+    orcamento_id, _ = _orcamento_com_insumos(
+        client, owner, [{"descricao": "Cimento", "quantidade": "10", "preco_unitario": "30"}]
+    )
+
+    body = client.get(
+        f"/api/v1/orcamentos/{orcamento_id}/curva-abc", headers=owner.auth_header
+    ).json()
+    item = body["itens"][0]
+    assert item["descricao"] == "Cimento"
+    assert item["fase"] is not None and item["fase"].endswith("Fase")
+    assert item["servico"] is not None and item["servico"].endswith("Serviço")
+
+
+def test_curva_persistida_sem_fase_e_preenchida_na_leitura(
+    client: TestClient, seed_tenant: SeedTenant
+) -> None:
+    """Versão aprovada não recalcula: a curva gravada antes desta mudança não tem
+    `fase`/`servico`, e a leitura precisa preenchê-los mesmo assim."""
+    owner = seed_tenant(role="owner")
+    orcamento_id, vid = _orcamento_com_insumos(
+        client, owner, [{"descricao": "Areia", "quantidade": "5", "preco_unitario": "20"}]
+    )
+    # Regrava a curva no formato anterior a esta mudança (itens sem fase/servico).
+    with SessionLocal() as session:
+        raw = session.execute(
+            text("SELECT curva_abc_json FROM orcamento_versao WHERE id = :v"), {"v": vid}
+        ).scalar_one()
+        for it in raw["itens"]:
+            it.pop("fase", None)
+            it.pop("servico", None)
+        session.execute(
+            text("UPDATE orcamento_versao SET curva_abc_json = CAST(:j AS jsonb) WHERE id = :v"),
+            {"j": json.dumps(raw), "v": vid},
+        )
+        session.commit()
+
+    item = client.get(
+        f"/api/v1/orcamentos/{orcamento_id}/curva-abc", headers=owner.auth_header
+    ).json()["itens"][0]
+    assert item["fase"].endswith("Fase")
+    assert item["servico"].endswith("Serviço")

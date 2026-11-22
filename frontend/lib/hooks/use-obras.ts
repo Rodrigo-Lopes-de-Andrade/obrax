@@ -13,6 +13,7 @@ import {
   createObra,
   deleteObra,
   getObra,
+  getProximoCodigoObra,
   listObras,
   updateObra,
   type ListObrasParams,
@@ -23,6 +24,7 @@ export const obrasKeys = {
   all: ["obras"] as const,
   list: (params: ListObrasParams) => ["obras", "list", params] as const,
   detail: (id: string) => ["obras", "detail", id] as const,
+  proximoCodigo: ["obras", "proximo-codigo"] as const,
 };
 
 export function useObras(params: ListObrasParams, options: { enabled?: boolean } = {}) {
@@ -41,6 +43,17 @@ export function useObra(id: string) {
     queryFn: () => getObra(id),
     // Guarda contra id vazio (ex.: obra_id de um ticket ainda carregando).
     enabled: id !== "",
+  });
+}
+
+/** Código sugerido para a próxima obra. Fica sob `obrasKeys.all`, então criar
+ * uma obra invalida a sugestão junto com a lista. */
+export function useProximoCodigoObra(enabled: boolean) {
+  return useQuery({
+    queryKey: obrasKeys.proximoCodigo,
+    queryFn: getProximoCodigoObra,
+    enabled,
+    staleTime: 0,
   });
 }
 
